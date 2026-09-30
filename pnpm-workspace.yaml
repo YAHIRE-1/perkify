@@ -1,0 +1,9 @@
+packages:
+  - 'apps/*'
+  - 'packages/*'
+allowBuilds:
+  '@parcel/watcher': true
+  '@reown/appkit': true
+  esbuild: true
+  protobufjs: true
+  unrs-resolver: true
