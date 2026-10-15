@@ -5,6 +5,6 @@ export default defineConfig({
   out: "./drizzle",
   dialect: "postgresql",
   dbCredentials: {
-    url: process.env.DATABASE_URL || "postgres://postgres:password@localhost:5435/perkify",
+    url: process.env.DATABASE_URL!,
   },
 });
