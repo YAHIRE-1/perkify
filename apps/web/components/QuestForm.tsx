@@ -1,8 +1,9 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { parseUnits, formatUnits } from 'viem';
-import type { Quest, QuestMilestone, QuestToken } from '@/collections/schemas/Quest';
-import { useWalletTokens } from '@/hooks/useWalletTokens';
+import type { Quest, QuestMilestone } from '@/collections/schemas/Quest';
+import { useWalletTokens } from '@/hooks/useWalletTokens'; // verifica que la ruta coincida con donde está el archivo
+import { NATIVE_TOKEN_ADDRESS } from '@/lib/knownTokens';
 import Field from './Field';
 
 type FormState = Partial<Quest> & {
@@ -14,12 +15,10 @@ export default function QuestForm({
   initial,
   submitLabel,
   onSubmit,
-  onBusyMessage,
 }: {
   initial?: Partial<Quest>;
   submitLabel: string;
   onSubmit: (d: Record<string, unknown>) => Promise<void>;
-  onBusyMessage?: (msg: string) => void;
 }) {
   const isEditing = Boolean(initial?.id);
   const [f, setF] = useState<FormState>({ checklist: [], milestones: [], ...initial });
@@ -27,10 +26,14 @@ export default function QuestForm({
   const [milestone, setMilestone] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [busyMessage, setBusyMessage] = useState('Saving…');
 
-
-  const { tokens, isLoading: loadingTokens, isConnected } = useWalletTokens();
+  const {
+    tokens,
+    isLoading: loadingTokens,
+    isConnected,
+    isSupportedChain,
+    error: tokensError,
+  } = useWalletTokens();
 
   const set = (p: Partial<FormState>) => setF((s) => ({ ...s, ...p }));
 
@@ -98,11 +101,10 @@ export default function QuestForm({
     if (!isEditing && (!f.milestones || f.milestones.length === 0)) {
       return 'You must add at least one expected milestone.';
     }
-    return null; // No errors
+    return null;
   };
 
   const submit = async () => {
-    // 1. Validate fields
     const validationError = validateForm();
     if (validationError) {
       setErr(validationError);
@@ -113,24 +115,19 @@ export default function QuestForm({
     setErr(null);
 
     try {
-      // 2. Map explicitly to the properties expected by TypeORM / NestJS
+      // Mapeo explícito a las propiedades que espera TypeORM / NestJS.
+      // Si acceptedTokenAddress es NATIVE_TOKEN_ADDRESS (0x000...0), el pago es en ETH nativo.
       const payload = {
         ...(isEditing ? { id: f.id } : {}),
         title: f.title!.trim(),
         description: f.description!.trim(),
-        rewardAmount: f.reward, // <--- matches TypeORM
-        acceptedTokenSymbol: f.token!.symbol, // <--- matches TypeORM
-        acceptedTokenAddress: f.token!.address, // <--- matches TypeORM
-        deadline: new Date(f.deadline!).toISOString(), // convert date format to ISO
+        rewardAmount: f.reward,
+        acceptedTokenSymbol: f.token!.symbol,
+        acceptedTokenAddress: f.token!.address,
+        deadline: new Date(f.deadline!).toISOString(),
         milestones: f.milestones,
         validationChecklist: f.checklist,
       };
-
-      // We don't handle the pipeline here because onSubmit is defined in the page
-      // But we can't update busyMessage from outside.
-      // Let's move the pipeline logic into the form or pass a setter.
-      // For a quick fix, we'll keep it as is but since I can't change the page's
-      // onSubmit easily without adding props, I'll move the logic here.
 
       await onSubmit(payload);
     } catch (e) {
@@ -169,9 +166,19 @@ export default function QuestForm({
 
       <Field label="Accepted token">
         {!isConnected && <p className="muted-2 text-sm">Connect your wallet to see your tokens.</p>}
-        {isConnected && loadingTokens && <p className="muted-2 text-sm">Loading balances…</p>}
-        {isConnected && !loadingTokens && tokens.length === 0 && (
-          <p className="muted-2 text-sm">No balance found in supported tokens.</p>
+        {isConnected && !isSupportedChain && (
+          <p className="muted-2 text-sm">Switch to Arbitrum or Sepolia to see your tokens.</p>
+        )}
+        {isConnected && isSupportedChain && loadingTokens && (
+          <p className="muted-2 text-sm">Loading balances…</p>
+        )}
+        {isConnected && isSupportedChain && !loadingTokens && tokensError && (
+          <p className="text-sm" style={{ color: 'var(--danger)' }}>
+            Couldn't read your balances. Try again in a moment.
+          </p>
+        )}
+        {isConnected && isSupportedChain && !loadingTokens && !tokensError && tokens.length === 0 && (
+          <p className="muted-2 text-sm">No ETH or USDC balance found on this network.</p>
         )}
         {isConnected && tokens.length > 0 && (
           <select
@@ -186,7 +193,8 @@ export default function QuestForm({
             <option value="" disabled>Choose a token</option>
             {tokens.map((t) => (
               <option key={t.address} value={t.address}>
-                {t.symbol} — balance: {formatUnits(t.balance, t.decimals)}
+                {t.symbol}
+                {t.address === NATIVE_TOKEN_ADDRESS ? ' (native)' : ''} — balance: {formatUnits(t.balance, t.decimals)}
               </option>
             ))}
           </select>
@@ -217,7 +225,7 @@ export default function QuestForm({
             <li key={m.id} className="surface-2 flex items-center justify-between px-3 py-2 text-sm">
               {m.description}
               {!isEditing && (
-                <button className="muted-2 text-xs" onClick={() => removeMilestone(m.id)}>Remove</button>
+                <button type="button" className="muted-2 text-xs" onClick={() => removeMilestone(m.id)}>Remove</button>
               )}
             </li>
           ))}
@@ -250,7 +258,7 @@ export default function QuestForm({
           {f.checklist.map((c, i) => (
             <li key={i} className="surface-2 flex items-center justify-between px-3 py-2 text-sm">
               {c}
-              <button className="muted-2 text-xs" onClick={() => set({ checklist: f.checklist.filter((_, j) => j !== i) })}>Remove</button>
+              <button type="button" className="muted-2 text-xs" onClick={() => set({ checklist: f.checklist.filter((_, j) => j !== i) })}>Remove</button>
             </li>
           ))}
         </ul>
@@ -258,7 +266,7 @@ export default function QuestForm({
 
       {err && <p className="text-sm" style={{ color: 'var(--danger)' }}>{err}</p>}
       <button className="btn btn-primary" disabled={!canSubmit} onClick={submit}>
-        {busy ? busyMessage : submitLabel}
+        {busy ? 'Saving…' : submitLabel}
       </button>
     </div>
   );

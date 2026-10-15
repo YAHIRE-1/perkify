@@ -1,8 +1,10 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
+import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { config } from '@/lib/wagmi';
 import { authClient } from '@/lib/auth-client';
 import { signInWithWallet } from '@/lib/wallet-auth';
 import type { User } from '@/collections/schemas/User';
@@ -124,11 +126,13 @@ export default function Providers({
   );
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>{children}</AuthProvider>
-      </ThemeProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
