@@ -12,8 +12,7 @@
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio",
-    "typecheck": "turbo run typecheck"
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "drizzle-orm": "0.45.3",

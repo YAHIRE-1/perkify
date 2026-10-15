@@ -13,7 +13,8 @@
     "db:logs": "docker compose logs -f postgres",
     "db:generate": "pnpm --filter @perkify/db db:generate",
     "db:push": "pnpm --filter @perkify/db db:push",
-    "db:studio": "pnpm --filter @perkify/db db:studio"
+    "db:studio": "pnpm --filter @perkify/db db:studio",
+    "typecheck": "turbo run typecheck"
   },
   "engines": {
     "node": ">=22"
