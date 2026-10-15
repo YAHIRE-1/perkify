@@ -1,11 +1,13 @@
+import "varlock/auto-load";
+import { ENV } from "varlock/env";
 import { createAuth } from "./index";
 
 export const auth = createAuth(
   {
-    BETTER_AUTH_SECRET: "x".repeat(32),
-    BETTER_AUTH_URL: "http://localhost:3004",
-    WEB_URL: "http://localhost:3001",
-    SIWE_DOMAIN: "localhost",
+    BETTER_AUTH_SECRET: ENV.BETTER_AUTH_SECRET,
+    BETTER_AUTH_URL: ENV.BETTER_AUTH_URL,
+    WEB_URL: ENV.WEB_URL,
+    SIWE_DOMAIN: ENV.SIWE_DOMAIN,
   },
   {} as any,
 );
