@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { siwe } from "better-auth/plugins";
 import { createPublicClient, http } from "viem";
-import { arbitrum, arbitrumSepolia } from "viem/chains";
+import { arbitrum, arbitrumSepolia, sepolia } from "viem/chains";
 import { verifySiweMessage, parseSiweMessage } from "viem/siwe";
 import type { PgDatabase } from "drizzle-orm/pg-core";
 
@@ -17,6 +17,7 @@ export function createAuth(env: AuthConfig, db: PgDatabase<any, any, any>) {
   const publicClients: Record<string, any> = {
     "42161": createPublicClient({ chain: arbitrum, transport: http() }),
     "421614": createPublicClient({ chain: arbitrumSepolia, transport: http() }),
+    "11155111": createPublicClient({ chain: sepolia, transport: http() }), // ← nuevo
   };
 
   return betterAuth({
@@ -39,17 +40,34 @@ export function createAuth(env: AuthConfig, db: PgDatabase<any, any, any>) {
         verifyMessage: async ({ message, signature, address }) => {
           try {
             const parsed = parseSiweMessage(message);
-            if (!parsed.chainId) return false;
+
+            if (!parsed.chainId) {
+              console.error("SIWE: mensaje sin chainId");
+              return false;
+            }
 
             const client = publicClients[parsed.chainId.toString()];
-            if (!client) return false;
+            if (!client) {
+              console.error("SIWE: chainId no soportado:", parsed.chainId);
+              return false;
+            }
 
-            return await verifySiweMessage(client, {
+            const ok = await verifySiweMessage(client, {
               message,
               signature: signature as `0x${string}`,
               address: address as `0x${string}`,
               domain: env.SIWE_DOMAIN,
             });
+
+            if (!ok) {
+              console.error("SIWE: verificación falló", {
+                messageDomain: parsed.domain,
+                expectedDomain: env.SIWE_DOMAIN,
+                messageAddress: parsed.address,
+                address,
+              });
+            }
+            return ok;
           } catch (e) {
             console.error("SIWE verify error:", e);
             return false;
