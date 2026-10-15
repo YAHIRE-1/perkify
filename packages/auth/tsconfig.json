@@ -10,6 +10,7 @@
     "declarationMap": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["./src/*"],
       "@perkify/db": ["../db/src/index.ts"]
     }
   },
