@@ -1,68 +1,44 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import type { User } from '@/collections/schemas/User';
-import { api, ApiError, tokenStore } from '../api/client';
+import { authClient } from '@/lib/auth-client';
 
-export const authKeys = {
-  all: ['auth'] as const,
-  me: () => [...authKeys.all, 'me'] as const,
-};
+/** Usuario actual (sesión de better-auth, por cookie) */
+export function useMe() {
+  const { data: session, isPending, error, refetch } = authClient.useSession();
 
-/** POST /auth/nonce */
-export function useNonce() {
-  return useMutation<{ nonce: string }, ApiError, string>({
-    mutationFn: (address) => api.nonce(address),
-  });
+  return {
+    data: (session?.user as unknown as User) ?? null,
+    isLoading: isPending,
+    error,
+    refetch,
+  };
 }
 
 /**
- * POST /auth/verify
- * Al resolver, guarda el token en el tokenStore y refresca `me`.
- */
-export function useVerify() {
-  const queryClient = useQueryClient();
-
-  return useMutation<{ accessToken: string }, ApiError, { message: string; signature: string }>({
-    mutationFn: ({ message, signature }) => api.verify(message, signature),
-    onSuccess: (data) => {
-      tokenStore.set(data.accessToken);
-      queryClient.invalidateQueries({ queryKey: authKeys.me() });
-    },
-  });
-}
-
-/** GET /me */
-export function useMe(options?: { enabled?: boolean }) {
-  return useQuery<User, ApiError>({
-    queryKey: authKeys.me(),
-    queryFn: api.me,
-    enabled: options?.enabled ?? (typeof window !== 'undefined' && !!tokenStore.get()),
-    retry: false,
-  });
-}
-
-/**
- * PATCH /me
- * Actualiza el usuario y sincroniza la cache de `me` de forma optimista,
- * además de invalidarla para asegurar consistencia con el servidor.
+ * Actualiza el usuario.
+ * better-auth refresca la sesión después de updateUser.
  */
 export function useUpdateMe() {
-  const queryClient = useQueryClient();
+  return useMutation<void, Error, Partial<Pick<User, 'avatarUrl' | 'bio' | 'name'>>>({
+    mutationFn: async (d) => {
+      const { error } = await authClient.updateUser({
+        name: d.name ?? undefined,
+        image: d.avatarUrl ?? undefined, 
+        ...(d.bio !== undefined && {
+          additionalFields: {
+            bio: d.bio,
+          },
+        }),
+      });
 
-  return useMutation<User, ApiError, Partial<Pick<User, 'avatarUrl' | 'bio' | 'name'>>>({
-    mutationFn: (d) => api.updateMe(d),
-    onSuccess: (updatedUser) => {
-      queryClient.setQueryData(authKeys.me(), updatedUser);
-      queryClient.invalidateQueries({ queryKey: authKeys.me() });
+      if (error) throw new Error(error.message ?? 'No se pudo actualizar el perfil');
     },
   });
 }
 
-/** Utilidad para cerrar sesión (limpia token + cache local del usuario) */
+/** Cerrar sesión */
 export function useLogout() {
-  const queryClient = useQueryClient();
-
-  return () => {
-    tokenStore.clear();
-    queryClient.removeQueries({ queryKey: authKeys.me() });
+  return async () => {
+    await authClient.signOut();
   };
 }

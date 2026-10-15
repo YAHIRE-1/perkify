@@ -1,0 +1,12 @@
+{
+  "name": "@perkify/auth",
+  "version": "0.0.1",
+  "private": true,
+  "main": "index.ts",
+  "dependencies": {
+    "better-auth": "catalog:",
+    "drizzle-orm": "latest",
+    "viem": "catalog:",
+    "zod": "^4.6.5"
+  }
+}

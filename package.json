@@ -7,7 +7,13 @@
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
-    "test": "turbo run test"
+    "test": "turbo run test",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f postgres",
+    "db:generate": "pnpm --filter @perkify/db db:generate",
+    "db:push": "pnpm --filter @perkify/db db:push",
+    "db:studio": "pnpm --filter @perkify/db db:studio"
   },
   "keywords": [],
   "author": "",

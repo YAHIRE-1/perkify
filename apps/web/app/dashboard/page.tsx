@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/api/client';
-import type { Page, Quest, QuestFilters } from '@/collections/schemas/Quest';
+import type { Quest, QuestFilters } from '@/collections/schemas/Quest';
+import type { Page } from '@/api/types';
 import QuestCard from '@/components/QuestCard';
 import QuestFiltersBar from '@/components/QuestFilters';
 import Pagination from '@/components/Pagination';

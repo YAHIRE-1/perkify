@@ -1,18 +1,10 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import {
-  QueryClient,
-  QueryClientProvider,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { WagmiProvider, type State } from 'wagmi';
-import { config as wagmiConfig } from '@/lib/wagmi';
-import { api, tokenStore } from '@/api/client';
-import { signInWithWallet } from '@/lib/siwe';
+import { authClient } from '@/lib/auth-client';
+import { signInWithWallet } from '@/lib/wallet-auth';
 import type { User } from '@/collections/schemas/User';
 
 // ---------- Tema (oscuro/claro) ----------
@@ -32,9 +24,7 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
-    setTheme(
-      (document.documentElement.dataset.theme as Theme) || 'dark'
-    );
+    setTheme((document.documentElement.dataset.theme as Theme) || 'dark');
   }, []);
 
   const toggle = () => {
@@ -52,12 +42,12 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ---------- Auth (wallet + SIWE + JWT) ----------
+// ---------- Auth (wallet + SIWE + sesión better-auth) ----------
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: () => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
 
@@ -65,70 +55,40 @@ const AuthCtx = createContext<AuthContextType>({
   user: null,
   loading: true,
   login: async () => {},
-  logout: () => {},
+  logout: async () => {},
   refresh: async () => {},
 });
 
 export const useAuth = () => useContext(AuthCtx);
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const queryClient = useQueryClient();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const hasToken = mounted && typeof window !== 'undefined' && !!tokenStore.get();
-
-  const {
-    data: user,
-    isLoading: loadingUser,
-    error: meError,
-  } = useQuery({
-    queryKey: ['me'],
-    queryFn: async () => {
-      try {
-        return await api.me();
-      } catch (err) {
-        tokenStore.clear();
-        throw err;
-      }
-    },
-    enabled: hasToken,
-    retry: false,
-  });
-
-  const loginMutation = useMutation({
-    mutationFn: async () => {
-      const token = await signInWithWallet();
-      tokenStore.set(token);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['me'] });
-    },
-  });
+  const { data: session, isPending, refetch } = authClient.useSession();
+  const [signingIn, setSigningIn] = useState(false);
 
   const login = async () => {
-    await loginMutation.mutateAsync();
+    setSigningIn(true);
+    try {
+      await signInWithWallet();
+      await refetch();
+    } finally {
+      setSigningIn(false);
+    }
   };
 
-  const logout = () => {
-    tokenStore.clear();
-    queryClient.setQueryData(['me'], null);
+  const logout = async () => {
+    await authClient.signOut();
+    await refetch();
   };
 
   const refresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: ['me'] });
+    await refetch();
   };
-
-  const isAuthChecking = hasToken ? loadingUser : false;
 
   return (
     <AuthCtx.Provider
       value={{
-        user: meError ? null : (user ?? null),
-        loading: !mounted || isAuthChecking || loginMutation.isPending,
+        user: (session?.user as unknown as User) ?? null,
+        loading: isPending || signingIn,
         login,
         logout,
         refresh,
@@ -142,10 +102,8 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 // ---------- Composición ----------
 export default function Providers({
   children,
-  initialWagmiState,
 }: {
   children: React.ReactNode;
-  initialWagmiState?: State;
 }) {
   const [queryClient] = useState(
     () =>
@@ -166,13 +124,11 @@ export default function Providers({
   );
 
   return (
-    <WagmiProvider config={wagmiConfig} initialState={initialWagmiState}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </ThemeProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </WagmiProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AuthProvider>{children}</AuthProvider>
+      </ThemeProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }

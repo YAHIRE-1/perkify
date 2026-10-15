@@ -1,7 +1,7 @@
 import type { Dispute, Page, Quest, QuestFilters } from './types';
 import type { User } from '@/collections/schemas/User';
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3100';
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002';
 const KEY = 'prky_token';
 
 export const tokenStore = {
@@ -55,11 +55,11 @@ const qs = (o: Record<string, unknown>) => {
 const json = (b: unknown) => JSON.stringify(b);
 
 export const api = {
-  nonce: (address: string) => req<{ nonce: string }>('/auth/nonce', { method: 'POST', body: json({ address }) }),
+  nonce: (address: string) => req<{ nonce: string }>('/api/auth/siwe/nonce', { method: 'POST', body: json({ address }) }),
   verify: (message: string, signature: string) =>
-    req<{ accessToken: string }>('/auth/verify', { method: 'POST', body: json({ message, signature }) }),
-  me: () => req<User>('/me'),
-  updateMe: (d: Partial<Pick<User, 'avatarUrl' | 'bio' | 'name'>>) => req<User>('/me', { method: 'PATCH', body: json(d) }),
+    req<{ accessToken: string }>('/api/auth/siwe/verify', { method: 'POST', body: json({ message, signature }) }),
+  me: () => req<User>('/api/me'),
+  updateMe: (d: Partial<Pick<User, 'avatarUrl' | 'bio' | 'name'>>) => req<User>('/api/me', { method: 'PATCH', body: json(d) }),
 
   quests: {
     list: async (f: QuestFilters = {}) => toPage<Quest>(await req(`/quests${qs({ ...f })}`)),
