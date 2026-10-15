@@ -2,14 +2,18 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "globalEnv": ["NODE_ENV"],
+  "globalDependencies": [
+    "**/.env.schema",
+    "**/.env.local",
+    "**/.env.*.local"
+  ],
   "tasks": {
     "db:generate": {
       "cache": false
     },
     "build": {
       "dependsOn": ["^build", "db:generate"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "out/**"],
-      "env": ["DATABASE_URL"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "out/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]

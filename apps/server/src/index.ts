@@ -12,6 +12,7 @@ import { evlog } from "evlog/hono";
 import type { EvlogVariables } from "evlog/hono";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import 'varlock/auto-load';
 
 import { createContext } from "./context";
 import { ENV } from "./env";
