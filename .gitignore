@@ -13,6 +13,9 @@ apps/web/src/routeTree.gen.ts
 local.db
 local.db-*
 
+# Varlock generated types (se regeneran con varlock load/run/codegen)
+env.d.ts
+
 # Environment variables
 .env
 .env*.local

@@ -5,7 +5,8 @@
   "main": "index.ts",
   "dependencies": {
     "better-auth": "catalog:",
-    "drizzle-orm": "latest",
+    "drizzle-orm": "catalog:",
+    "varlock": "catalog:",
     "viem": "catalog:",
     "zod": "^4.6.5"
   }
