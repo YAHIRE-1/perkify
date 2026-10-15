@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@perkify/config": "workspace:*",
+    "@types/bun": "catalog:",
     "typescript": "catalog:"
   }
 }

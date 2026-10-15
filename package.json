@@ -21,6 +21,7 @@
   },
   "packageManager": "pnpm@12.6.0",
   "devDependencies": {
+    "@types/bun": "catalog:",
     "turbo": "^2.11.4",
     "typescript": "^7.0.2"
   },

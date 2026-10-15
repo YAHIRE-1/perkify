@@ -8,10 +8,8 @@
     "composite": true,
     "declaration": true,
     "declarationMap": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@perkify/db": ["../db/src/index.ts"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src/**/*", "index.ts"]

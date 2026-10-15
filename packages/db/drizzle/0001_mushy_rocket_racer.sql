@@ -1,0 +1,1 @@
+ALTER TABLE "quests" ALTER COLUMN "validation_checklist" SET DEFAULT '[]'::jsonb;

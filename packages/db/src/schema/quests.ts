@@ -24,8 +24,7 @@ export const quests = pgTable("quests", {
   escrowId: text("escrow_id"),
   escrowStatus: escrowStatusEnum("escrow_status").default("none").notNull(),
   lastChainEventAt: timestamp("last_chain_event_at", { withTimezone: true }),
-  validationChecklist: jsonb("validation_checklist").$type<string[]>().notNull().default('[]'),
-  createdAt: createdAt(),
+  validationChecklist: jsonb("validation_checklist").$type<string[]>().notNull().default([]),  createdAt: createdAt(),
   updatedAt: updatedAt(),
 }, (table) => ({
   statusIdx: index("idx_quest_status").on(table.status),

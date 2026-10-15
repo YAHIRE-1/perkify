@@ -196,6 +196,9 @@ importers:
 
   .:
     devDependencies:
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.4.2
       turbo:
         specifier: ^2.11.4
         version: 2.11.4
@@ -352,6 +355,9 @@ importers:
       '@perkify/config':
         specifier: workspace:*
         version: link:../config
+      '@types/bun':
+        specifier: 'catalog:'
+        version: 1.4.2
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
