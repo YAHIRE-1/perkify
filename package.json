@@ -1,8 +1,8 @@
 {
-  "name": "Perkify-full",
+  "name": "perkify-full",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "type": "module",
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -15,20 +15,13 @@
     "db:push": "pnpm --filter @perkify/db db:push",
     "db:studio": "pnpm --filter @perkify/db db:studio"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "12.6.0",
-      "onFail": "download"
-    }
+  "engines": {
+    "node": ">=22"
   },
   "packageManager": "pnpm@12.6.0",
-  "type": "module",
   "devDependencies": {
     "turbo": "^2.11.4",
     "typescript": "^7.0.2"
-  }
+  },
+  "license": "ISC"
 }
