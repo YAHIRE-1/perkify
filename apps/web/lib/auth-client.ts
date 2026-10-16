@@ -3,7 +3,7 @@ import { inferAdditionalFields, siweClient } from "better-auth/client/plugins";
 import type { Auth } from "@perkify/auth";
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  // Sin baseURL: usa el origen actual, por lo que pasa por el rewrite de Next
   plugins: [siweClient(), inferAdditionalFields<Auth>()],
 });
 
