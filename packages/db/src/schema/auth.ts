@@ -22,8 +22,6 @@ export const user = pgTable("user", {
   role: text("role").default("hunter").notNull(),
   bio: text("bio"),
   avatarUrl: text("avatar_url"),
-  // Nullable: Better Auth crea el usuario antes de conocer la dirección.
-  // La rellenamos con un hook después del login SIWE.
   walletAddress: text("wallet_address").unique(),
 });
 

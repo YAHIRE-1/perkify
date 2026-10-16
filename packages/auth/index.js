@@ -1,16 +1,24 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { createAuthMiddleware } from "better-auth/api";
 import { siwe } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 import { createPublicClient, http } from "viem";
-import { arbitrum, arbitrumSepolia } from "viem/chains";
+import { arbitrum, arbitrumSepolia, sepolia } from "viem/chains";
 import { verifySiweMessage, parseSiweMessage } from "viem/siwe";
+import * as schema from "@perkify/db";
 export function createAuth(env, db) {
     const publicClients = {
         "42161": createPublicClient({ chain: arbitrum, transport: http() }),
         "421614": createPublicClient({ chain: arbitrumSepolia, transport: http() }),
+        "11155111": createPublicClient({ chain: sepolia, transport: http() }),
     };
     return betterAuth({
-        database: drizzleAdapter(db, { provider: "pg", usePlural: false }),
+        database: drizzleAdapter(db, {
+            provider: "pg",
+            usePlural: false,
+            schema,
+        }),
         secret: env.BETTER_AUTH_SECRET,
         baseURL: env.BETTER_AUTH_URL,
         trustedOrigins: [env.WEB_URL],
@@ -19,7 +27,28 @@ export function createAuth(env, db) {
                 role: { type: "string", defaultValue: "hunter" },
                 bio: { type: "string", required: false },
                 avatarUrl: { type: "string", required: false },
+                walletAddress: {
+                    type: "string",
+                    required: false, // nullable en la BD
+                    input: false, // el cliente no puede escribirla
+                },
             },
+        },
+        hooks: {
+            // Después de un login SIWE exitoso, guarda la dirección en user
+            after: createAuthMiddleware(async (ctx) => {
+                if (ctx.path !== "/siwe/verify")
+                    return;
+                const newSession = ctx.context.newSession;
+                const address = ctx.body
+                    ?.walletAddress;
+                if (!newSession || !address)
+                    return;
+                await db
+                    .update(schema.user)
+                    .set({ walletAddress: address.toLowerCase() })
+                    .where(eq(schema.user.id, newSession.user.id));
+            }),
         },
         plugins: [
             siwe({
@@ -29,17 +58,30 @@ export function createAuth(env, db) {
                 verifyMessage: async ({ message, signature, address }) => {
                     try {
                         const parsed = parseSiweMessage(message);
-                        if (!parsed.chainId)
+                        if (!parsed.chainId) {
+                            console.error("SIWE: mensaje sin chainId");
                             return false;
+                        }
                         const client = publicClients[parsed.chainId.toString()];
-                        if (!client)
+                        if (!client) {
+                            console.error("SIWE: chainId no soportado:", parsed.chainId);
                             return false;
-                        return await verifySiweMessage(client, {
+                        }
+                        const ok = await verifySiweMessage(client, {
                             message,
                             signature: signature,
                             address: address,
                             domain: env.SIWE_DOMAIN,
                         });
+                        if (!ok) {
+                            console.error("SIWE: verificación falló", {
+                                messageDomain: parsed.domain,
+                                expectedDomain: env.SIWE_DOMAIN,
+                                messageAddress: parsed.address,
+                                address,
+                            });
+                        }
+                        return ok;
                     }
                     catch (e) {
                         console.error("SIWE verify error:", e);

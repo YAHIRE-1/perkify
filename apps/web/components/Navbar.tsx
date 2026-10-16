@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import ThemeToggle from './ThemeToggle';
 import { useAuth } from './Providers';
 
-const short = (address?: string) => 
+const short = (address?: string | null) =>
   address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 
 export default function Navbar() {

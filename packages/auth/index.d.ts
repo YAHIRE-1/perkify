@@ -24,7 +24,15 @@ export declare function createAuth(env: AuthConfig, db: PgDatabase<any, any, any
                 type: "string";
                 required: false;
             };
+            walletAddress: {
+                type: "string";
+                required: false;
+                input: false;
+            };
         };
+    };
+    hooks: {
+        after: import("better-auth").Middleware<import("better-auth").MiddlewareOptions, (inputContext: import("better-auth").MiddlewareInputContext<import("better-auth").MiddlewareOptions>) => Promise<void>>;
     };
     plugins: [{
         id: "siwe";
