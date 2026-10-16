@@ -2,9 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/api/client';
-import type { QuestFilters } from '@/api/types';
-import type { Quest } from '@perkify/db';
-import type { Page } from '@/api/types';
+import type { Page, QuestFilters, QuestSummary } from '@/api/types';
 import QuestCard from '@/components/QuestCard';
 import QuestFiltersBar from '@/components/QuestFilters';
 import Pagination from '@/components/Pagination';
@@ -16,7 +14,7 @@ const LIMIT = 9;
 export default function Marketplace() {
   const { user } = useAuth();
   const [filters, setFilters] = useState<QuestFilters>({ page: 1, limit: LIMIT });
-  const [data, setData] = useState<Page<Quest> | null>(null);
+  const [data, setData] = useState<Page<QuestSummary> | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
