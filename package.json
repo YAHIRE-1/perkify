@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "turbo run dev",
+    "start": "pnpm --filter @perkify/server start",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",
