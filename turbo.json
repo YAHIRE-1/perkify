@@ -13,6 +13,7 @@
     },
     "build": {
       "dependsOn": ["^build"],
+      "env": ["PERKIFY_API_URL", "NEXT_PUBLIC_API_URL", "NEXT_PUBLIC_WEB_URL"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "out/**"]
     },
     "lint": {

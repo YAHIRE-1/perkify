@@ -7,11 +7,14 @@ import { createPublicClient, http } from "viem";
 import { arbitrum, arbitrumSepolia, sepolia } from "viem/chains";
 import { verifySiweMessage, parseSiweMessage } from "viem/siwe";
 import * as schema from "@perkify/db";
+// RPC público por defecto de cada chain (sin API key), pero con timeout y
+// reintentos acotados para que el POST no quede colgado ~40s.
+const rpc = () => http(undefined, { timeout: 8_000, retryCount: 1, retryDelay: 300 });
 export function createAuth(env, db) {
     const publicClients = {
-        "42161": createPublicClient({ chain: arbitrum, transport: http() }),
-        "421614": createPublicClient({ chain: arbitrumSepolia, transport: http() }),
-        "11155111": createPublicClient({ chain: sepolia, transport: http() }),
+        "42161": createPublicClient({ chain: arbitrum, transport: rpc() }),
+        "421614": createPublicClient({ chain: arbitrumSepolia, transport: rpc() }),
+        "11155111": createPublicClient({ chain: sepolia, transport: rpc() }),
     };
     return betterAuth({
         database: drizzleAdapter(db, {
@@ -56,6 +59,7 @@ export function createAuth(env, db) {
                 anonymous: true,
                 getNonce: async () => crypto.randomUUID().replace(/-/g, ""),
                 verifyMessage: async ({ message, signature, address }) => {
+                    const t = Date.now();
                     try {
                         const parsed = parseSiweMessage(message);
                         if (!parsed.chainId) {
@@ -73,6 +77,11 @@ export function createAuth(env, db) {
                             address: address,
                             domain: env.SIWE_DOMAIN,
                         });
+                        console.log("[siwe] verify", {
+                            ok,
+                            chainId: parsed.chainId,
+                            ms: Date.now() - t,
+                        });
                         if (!ok) {
                             console.error("SIWE: verificación falló", {
                                 messageDomain: parsed.domain,
@@ -84,7 +93,7 @@ export function createAuth(env, db) {
                         return ok;
                     }
                     catch (e) {
-                        console.error("SIWE verify error:", e);
+                        console.error("SIWE verify error:", `${Date.now() - t}ms`, e);
                         return false;
                     }
                 },
