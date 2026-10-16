@@ -1,5 +1,5 @@
 'use client';
-import type { QuestFilters } from '@/collections/schemas/Quest';
+import type { QuestFilters } from '@/api/types';
 
 export const TOKENS = ['ETH', 'USDC', 'USDT', 'PRKY'];
 

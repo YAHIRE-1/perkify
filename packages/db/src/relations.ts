@@ -1,32 +1,12 @@
 import { relations } from "drizzle-orm";
 import { user } from "./schema/auth";
 import {
-  quests, questMilestones, disputes, evidence, transactions,
+  quests, disputes, evidence, transactions,
 } from "./schema";
 
 export const userQuestsRelations = relations(user, ({ many }) => ({
   questsCreated: many(quests, { relationName: "creator" }),
   questsHunted: many(quests, { relationName: "hunter" }),
-}));
-
-export const questsRelations = relations(quests, ({ one, many }) => ({
-  creator: one(user, {
-    fields: [quests.creatorId],
-    references: [user.id],
-    relationName: "creator",
-  }),
-  hunter: one(user, {
-    fields: [quests.hunterId],
-    references: [user.id],
-    relationName: "hunter",
-  }),
-  milestones: many(questMilestones),
-  transactions: many(transactions),
-  disputes: many(disputes),
-}));
-
-export const questMilestonesRelations = relations(questMilestones, ({ one }) => ({
-  quest: one(quests, { fields: [questMilestones.questId], references: [quests.id] }),
 }));
 
 export const disputesRelations = relations(disputes, ({ one, many }) => ({

@@ -1,7 +1,10 @@
 import { createAuthClient } from "better-auth/react";
-import { siweClient } from "better-auth/client/plugins";
+import { inferAdditionalFields, siweClient } from "better-auth/client/plugins";
+import type { Auth } from "@perkify/auth";
 
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3002",
-  plugins: [siweClient()],
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  plugins: [siweClient(), inferAdditionalFields<Auth>()],
 });
+
+export type SessionUser = typeof authClient.$Infer.Session.user;

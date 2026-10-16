@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { api } from '@/api/client';
-import type { Quest, QuestFilters } from '@/collections/schemas/Quest';
+import type { QuestFilters } from '@/api/types';
+import type { Quest } from '@perkify/db';
 import type { Page } from '@/api/types';
 import QuestCard from '@/components/QuestCard';
 import QuestFiltersBar from '@/components/QuestFilters';

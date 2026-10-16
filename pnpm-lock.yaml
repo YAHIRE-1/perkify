@@ -275,6 +275,9 @@ importers:
       '@perkify/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@perkify/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@safe-global/safe-apps-provider':
         specifier: ^0.18.6
         version: 0.18.6(typescript@5.9.3)(zod@3.22.4)

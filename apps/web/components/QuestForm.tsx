@@ -1,14 +1,23 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { parseUnits, formatUnits } from 'viem';
-import type { Quest, QuestMilestone } from '@/collections/schemas/Quest';
-import { useWalletTokens } from '@/hooks/useWalletTokens'; // verifica que la ruta coincida con donde está el archivo
+import type { Quest, CreateQuestInput } from '@perkify/db';
+import { useWalletTokens } from '@/hooks/useWalletTokens';
 import { NATIVE_TOKEN_ADDRESS } from '@/lib/knownTokens';
 import Field from './Field';
 
-type FormState = Partial<Quest> & {
-  checklist: string[];
-  milestones: QuestMilestone[];
+type TokenChoice = { address: string; symbol: string; decimals: number };
+
+type FormState = {
+  title: string;
+  description: string;
+  category: string;
+  criteria: string;
+  rewardAmount: string;
+  deadline: string;
+  validationChecklist: string[];
+  milestones: string[];
+  token?: TokenChoice;
 };
 
 export default function QuestForm({
@@ -16,12 +25,21 @@ export default function QuestForm({
   submitLabel,
   onSubmit,
 }: {
-  initial?: Partial<Quest>;
+  initial?: Quest;
   submitLabel: string;
-  onSubmit: (d: Record<string, unknown>) => Promise<void>;
+  onSubmit: (d: CreateQuestInput) => Promise<void>;
 }) {
   const isEditing = Boolean(initial?.id);
-  const [f, setF] = useState<FormState>({ checklist: [], milestones: [], ...initial });
+  const [f, setF] = useState<FormState>({
+    title: initial?.title ?? '',
+    description: initial?.description ?? '',
+    category: initial?.category ?? '',
+    criteria: initial?.criteria ?? '',
+    rewardAmount: initial?.rewardAmount ?? '',
+    deadline: initial?.deadline?.slice(0, 10) ?? '',
+    validationChecklist: initial?.validationChecklist ?? [],
+    milestones: initial?.milestones?.map((m) => m.description) ?? [],
+  });
   const [item, setItem] = useState('');
   const [milestone, setMilestone] = useState('');
   const [err, setErr] = useState<string | null>(null);
@@ -39,21 +57,20 @@ export default function QuestForm({
 
   const addItem = () => {
     if (item.trim()) {
-      set({ checklist: [...f.checklist, item.trim()] });
+      set({ validationChecklist: [...f.validationChecklist, item.trim()] });
       setItem('');
     }
   };
 
   const addMilestone = () => {
     if (!milestone.trim() || isEditing) return;
-    const m: QuestMilestone = { id: crypto.randomUUID(), description: milestone.trim() };
-    set({ milestones: [...f.milestones, m] });
+    set({ milestones: [...f.milestones, milestone.trim()] });
     setMilestone('');
   };
 
-  const removeMilestone = (id: string) => {
+  const removeMilestone = (index: number) => {
     if (isEditing) return;
-    set({ milestones: f.milestones.filter((m) => m.id !== id) });
+    set({ milestones: f.milestones.filter((_, i) => i !== index) });
   };
 
   const selectedTokenBalance = useMemo(
@@ -62,30 +79,30 @@ export default function QuestForm({
   );
 
   const insufficientBalance = useMemo(() => {
-    if (!f.token || selectedTokenBalance === null || !f.reward) return false;
+    if (!f.token || selectedTokenBalance === null || !f.rewardAmount) return false;
     try {
-      const rewardWei = parseUnits(f.reward, f.token.decimals);
+      const rewardWei = parseUnits(f.rewardAmount, f.token.decimals);
       return rewardWei > selectedTokenBalance;
     } catch {
       return false;
     }
-  }, [f.token, f.reward, selectedTokenBalance]);
+  }, [f.token, f.rewardAmount, selectedTokenBalance]);
 
   // --- LOCAL VALIDATION ---
   const validateForm = (): string | null => {
-    if (!f.title || !f.title.trim()) {
+    if (!f.title.trim()) {
       return 'Title is required.';
     }
     if (f.title.trim().length > 120) {
       return 'Title cannot exceed 120 characters.';
     }
-    if (!f.description || !f.description.trim()) {
+    if (!f.description.trim()) {
       return 'Description is required.';
     }
-    if (!f.reward || isNaN(Number(f.reward)) || Number(f.reward) <= 0) {
+    if (!f.rewardAmount || isNaN(Number(f.rewardAmount)) || Number(f.rewardAmount) <= 0) {
       return 'Enter a valid reward amount greater than 0.';
     }
-    if (!f.token) {
+    if (!isEditing && !f.token) {
       return 'Choose a valid token for the reward.';
     }
     if (insufficientBalance) {
@@ -98,7 +115,7 @@ export default function QuestForm({
     if (isNaN(deadlineDate.getTime()) || deadlineDate <= new Date()) {
       return 'The deadline must be in the future.';
     }
-    if (!isEditing && (!f.milestones || f.milestones.length === 0)) {
+    if (!isEditing && f.milestones.length === 0) {
       return 'You must add at least one expected milestone.';
     }
     return null;
@@ -115,19 +132,18 @@ export default function QuestForm({
     setErr(null);
 
     try {
-      // Mapeo explícito a las propiedades que espera TypeORM / NestJS.
-      // Si acceptedTokenAddress es NATIVE_TOKEN_ADDRESS (0x000...0), el pago es en ETH nativo.
+      // Token y milestones solo se envían al crear (no son editables).
+      // Si tokenAddress es NATIVE_TOKEN_ADDRESS (0x000...0), el pago es en ETH nativo.
       const payload = {
-        ...(isEditing ? { id: f.id } : {}),
-        title: f.title!.trim(),
-        description: f.description!.trim(),
-        rewardAmount: f.reward,
-        acceptedTokenSymbol: f.token!.symbol,
-        acceptedTokenAddress: f.token!.address,
-        deadline: new Date(f.deadline!).toISOString(),
-        milestones: f.milestones,
-        validationChecklist: f.checklist,
-      };
+        title: f.title.trim(),
+        description: f.description.trim(),
+        category: f.category.trim() || null,
+        criteria: f.criteria.trim() || null,
+        rewardAmount: f.rewardAmount,
+        deadline: new Date(f.deadline).toISOString(),
+        validationChecklist: f.validationChecklist,
+        ...(isEditing ? {} : { tokenAddress: f.token!.address, milestones: f.milestones }),
+      } as CreateQuestInput;
 
       await onSubmit(payload);
     } catch (e) {
@@ -138,20 +154,23 @@ export default function QuestForm({
   };
 
   const canSubmit =
-    !busy && !!f.title && !!f.token && !insufficientBalance && (isEditing || f.milestones.length > 0);
+    !busy &&
+    !!f.title &&
+    !insufficientBalance &&
+    (isEditing || (!!f.token && f.milestones.length > 0));
 
   return (
     <div className="surface space-y-4 p-6">
       <Field label="Title">
-        <input className="input" value={f.title ?? ''} onChange={(e) => set({ title: e.target.value })} />
+        <input className="input" value={f.title} onChange={(e) => set({ title: e.target.value })} />
       </Field>
       <Field label="Description">
-        <textarea className="input min-h-28" value={f.description ?? ''} onChange={(e) => set({ description: e.target.value })} />
+        <textarea className="input min-h-28" value={f.description} onChange={(e) => set({ description: e.target.value })} />
       </Field>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Reward">
-          <input className="input" type="number" min="0" step="any" value={f.reward ?? ''} onChange={(e) => set({ reward: e.target.value })} />
+          <input className="input" type="number" min="0" step="any" value={f.rewardAmount} onChange={(e) => set({ rewardAmount: e.target.value })} />
           {insufficientBalance && (
             <p className="text-xs mt-1" style={{ color: 'var(--danger)' }}>
               Exceeds your {f.token?.symbol} balance
@@ -160,44 +179,49 @@ export default function QuestForm({
           )}
         </Field>
         <Field label="Deadline">
-          <input className="input" type="date" value={f.deadline?.slice(0, 10) ?? ''} onChange={(e) => set({ deadline: e.target.value })} />
+          <input className="input" type="date" value={f.deadline} onChange={(e) => set({ deadline: e.target.value })} />
         </Field>
       </div>
 
       <Field label="Accepted token">
-        {!isConnected && <p className="muted-2 text-sm">Connect your wallet to see your tokens.</p>}
-        {isConnected && !isSupportedChain && (
-          <p className="muted-2 text-sm">Switch to Arbitrum or Sepolia to see your tokens.</p>
-        )}
-        {isConnected && isSupportedChain && loadingTokens && (
-          <p className="muted-2 text-sm">Loading balances…</p>
-        )}
-        {isConnected && isSupportedChain && !loadingTokens && tokensError && (
-          <p className="text-sm" style={{ color: 'var(--danger)' }}>
-            Couldn't read your balances. Try again in a moment.
-          </p>
-        )}
-        {isConnected && isSupportedChain && !loadingTokens && !tokensError && tokens.length === 0 && (
-          <p className="muted-2 text-sm">No ETH or USDC balance found on this network.</p>
-        )}
-        {isConnected && tokens.length > 0 && (
-          <select
-            className="input"
-            disabled={isEditing}
-            value={f.token?.address ?? ''}
-            onChange={(e) => {
-              const t = tokens.find((tk) => tk.address === e.target.value);
-              set({ token: t ? { address: t.address, symbol: t.symbol, decimals: t.decimals } : undefined });
-            }}
-          >
-            <option value="" disabled>Choose a token</option>
-            {tokens.map((t) => (
-              <option key={t.address} value={t.address}>
-                {t.symbol}
-                {t.address === NATIVE_TOKEN_ADDRESS ? ' (native)' : ''} — balance: {formatUnits(t.balance, t.decimals)}
-              </option>
-            ))}
-          </select>
+        {isEditing ? (
+          <p className="muted text-sm">{initial?.acceptedTokenSymbol} (can't be changed)</p>
+        ) : (
+          <>
+            {!isConnected && <p className="muted-2 text-sm">Connect your wallet to see your tokens.</p>}
+            {isConnected && !isSupportedChain && (
+              <p className="muted-2 text-sm">Switch to Arbitrum or Sepolia to see your tokens.</p>
+            )}
+            {isConnected && isSupportedChain && loadingTokens && (
+              <p className="muted-2 text-sm">Loading balances…</p>
+            )}
+            {isConnected && isSupportedChain && !loadingTokens && tokensError && (
+              <p className="text-sm" style={{ color: 'var(--danger)' }}>
+                Couldn't read your balances. Try again in a moment.
+              </p>
+            )}
+            {isConnected && isSupportedChain && !loadingTokens && !tokensError && tokens.length === 0 && (
+              <p className="muted-2 text-sm">No ETH or USDC balance found on this network.</p>
+            )}
+            {isConnected && tokens.length > 0 && (
+              <select
+                className="input"
+                value={f.token?.address ?? ''}
+                onChange={(e) => {
+                  const t = tokens.find((tk) => tk.address === e.target.value);
+                  set({ token: t ? { address: t.address, symbol: t.symbol, decimals: t.decimals } : undefined });
+                }}
+              >
+                <option value="" disabled>Choose a token</option>
+                {tokens.map((t) => (
+                  <option key={t.address} value={t.address}>
+                    {t.symbol}
+                    {t.address === NATIVE_TOKEN_ADDRESS ? ' (native)' : ''} — balance: {formatUnits(t.balance, t.decimals)}
+                  </option>
+                ))}
+              </select>
+            )}
+          </>
         )}
       </Field>
 
@@ -221,11 +245,11 @@ export default function QuestForm({
           </div>
         )}
         <ul className="mt-2 space-y-1">
-          {f.milestones.map((m) => (
-            <li key={m.id} className="surface-2 flex items-center justify-between px-3 py-2 text-sm">
-              {m.description}
+          {f.milestones.map((m, i) => (
+            <li key={i} className="surface-2 flex items-center justify-between px-3 py-2 text-sm">
+              {m}
               {!isEditing && (
-                <button type="button" className="muted-2 text-xs" onClick={() => removeMilestone(m.id)}>Remove</button>
+                <button type="button" className="muted-2 text-xs" onClick={() => removeMilestone(i)}>Remove</button>
               )}
             </li>
           ))}
@@ -236,10 +260,10 @@ export default function QuestForm({
       </div>
 
       <Field label="Category">
-        <input className="input" value={f.category ?? ''} onChange={(e) => set({ category: e.target.value })} />
+        <input className="input" value={f.category} onChange={(e) => set({ category: e.target.value })} />
       </Field>
       <Field label="Acceptance criteria">
-        <textarea className="input min-h-20" value={f.criteria ?? ''} onChange={(e) => set({ criteria: e.target.value })} />
+        <textarea className="input min-h-20" value={f.criteria} onChange={(e) => set({ criteria: e.target.value })} />
       </Field>
 
       <div>
@@ -255,10 +279,16 @@ export default function QuestForm({
           <button type="button" className="btn" onClick={addItem}>Add</button>
         </div>
         <ul className="mt-2 space-y-1">
-          {f.checklist.map((c, i) => (
+          {f.validationChecklist.map((c, i) => (
             <li key={i} className="surface-2 flex items-center justify-between px-3 py-2 text-sm">
               {c}
-              <button type="button" className="muted-2 text-xs" onClick={() => set({ checklist: f.checklist.filter((_, j) => j !== i) })}>Remove</button>
+              <button
+                type="button"
+                className="muted-2 text-xs"
+                onClick={() => set({ validationChecklist: f.validationChecklist.filter((_, j) => j !== i) })}
+              >
+                Remove
+              </button>
             </li>
           ))}
         </ul>

@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/api/client';
-import type { Page, QuestFilters, Quest } from '@/collections/schemas/Quest';
+import type { Page, QuestFilters } from '@/api/types';
+import type { Quest } from '@perkify/db';
 import QuestCard from '@/components/QuestCard';
 import QuestFiltersBar from '@/components/QuestFilters';
 import Pagination from '@/components/Pagination';

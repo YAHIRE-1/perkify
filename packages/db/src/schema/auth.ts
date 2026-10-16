@@ -124,3 +124,5 @@ export const walletAddressRelations = relations(walletAddress, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
+export type UserRow = typeof user.$inferSelect;

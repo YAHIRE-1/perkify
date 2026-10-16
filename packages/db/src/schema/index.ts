@@ -2,7 +2,6 @@ export * from "./enums";
 export * from "./siwe_nonces";
 export * from "./tokens";
 export * from "./quests";
-export * from "./questMilestones";
 export * from "./disputes";
 export * from "./evidence";
 export * from "./transactions";

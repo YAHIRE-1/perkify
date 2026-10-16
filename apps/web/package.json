@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3001",
+    "dev": "varlock run -- next dev -p 3001",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -13,6 +13,7 @@
     "@coinbase/wallet-sdk": "^4.4.0",
     "@metamask/connect-evm": "^2.1.1",
     "@perkify/auth": "workspace:*",
+    "@perkify/db": "workspace:*",
     "@safe-global/safe-apps-provider": "^0.18.6",
     "@safe-global/safe-apps-sdk": "^9.1.0",
     "@tanstack/react-query": "^5.103.2",

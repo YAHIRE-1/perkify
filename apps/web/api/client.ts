@@ -1,7 +1,7 @@
 import type { Dispute, Page, Quest, QuestFilters } from './types';
-import type { User } from '@/collections/schemas/User';
+import type { UserRow as User } from '@perkify/db';
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3002';
+const BASE = process.env.NEXT_PUBLIC_API_URL;
 const KEY = 'prky_token';
 
 export const tokenStore = {

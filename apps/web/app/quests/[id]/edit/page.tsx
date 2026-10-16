@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/api/client';
-import type { Quest } from '@/collections/schemas/Quest';
+import type { Quest } from '@perkify/db';
 import QuestForm from '@/components/QuestForm';
 import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/components/Providers';
@@ -21,8 +21,17 @@ export default function EditQuestPage() {
   if (err) return <EmptyState title="Quest not found" hint={err} />;
   if (!q) return <div className="muted">Loading…</div>;
 
-  if (!user || user.id !== q.createdBy) {
+  if (!user || user.id !== q.creatorId) {
     return <EmptyState title="Not authorized" hint="You can only edit quests you created." />;
+  }
+
+  if (q.status !== 'DRAFT') {
+    return (
+      <EmptyState
+        title="Quest can't be edited"
+        hint="Only quests in draft status can be edited."
+      />
+    );
   }
 
   return (
