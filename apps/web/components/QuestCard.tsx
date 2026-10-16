@@ -1,14 +1,14 @@
 import Link from 'next/link';
-import type { Quest } from '@perkify/db';
+import type { QuestSummary } from '@/api/types';
 import StatusBadge from './StatusBadge';
 
 export default function QuestCard({
   quest: q,
   isOwner = false,
 }: {
-  quest: Quest;
+  quest: QuestSummary;
   isOwner?: boolean;
-}) {
+})  {
   const isDraft = q.status === 'DRAFT';
   const canEdit = isOwner && isDraft;
   const viewHref = canEdit ? `/quests/${q.id}/edit` : `/quests/${q.id}`;
