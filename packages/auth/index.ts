@@ -16,11 +16,15 @@ export interface AuthConfig {
   SIWE_DOMAIN: string;
 }
 
+// RPC público por defecto de cada chain (sin API key), pero con timeout y
+// reintentos acotados para que el POST no quede colgado ~40s.
+const rpc = () => http(undefined, { timeout: 8_000, retryCount: 1, retryDelay: 300 });
+
 export function createAuth(env: AuthConfig, db: PgDatabase<any, any, any>) {
   const publicClients: Record<string, any> = {
-    "42161": createPublicClient({ chain: arbitrum, transport: http() }),
-    "421614": createPublicClient({ chain: arbitrumSepolia, transport: http() }),
-    "11155111": createPublicClient({ chain: sepolia, transport: http() }),
+    "42161": createPublicClient({ chain: arbitrum, transport: rpc() }),
+    "421614": createPublicClient({ chain: arbitrumSepolia, transport: rpc() }),
+    "11155111": createPublicClient({ chain: sepolia, transport: rpc() }),
   };
 
   return betterAuth({
@@ -66,6 +70,7 @@ export function createAuth(env: AuthConfig, db: PgDatabase<any, any, any>) {
         anonymous: true,
         getNonce: async () => crypto.randomUUID().replace(/-/g, ""),
         verifyMessage: async ({ message, signature, address }) => {
+          const t = Date.now();
           try {
             const parsed = parseSiweMessage(message);
 
@@ -87,6 +92,12 @@ export function createAuth(env: AuthConfig, db: PgDatabase<any, any, any>) {
               domain: env.SIWE_DOMAIN,
             });
 
+            console.log("[siwe] verify", {
+              ok,
+              chainId: parsed.chainId,
+              ms: Date.now() - t,
+            });
+
             if (!ok) {
               console.error("SIWE: verificación falló", {
                 messageDomain: parsed.domain,
@@ -97,7 +108,7 @@ export function createAuth(env: AuthConfig, db: PgDatabase<any, any, any>) {
             }
             return ok;
           } catch (e) {
-            console.error("SIWE verify error:", e);
+            console.error("SIWE verify error:", `${Date.now() - t}ms`, e);
             return false;
           }
         },
