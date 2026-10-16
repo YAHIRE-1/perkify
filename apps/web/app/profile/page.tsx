@@ -60,7 +60,7 @@ export default function Profile() {
           </div>
           <div className="min-w-0">
             <div className="muted-2 text-xs">Wallet</div>
-            <div className="truncate text-sm">{wallet ?? 'No address'}</div>
+            <div className="truncate text-sm">{user.walletAddress ?? 'No address'}</div>
             {user.role && <span className="chip chip-cyan mt-1">{user.role}</span>}
           </div>
         </div>

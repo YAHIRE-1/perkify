@@ -1,4 +1,12 @@
-import type { Dispute, Page, Quest, QuestFilters } from './types';
+import type {
+  CreateQuestInput,
+  Dispute,
+  Page,
+  Quest,
+  QuestFilters,
+  QuestSummary,
+  UpdateQuestInput,
+} from './types';
 import type { UserRow as User } from '@perkify/db';
 
 const BASE = process.env.NEXT_PUBLIC_API_URL;
@@ -59,14 +67,16 @@ export const api = {
   verify: (message: string, signature: string) =>
     req<{ accessToken: string }>('/api/auth/siwe/verify', { method: 'POST', body: json({ message, signature }) }),
   me: () => req<User>('/api/me'),
-  updateMe: (d: Partial<Pick<User, 'avatarUrl' | 'bio' | 'name'>>) => req<User>('/api/me', { method: 'PATCH', body: json(d) }),
+  updateMe: (d: Partial<Pick<User, 'avatarUrl' | 'bio' | 'name'>>) =>
+    req<User>('/api/me', { method: 'PATCH', body: json(d) }),
 
   quests: {
-    list: async (f: QuestFilters = {}) => toPage<Quest>(await req(`/quests${qs({ ...f })}`)),
-    mine: async (f: QuestFilters = {}) => toPage<Quest>(await req(`/quests/mine${qs({ ...f })}`)),
+    list: async (f: QuestFilters = {}) => toPage<QuestSummary>(await req(`/quests${qs({ ...f })}`)),
+    mine: async (f: QuestFilters = {}) => toPage<QuestSummary>(await req(`/quests/mine${qs({ ...f })}`)),
     get: (id: string) => req<Quest>(`/quests/${id}`),
-    create: (d: Partial<Quest>) => req<Quest>('/quests', { method: 'POST', body: json(d) }),
-    update: (id: string, d: Partial<Quest>) => req<Quest>(`/quests/${id}`, { method: 'PATCH', body: json(d) }),
+    create: (d: CreateQuestInput) => req<Quest>('/quests', { method: 'POST', body: json(d) }),
+    update: (id: string, d: UpdateQuestInput) =>
+      req<Quest>(`/quests/${id}`, { method: 'PATCH', body: json(d) }),
     remove: (id: string) => req<void>(`/quests/${id}`, { method: 'DELETE' }),
   },
   escrow: {

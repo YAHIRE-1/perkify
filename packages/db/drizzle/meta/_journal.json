@@ -15,6 +15,20 @@
       "when": 1792043798796,
       "tag": "0001_mushy_rocket_racer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792133829262,
+      "tag": "0002_tiny_lizard",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792134173893,
+      "tag": "0003_common_radioactive_man",
+      "breakpoints": true
     }
   ]
 }
