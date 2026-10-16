@@ -2,8 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/api/client';
-import type { Page, QuestFilters } from '@/api/types';
-import type { Quest } from '@perkify/db';
+import type { Page, QuestFilters, QuestSummary } from '@/api/types';
 import QuestCard from '@/components/QuestCard';
 import QuestFiltersBar from '@/components/QuestFilters';
 import Pagination from '@/components/Pagination';
@@ -16,7 +15,7 @@ export default function MyQuests() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [filters, setFilters] = useState<QuestFilters>({ page: 1, limit: LIMIT });
-  const [data, setData] = useState<Page<Quest> | null>(null);
+  const [data, setData] = useState<Page<QuestSummary> | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
