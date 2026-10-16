@@ -1,10 +1,13 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { createAuthMiddleware } from "better-auth/api";
 import { siwe } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 import { createPublicClient, http } from "viem";
 import { arbitrum, arbitrumSepolia, sepolia } from "viem/chains";
 import { verifySiweMessage, parseSiweMessage } from "viem/siwe";
 import type { PgDatabase } from "drizzle-orm/pg-core";
+import * as schema from "@perkify/db";
 
 export interface AuthConfig {
   BETTER_AUTH_SECRET: string;
@@ -17,11 +20,15 @@ export function createAuth(env: AuthConfig, db: PgDatabase<any, any, any>) {
   const publicClients: Record<string, any> = {
     "42161": createPublicClient({ chain: arbitrum, transport: http() }),
     "421614": createPublicClient({ chain: arbitrumSepolia, transport: http() }),
-    "11155111": createPublicClient({ chain: sepolia, transport: http() }), // ← nuevo
+    "11155111": createPublicClient({ chain: sepolia, transport: http() }),
   };
 
   return betterAuth({
-    database: drizzleAdapter(db, { provider: "pg", usePlural: false }),
+    database: drizzleAdapter(db, {
+      provider: "pg",
+      usePlural: false,
+      schema,
+    }),
     secret: env.BETTER_AUTH_SECRET,
     baseURL: env.BETTER_AUTH_URL,
     trustedOrigins: [env.WEB_URL],
@@ -30,7 +37,28 @@ export function createAuth(env: AuthConfig, db: PgDatabase<any, any, any>) {
         role: { type: "string", defaultValue: "hunter" },
         bio: { type: "string", required: false },
         avatarUrl: { type: "string", required: false },
+        walletAddress: {
+          type: "string",
+          required: false, // nullable en la BD
+          input: false, // el cliente no puede escribirla
+        },
       },
+    },
+    hooks: {
+      // Después de un login SIWE exitoso, guarda la dirección en user
+      after: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== "/siwe/verify") return;
+
+        const newSession = ctx.context.newSession;
+        const address = (ctx.body as { walletAddress?: string } | undefined)
+          ?.walletAddress;
+        if (!newSession || !address) return;
+
+        await db
+          .update(schema.user)
+          .set({ walletAddress: address.toLowerCase() })
+          .where(eq(schema.user.id, newSession.user.id));
+      }),
     },
     plugins: [
       siwe({

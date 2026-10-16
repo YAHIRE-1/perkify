@@ -382,6 +382,9 @@ importers:
 
   packages/auth:
     dependencies:
+      '@perkify/db':
+        specifier: workspace:*
+        version: link:../db
       better-auth:
         specifier: 'catalog:'
         version: 1.7.9(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@types/pg@8.23.1)(bun-types@1.4.3)(kysely@0.29.6)(pg@8.23.0))(next@14.2.35(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(pg@8.23.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(solid-js@1.9.17)

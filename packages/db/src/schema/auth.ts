@@ -4,6 +4,7 @@ import {
   text,
   timestamp,
   boolean,
+  integer,
   index,
 } from "drizzle-orm/pg-core";
 
@@ -21,7 +22,9 @@ export const user = pgTable("user", {
   role: text("role").default("hunter").notNull(),
   bio: text("bio"),
   avatarUrl: text("avatar_url"),
-  walletAddress: text("wallet_address").notNull().unique(),
+  // Nullable: Better Auth crea el usuario antes de conocer la dirección.
+  // La rellenamos con un hook después del login SIWE.
+  walletAddress: text("wallet_address").unique(),
 });
 
 export const session = pgTable(
@@ -83,9 +86,26 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
+// Tabla requerida por el plugin SIWE
+export const walletAddress = pgTable(
+  "wallet_address",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    address: text("address").notNull(),
+    chainId: integer("chain_id").notNull(),
+    isPrimary: boolean("is_primary").default(false),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [index("walletAddress_userId_idx").on(table.userId)],
+);
+
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  walletAddresses: many(walletAddress),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -102,4 +122,12 @@ export const accountRelations = relations(account, ({ one }) => ({
   }),
 }));
 
+export const walletAddressRelations = relations(walletAddress, ({ one }) => ({
+  user: one(user, {
+    fields: [walletAddress.userId],
+    references: [user.id],
+  }),
+}));
+
 export type UserRow = typeof user.$inferSelect;
+export type WalletAddressRow = typeof walletAddress.$inferSelect;
