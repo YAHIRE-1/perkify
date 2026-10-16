@@ -1,3 +1,4 @@
+import { serve } from "@hono/node-server";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
 import { onError } from "@orpc/server";
@@ -12,7 +13,7 @@ import { evlog } from "evlog/hono";
 import type { EvlogVariables } from "evlog/hono";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import 'varlock/auto-load';
+import "varlock/auto-load";
 
 import { createContext } from "./context";
 import { ENV } from "./env";
@@ -97,7 +98,8 @@ app.use("/*", async (c, next) => {
 
 app.get("/", (c) => c.text("OK"));
 
-export default {
-  port: 3002,
-  fetch: app.fetch,
-};
+const port = Number(process.env.PORT ?? 3002);
+
+serve({ fetch: app.fetch, port, hostname: "0.0.0.0" }, (info) => {
+  console.log(`Server listening on port ${info.port}`);
+});
