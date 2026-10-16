@@ -1,7 +1,9 @@
-import type { Session } from "@perkify/auth";
-import type { Database } from "@perkify/db";
+import type { Auth } from "@perkify/auth";
+import type { Db } from "@perkify/db";
+
+export type Session = Awaited<ReturnType<Auth["api"]["getSession"]>>;
 
 export interface Context {
-  session: Session | null;
-  db: Database;
+  session: Session;
+  db: Db;
 }
