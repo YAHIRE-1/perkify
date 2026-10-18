@@ -5,6 +5,7 @@ export const tokens = pgTable("tokens", {
   chainId: integer("chain_id").notNull(),
   address: text("address").notNull(),
   symbol: text("symbol").notNull(),
+  decimals: integer("decimals").notNull(),
 }, (table) => ({
   unqChainAddress: unique("unq_chain_address").on(table.chainId, table.address),
 }));

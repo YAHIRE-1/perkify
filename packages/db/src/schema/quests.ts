@@ -2,12 +2,14 @@ import {
   pgTable, pgEnum, uuid, text, numeric, timestamp, boolean, jsonb, integer, index,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { z } from "zod";
 import { user } from "./auth";
 import { tokens } from "./tokens";
 import { createdAt, updatedAt } from "./helpers";
 
 export const questStatusEnum = pgEnum("quest_status", [
   "DRAFT", "FUNDED", "CLAIMED", "SUBMITTED", "COMPLETED", "CANCELLED", "EXPIRED",
+  "APPROVED", "DISPUTED",
 ]);
 
 export const escrowStatusEnum = pgEnum("escrow_status", [
@@ -86,3 +88,50 @@ export type CreateQuestInput = Pick<
   "title" | "description" | "category" | "criteria" | "rewardAmount" | "tokenId" | "isBoosted" | "validationChecklist"
 > & { deadline: string; milestones?: string[] };
 export type UpdateQuestInput = Partial<CreateQuestInput>;
+
+// ---- Validación (Zod) ----
+const questStatusSchema = z.enum(questStatusEnum.enumValues);
+
+/** Valida CreateQuestInput. isBoosted se acepta pero el servidor lo ignora. */
+export const createQuestSchema = z.object({
+  title: z.string().trim().min(5).max(120),
+  description: z.string().trim().min(20).max(10_000),
+  category: z.string().trim().max(60).nullish(),
+  criteria: z.string().trim().max(5_000).nullish(),
+  /** Monto decimal legible del token elegido: "25" o "25.50". */
+  rewardAmount: z.string().regex(/^\d{1,18}(\.\d{1,18})?$/, "Monto inválido"),
+  tokenId: z.string().uuid(),
+  isBoosted: z.boolean().optional(),
+  validationChecklist: z.array(z.string().trim().min(1).max(200)).max(20).optional(),
+  /** ISO 8601 con zona, p. ej. 2026-12-31T23:59:00Z. */
+  deadline: z.string().datetime({ offset: true }),
+  milestones: z.array(z.string().trim().min(1).max(300)).max(20).optional(),
+});
+
+export const updateQuestSchema = z.object({
+  id: z.string().uuid(),
+  data: createQuestSchema.partial().refine((d) => Object.keys(d).length > 0, "Nada que actualizar"),
+});
+
+/** Para get, prepare y delete. */
+export const questIdSchema = z.object({ id: z.string().uuid() });
+
+export const confirmQuestSchema = z.object({
+  chainId: z.number().int().positive(),
+  txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/, "Hash inválido"),
+});
+
+export const listQuestsSchema = z.object({
+  status: questStatusSchema.exclude(["DRAFT"]).optional(),
+  chainId: z.number().int().positive().optional(),
+  tokenId: z.string().uuid().optional(),
+  category: z.string().trim().max(60).optional(),
+  limit: z.number().int().min(1).max(50).default(20),
+  /** Cursor opaco devuelto por la página anterior. */
+  cursor: z.string().max(200).optional(),
+});
+
+/** Mis quests: misma paginación, pero con borradores. */
+export const mineQuestsSchema = listQuestsSchema
+  .pick({ limit: true, cursor: true })
+  .extend({ status: questStatusSchema.optional() });

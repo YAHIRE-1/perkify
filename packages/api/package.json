@@ -16,7 +16,11 @@
     "@orpc/zod": "catalog:",
     "@perkify/auth": "workspace:*",
     "@perkify/db": "workspace:*",
-    "zod": "^4.6.5"
+    "@perkify/contracts": "workspace:*",
+    "zod": "^4.6.5",
+    "drizzle-orm": "catalog:",
+    "varlock": "catalog:",
+    "viem": "catalog:"
   },
   "devDependencies": {
     "@perkify/config": "workspace:*",
