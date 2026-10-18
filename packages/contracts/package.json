@@ -2,5 +2,28 @@
   "name": "@perkify/contracts",
   "version": "0.0.1",
   "private": true,
-  "main": "./index.json"
+  "type": "module",
+  "exports": {
+    ".": "./src/ts/index.ts",
+    "./abi": "./src/ts/abi.ts",
+    "./addresses": "./src/ts/addresses.ts"
+  },
+  "scripts": {
+    "install:libs": "forge install foundry-rs/forge-std OpenZeppelin/openzeppelin-contracts@v5.1.0",
+    "build": "forge build",
+    "build:abi": "forge build && node scripts/export-abi.mjs",
+    "test": "forge test -vv",
+    "test:gas": "forge test --gas-report",
+    "typecheck": "tsc --noEmit",
+    "deploy:sepolia": "varlock run -- forge script script/Deploy.s.sol --rpc-url arbitrum_sepolia --broadcast --verify",
+    "deploy:mainnet": "varlock run -- forge script script/Deploy.s.sol --rpc-url arbitrum --broadcast --verify",
+    "deploy:local": "forge script script/DeployLocal.s.sol --rpc-url http://127.0.0.1:8545 --broadcast"
+  },
+  "dependencies": {
+    "viem": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "varlock": "catalog:"
+  }
 }
