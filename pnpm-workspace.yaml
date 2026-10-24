@@ -20,6 +20,7 @@ catalog:
   '@orpc/zod': '^1.15.7'
   '@orpc/openapi': '^1.15.7'
   varlock: '^1.23.0'
+  '@varlock/nextjs-integration': '^1.2.5'
   viem: '^2.57.7'
   drizzle-zod: '^0.8.3'
   drizzle-orm: '0.45.4'
@@ -52,3 +53,4 @@ minimumReleaseAgeExclude:
   
 overrides:
   drizzle-orm: 0.45.4
+  "@next/env": "npm:@varlock/nextjs-integration"

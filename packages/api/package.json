@@ -20,7 +20,8 @@
     "zod": "^4.6.5",
     "drizzle-orm": "catalog:",
     "varlock": "catalog:",
-    "viem": "catalog:"
+    "viem": "catalog:",
+    "@perkify/shared": "workspace:*"
   },
   "devDependencies": {
     "@perkify/config": "workspace:*",

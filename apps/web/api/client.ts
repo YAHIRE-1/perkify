@@ -9,7 +9,7 @@ import type {
 } from './types';
 import type { UserRow as User } from '@perkify/db';
 
-const BASE = process.env.NEXT_PUBLIC_API_URL;
+const BASE = process.env.NEXT_PUBLIC_PERKIFY_API_URL;
 const KEY = 'prky_token';
 
 export const tokenStore = {

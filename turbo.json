@@ -11,9 +11,22 @@
     "db:generate": {
       "cache": false
     },
+    "db:push": {
+      "cache": false
+    },
+    "db:migrate": {
+      "cache": false
+    },
+    "db:seed": {
+      "cache": false
+    },
+    "db:studio": {
+      "cache": false,
+      "persistent": true
+    },
     "build": {
       "dependsOn": ["^build"],
-      "env": ["PERKIFY_API_URL", "NEXT_PUBLIC_API_URL", "NEXT_PUBLIC_WEB_URL"],
+      "env": ["NEXT_PUBLIC_PERKIFY_API_URL", "NEXT_PUBLIC_WEB_URL"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "out/**"]
     },
     "lint": {

@@ -1,4 +1,6 @@
-import { pgTable, uuid, text, integer, unique } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, integer, unique, pgEnum } from "drizzle-orm/pg-core";
+
+export const chainTypeEnum = pgEnum("chain_type", ["evm", "solana"]);
 
 export const tokens = pgTable("tokens", {
   id: uuid("id").primaryKey().defaultRandom(),
