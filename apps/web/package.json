@@ -40,6 +40,7 @@
     "postcss": "^8.5.28",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.4.5",
-    "varlock": "catalog:"
+    "varlock": "catalog:",
+     "zod": "catalog:"
   }
 }

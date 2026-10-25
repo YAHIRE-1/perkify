@@ -1,219 +1,88 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
-import { formatUnits, parseUnits } from 'viem';
-import type { Quest, CreateQuestInput } from '@perkify/db';
+import { useState } from 'react';
+import { formatUnits } from 'viem';
+import type { CreateQuestInput } from '@perkify/db';
 import { useAcceptedTokens } from '@/hooks/useAcceptedTokens';
-import { useAuth } from '@/components/Providers';
-import { toLocalInput } from '@/lib/format';
 import Field from '@/components/Field';
-
-type FormState = {
-  title: string;
-  description: string;
-  category: string;
-  criteria: string;
-  rewardAmount: string;
-  deadline: string; // datetime-local
-  tokenId: string;
-  validationChecklist: string[];
-  milestones: string[];
-};
-
-const MIN_DEADLINE_MS = 65 * 60 * 1000; // la API exige >= 1 h; margen de 5 min
-const NO_WALLET_MSG = 'Your session has no linked wallet. Reconnect your wallet and try again.';
-const NO_WALLET_RE = /sin wallet asociada/i;
-
-function parseReward(value: string, decimals: number): bigint | null {
-  if (!/^\d{1,18}(\.\d+)?$/.test(value)) return null;
-  if ((value.split('.')[1] ?? '').length > decimals) return null;
-  try {
-    const n = parseUnits(value, decimals);
-    return n > BigInt(0) ? n : null;
-  } catch {
-    return null;
-  }
-}
+import { questFormSchema, EMPTY_QUEST_FORM, type QuestFormValues } from '@/lib/validations/quest';
 
 export default function QuestForm({
-  initial,
   submitLabel,
   onSubmit,
 }: {
-  initial?: Quest;
   submitLabel: string;
   onSubmit: (d: CreateQuestInput) => Promise<void>;
 }) {
-  const [f, setF] = useState<FormState>({
-    title: initial?.title ?? '',
-    description: initial?.description ?? '',
-    category: initial?.category ?? '',
-    criteria: initial?.criteria ?? '',
-    rewardAmount: initial?.rewardAmount ? initial.rewardAmount.replace(/\.?0+$/, '') : '',
-    deadline: initial?.deadline ? toLocalInput(initial.deadline) : '',
-    tokenId: initial?.tokenId ?? '',
-    validationChecklist: initial?.validationChecklist ?? [],
-    milestones: initial?.milestones?.slice().sort((a, b) => a.position - b.position).map((m) => m.description) ?? [],
-  });
+  const [f, setF] = useState<QuestFormValues>(EMPTY_QUEST_FORM);
   const [item, setItem] = useState('');
   const [milestone, setMilestone] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const [needsWallet, setNeedsWallet] = useState(false);
-  const [reconnecting, setReconnecting] = useState(false);
 
   const { tokens, isLoading, isConnected, error: tokensError } = useAcceptedTokens();
-  const { user, loading: authLoading, login, refresh } = useAuth();
-  const hasWallet = !!user?.walletAddress;
-  const showWalletBanner = !authLoading && (!hasWallet || needsWallet);
 
-  const set = (p: Partial<FormState>) => setF((s) => ({ ...s, ...p }));
-
-  // ---- DEBUG: resumen del estado de tokens (solo imprime cuando cambia) ----
-  const tokensSummary = JSON.stringify({
-    isConnected,
-    isLoading,
-    tokensError,
-    tokens: tokens.map((t) => `${t.symbol}@${t.chainId} balance=${t.balance?.toString() ?? 'null'}`),
-  });
-  useEffect(() => {
-    console.log('[tokens]', tokensSummary);
-  }, [tokensSummary]);
-
-  // Si la sesión recibe wallet (tras reconectar), limpiamos el aviso.
-  useEffect(() => {
-    if (hasWallet) {
-      setNeedsWallet(false);
-      setErr((e) => (e === NO_WALLET_MSG ? null : e));
-    }
-  }, [hasWallet]);
-
+  const set = (p: Partial<QuestFormValues>) => setF((s) => ({ ...s, ...p }));
   const token = tokens.find((t) => t.id === f.tokenId);
-  const reward = token ? parseReward(f.rewardAmount, token.decimals) : null;
-  const lowBalance =
-    !!token && token.balance !== null && reward !== null && reward > token.balance;
-
-  const minDeadline = useMemo(() => toLocalInput(new Date(Date.now() + MIN_DEADLINE_MS).toISOString()), []);
 
   const addItem = () => {
-    if (!item.trim() || f.validationChecklist.length >= 20) return;
+    if (!item.trim()) return;
     set({ validationChecklist: [...f.validationChecklist, item.trim()] });
     setItem('');
   };
+
   const addMilestone = () => {
-    if (!milestone.trim() || f.milestones.length >= 20) return;
+    if (!milestone.trim()) return;
     set({ milestones: [...f.milestones, milestone.trim()] });
     setMilestone('');
   };
 
-  const reconnect = async () => {
-    setReconnecting(true);
-    try {
-      await login();
-      await refresh();
-      setNeedsWallet(false);
-      setErr(null);
-    } catch (e) {
-      console.error('[QuestForm] reconnect → error', e);
-      setErr(e instanceof Error ? e.message : 'Could not reconnect your wallet.');
-    } finally {
-      setReconnecting(false);
-    }
-  };
-
-  const validate = (): string | null => {
-    if (!user) return 'Connect your wallet to save the quest.';
-    if (!user.walletAddress) return NO_WALLET_MSG;
-
-    const title = f.title.trim();
-    if (title.length < 5) return 'The title needs at least 5 characters.';
-    if (title.length > 120) return 'The title cannot exceed 120 characters.';
-    if (f.description.trim().length < 20) return 'The description needs at least 20 characters.';
-    if (!f.tokenId) return 'Choose the reward token.';
-    if (token) {
-      if (!parseReward(f.rewardAmount, token.decimals)) {
-        return `Enter a reward greater than 0 with at most ${token.decimals} decimals.`;
-      }
-    } else if (!initial || f.tokenId !== initial.tokenId) {
-      return 'Choose the reward token.';
-    }
-    if (!f.deadline) return 'Select a deadline.';
-    const d = new Date(f.deadline);
-    if (Number.isNaN(d.getTime()) || d.getTime() < Date.now() + 60 * 60 * 1000) {
-      return 'The deadline must be at least 1 hour from now.';
-    }
-    if (f.milestones.length === 0) return 'Add at least one expected milestone.';
-    return null;
-  };
-
   const submit = async () => {
-    const v = validate();
-    if (v) return setErr(v);
+    const result = questFormSchema(token?.decimals ?? 18).safeParse(f);
+    if (!result.success) return setErr(result.error.issues[0].message);
+
+    const d = result.data;
     setBusy(true);
     setErr(null);
     try {
-      const payload: CreateQuestInput = {
-        title: f.title.trim(),
-        description: f.description.trim(),
-        category: f.category.trim() || null,
-        criteria: f.criteria.trim() || null,
-        rewardAmount: f.rewardAmount,
-        tokenId: f.tokenId,
-        validationChecklist: f.validationChecklist,
-        deadline: new Date(f.deadline).toISOString(),
-        milestones: f.milestones,
-      };
-      await onSubmit(payload);
+      await onSubmit({
+        ...d,
+        category: d.category || null,
+        criteria: d.criteria || null,
+        deadline: new Date(d.deadline).toISOString(),
+      });
     } catch (e) {
-      console.error('[QuestForm] submit → error', e);
-      const message = e instanceof Error ? e.message : 'Error saving the quest.';
-      if (NO_WALLET_RE.test(message)) {
-        // El front cree que hay sesión, pero el backend no ve wallet: refrescamos /me y ofrecemos reconectar.
-        setNeedsWallet(true);
-        setErr(NO_WALLET_MSG);
-        try {
-          await refresh();
-        } catch {
-          /* si falla el refresh, el aviso de reconexión sigue visible */
-        }
-      } else {
-        setErr(message);
-      }
+      setErr(e instanceof Error ? e.message : 'Error saving the quest.');
     } finally {
       setBusy(false);
     }
   };
 
-  // En edición, el token actual puede ser de otra chain que la de la wallet: se muestra igual.
-  const currentMissing = !!initial && !tokens.some((t) => t.id === initial.tokenId);
-
   return (
     <div className="surface space-y-4 p-6">
       <Field label="Title">
-        <input className="input" maxLength={120} value={f.title} onChange={(e) => set({ title: e.target.value })} />
+        <input
+          className="input"
+          maxLength={120}
+          value={f.title}
+          onChange={(e) => set({ title: e.target.value })}
+        />
       </Field>
+
       <Field label="Description">
-        <textarea className="input min-h-28" value={f.description} onChange={(e) => set({ description: e.target.value })} />
+        <textarea
+          className="input min-h-28"
+          value={f.description}
+          onChange={(e) => set({ description: e.target.value })}
+        />
       </Field>
 
       <Field label="Reward token">
-        {!isConnected && !currentMissing && (
-          <p className="muted-2 text-sm">Connect your wallet to see the tokens accepted on your network.</p>
-        )}
+        {!isConnected && <p className="muted-2 text-sm">Connect your wallet to see the accepted tokens.</p>}
         {isConnected && isLoading && <p className="muted-2 text-sm">Loading tokens…</p>}
         {tokensError && <p className="text-sm" style={{ color: 'var(--danger)' }}>{tokensError}</p>}
-        {isConnected && !isLoading && !tokensError && tokens.length === 0 && (
-          <p className="muted-2 text-sm">No accepted tokens on this network. Switch to Arbitrum or Arbitrum Sepolia.</p>
-        )}
-        {(tokens.length > 0 || currentMissing) && (
-          <select
-            className="input"
-            value={f.tokenId}
-            onChange={(e) => set({ tokenId: e.target.value })}
-          >
+        {tokens.length > 0 && (
+          <select className="input" value={f.tokenId} onChange={(e) => set({ tokenId: e.target.value })}>
             <option value="" disabled>Choose a token</option>
-            {currentMissing && initial && (
-              <option value={initial.tokenId}>{initial.acceptedTokenSymbol} (current)</option>
-            )}
             {tokens.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.symbol}
@@ -233,18 +102,11 @@ export default function QuestForm({
             value={f.rewardAmount}
             onChange={(e) => set({ rewardAmount: e.target.value.trim() })}
           />
-          {lowBalance && token && token.balance !== null && (
-            <p className="mt-1 text-xs" style={{ color: 'var(--danger)' }}>
-              More than your balance ({formatUnits(token.balance, token.decimals)} {token.symbol}). You can
-              save the draft, but you’ll need the full amount to fund it.
-            </p>
-          )}
         </Field>
         <Field label="Deadline">
           <input
             className="input"
             type="datetime-local"
-            min={minDeadline}
             value={f.deadline}
             onChange={(e) => set({ deadline: e.target.value })}
           />
@@ -253,10 +115,6 @@ export default function QuestForm({
 
       <div>
         <span className="muted mb-1 block text-sm font-medium">Expected milestones</span>
-        <p className="muted-2 mb-2 text-xs">
-          Milestones are part of the reward agreement. You can edit them while the quest is a draft;
-          once you start funding it they are locked.
-        </p>
         <div className="flex gap-2">
           <input
             className="input"
@@ -289,10 +147,20 @@ export default function QuestForm({
       </div>
 
       <Field label="Category (optional)">
-        <input className="input" maxLength={60} value={f.category} onChange={(e) => set({ category: e.target.value })} />
+        <input
+          className="input"
+          maxLength={60}
+          value={f.category}
+          onChange={(e) => set({ category: e.target.value })}
+        />
       </Field>
+
       <Field label="Acceptance criteria (optional)">
-        <textarea className="input min-h-20" value={f.criteria} onChange={(e) => set({ criteria: e.target.value })} />
+        <textarea
+          className="input min-h-20"
+          value={f.criteria}
+          onChange={(e) => set({ criteria: e.target.value })}
+        />
       </Field>
 
       <div>
@@ -319,7 +187,9 @@ export default function QuestForm({
               <button
                 type="button"
                 className="muted-2 text-xs"
-                onClick={() => set({ validationChecklist: f.validationChecklist.filter((_, j) => j !== i) })}
+                onClick={() =>
+                  set({ validationChecklist: f.validationChecklist.filter((_, j) => j !== i) })
+                }
               >
                 Remove
               </button>
@@ -328,28 +198,8 @@ export default function QuestForm({
         </ul>
       </div>
 
-      {showWalletBanner && (
-        <div className="surface-2 flex items-center justify-between gap-3 p-3 text-sm" role="alert">
-          <span>
-            {user ? 'Your session has no linked wallet.' : 'Connect your wallet to save the quest.'}
-          </span>
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled={reconnecting}
-            onClick={reconnect}
-          >
-            {reconnecting ? 'Connecting…' : 'Connect wallet'}
-          </button>
-        </div>
-      )}
-
       {err && <p className="text-sm" style={{ color: 'var(--danger)' }}>{err}</p>}
-      <button
-        className="btn btn-primary"
-        disabled={busy || authLoading || !hasWallet}
-        onClick={submit}
-      >
+      <button className="btn btn-primary" disabled={busy} onClick={submit}>
         {busy ? 'Saving…' : submitLabel}
       </button>
     </div>
