@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { formatUnits, parseUnits } from 'viem';
 import type { Quest, CreateQuestInput } from '@perkify/db';
 import { useAcceptedTokens } from '@/hooks/useAcceptedTokens';
+import { useAuth } from '@/components/Providers';
 import { toLocalInput } from '@/lib/format';
 import Field from '@/components/Field';
 
@@ -19,6 +20,8 @@ type FormState = {
 };
 
 const MIN_DEADLINE_MS = 65 * 60 * 1000; // la API exige >= 1 h; margen de 5 min
+const NO_WALLET_MSG = 'Your session has no linked wallet. Reconnect your wallet and try again.';
+const NO_WALLET_RE = /sin wallet asociada/i;
 
 function parseReward(value: string, decimals: number): bigint | null {
   if (!/^\d{1,18}(\.\d+)?$/.test(value)) return null;
@@ -55,8 +58,14 @@ export default function QuestForm({
   const [milestone, setMilestone] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [needsWallet, setNeedsWallet] = useState(false);
+  const [reconnecting, setReconnecting] = useState(false);
 
   const { tokens, isLoading, isConnected, error: tokensError } = useAcceptedTokens();
+  const { user, loading: authLoading, login, refresh } = useAuth();
+  const hasWallet = !!user?.walletAddress;
+  const showWalletBanner = !authLoading && (!hasWallet || needsWallet);
+
   const set = (p: Partial<FormState>) => setF((s) => ({ ...s, ...p }));
 
   // ---- DEBUG: resumen del estado de tokens (solo imprime cuando cambia) ----
@@ -69,6 +78,14 @@ export default function QuestForm({
   useEffect(() => {
     console.log('[tokens]', tokensSummary);
   }, [tokensSummary]);
+
+  // Si la sesión recibe wallet (tras reconectar), limpiamos el aviso.
+  useEffect(() => {
+    if (hasWallet) {
+      setNeedsWallet(false);
+      setErr((e) => (e === NO_WALLET_MSG ? null : e));
+    }
+  }, [hasWallet]);
 
   const token = tokens.find((t) => t.id === f.tokenId);
   const reward = token ? parseReward(f.rewardAmount, token.decimals) : null;
@@ -88,7 +105,25 @@ export default function QuestForm({
     setMilestone('');
   };
 
+  const reconnect = async () => {
+    setReconnecting(true);
+    try {
+      await login();
+      await refresh();
+      setNeedsWallet(false);
+      setErr(null);
+    } catch (e) {
+      console.error('[QuestForm] reconnect → error', e);
+      setErr(e instanceof Error ? e.message : 'Could not reconnect your wallet.');
+    } finally {
+      setReconnecting(false);
+    }
+  };
+
   const validate = (): string | null => {
+    if (!user) return 'Connect your wallet to save the quest.';
+    if (!user.walletAddress) return NO_WALLET_MSG;
+
     const title = f.title.trim();
     if (title.length < 5) return 'The title needs at least 5 characters.';
     if (title.length > 120) return 'The title cannot exceed 120 characters.';
@@ -130,7 +165,19 @@ export default function QuestForm({
       await onSubmit(payload);
     } catch (e) {
       console.error('[QuestForm] submit → error', e);
-      setErr(e instanceof Error ? e.message : 'Error saving the quest.');
+      const message = e instanceof Error ? e.message : 'Error saving the quest.';
+      if (NO_WALLET_RE.test(message)) {
+        // El front cree que hay sesión, pero el backend no ve wallet: refrescamos /me y ofrecemos reconectar.
+        setNeedsWallet(true);
+        setErr(NO_WALLET_MSG);
+        try {
+          await refresh();
+        } catch {
+          /* si falla el refresh, el aviso de reconexión sigue visible */
+        }
+      } else {
+        setErr(message);
+      }
     } finally {
       setBusy(false);
     }
@@ -281,8 +328,28 @@ export default function QuestForm({
         </ul>
       </div>
 
+      {showWalletBanner && (
+        <div className="surface-2 flex items-center justify-between gap-3 p-3 text-sm" role="alert">
+          <span>
+            {user ? 'Your session has no linked wallet.' : 'Connect your wallet to save the quest.'}
+          </span>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={reconnecting}
+            onClick={reconnect}
+          >
+            {reconnecting ? 'Connecting…' : 'Connect wallet'}
+          </button>
+        </div>
+      )}
+
       {err && <p className="text-sm" style={{ color: 'var(--danger)' }}>{err}</p>}
-      <button className="btn btn-primary" disabled={busy} onClick={submit}>
+      <button
+        className="btn btn-primary"
+        disabled={busy || authLoading || !hasWallet}
+        onClick={submit}
+      >
         {busy ? 'Saving…' : submitLabel}
       </button>
     </div>
