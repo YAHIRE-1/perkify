@@ -24,6 +24,7 @@ const buttonVariants = cva(
         "outline-destructive":
           "border border-danger text-danger hover:bg-danger/10 duration-500 active:bg-danger-dark active:text-white",
         blue: "bg-brand text-white shadow transition-colors duration-400 hover:bg-brand/80 active:bg-brand-dark",
+        legacy: "btn", "legacy-primary": "btn btn-primary", "legacy-link": "muted-2 text-xs",
       },
       size: {
         default: "h-9 px-4 py-2",

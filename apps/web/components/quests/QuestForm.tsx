@@ -1,18 +1,25 @@
 'use client';
 import { useState } from 'react';
-import { useForm } from '@tanstack/react-form';
+import { revalidateLogic, useForm } from '@tanstack/react-form';
+import { Loader2 } from 'lucide-react';
 import { formatUnits } from 'viem';
 import type { CreateQuestInput } from '@perkify/db';
+import { Button } from '@perkify/ui/components/button';
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage,
 } from '@perkify/ui/components/form';
+import { Input } from '@perkify/ui/components/input';
+import { ReactSelect } from '@perkify/ui/components/react-select';
+import { Textarea } from '@perkify/ui/components/textarea';
 import { useAcceptedTokens } from '@/hooks/useAcceptedTokens';
 import { questFormSchema, EMPTY_QUEST_FORM, type QuestFormValues } from '@/lib/validations/quest';
+
+type TokenOption = ReturnType<typeof useAcceptedTokens>['tokens'][number];
 
 export default function QuestForm({
   submitLabel,
@@ -27,7 +34,6 @@ export default function QuestForm({
 
   const { tokens, isLoading, isConnected, error: tokensError } = useAcceptedTokens();
 
-  // El schema depende de los decimales del token elegido, por eso se arma al validar.
   const validate = (value: QuestFormValues) => {
     const token = tokens.find((t) => t.id === value.tokenId);
     return questFormSchema(token?.decimals ?? 18).safeParse(value);
@@ -35,9 +41,9 @@ export default function QuestForm({
 
   const form = useForm({
     defaultValues: EMPTY_QUEST_FORM as QuestFormValues,
+    validationLogic: revalidateLogic(),
     validators: {
-      // Mapea los errores de zod a cada campo para que FormMessage los muestre.
-      onSubmit: ({ value }) => {
+      onDynamic: ({ value }) => {
         const result = validate(value);
         if (result.success) return undefined;
 
@@ -74,8 +80,7 @@ export default function QuestForm({
         className="surface space-y-4 p-6"
         onSubmit={(e) => {
           e.preventDefault();
-          e.stopPropagation();
-          void form.handleSubmit();
+          form.handleSubmit();
         }}
       >
         <FormField
@@ -84,12 +89,12 @@ export default function QuestForm({
             <FormItem>
               <FormLabel>Title</FormLabel>
               <FormControl>
-                <input
-                  className="input"
+                <Input
                   maxLength={120}
-                  value={field.state.value as string}
+                  name={field.name}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  value={field.state.value}
                 />
               </FormControl>
               <FormMessage />
@@ -103,11 +108,12 @@ export default function QuestForm({
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <textarea
-                  className="input min-h-28"
-                  value={field.state.value as string}
+                <Textarea
+                  className="min-h-28"
+                  name={field.name}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  value={field.state.value}
                 />
               </FormControl>
               <FormMessage />
@@ -120,30 +126,30 @@ export default function QuestForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Reward token</FormLabel>
-              {!isConnected && (
-                <p className="muted-2 text-sm">Connect your wallet to see the accepted tokens.</p>
-              )}
-              {isConnected && isLoading && <p className="muted-2 text-sm">Loading tokens…</p>}
+              <FormControl>
+                <ReactSelect<TokenOption>
+                  getOptionLabel={(t) =>
+                    t.balance !== null
+                      ? `${t.symbol} — balance: ${formatUnits(t.balance, t.decimals)}`
+                      : t.symbol
+                  }
+                  getOptionValue={(t) => t.id}
+                  isDisabled={!isConnected}
+                  isLoading={isLoading}
+                  noOptionsMessage={() => 'No accepted tokens'}
+                  onBlur={field.handleBlur}
+                  onChange={(option) => field.handleChange(option?.id ?? '')}
+                  options={tokens}
+                  placeholder={
+                    isConnected
+                      ? 'Choose a token'
+                      : 'Connect your wallet to see the accepted tokens'
+                  }
+                  value={tokens.find((t) => t.id === field.state.value) ?? null}
+                />
+              </FormControl>
               {tokensError && (
-                <p className="text-sm" style={{ color: 'var(--danger)' }}>{tokensError}</p>
-              )}
-              {tokens.length > 0 && (
-                <FormControl>
-                  <select
-                    className="input"
-                    value={field.state.value as string}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  >
-                    <option value="" disabled>Choose a token</option>
-                    {tokens.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.symbol}
-                        {t.balance !== null ? ` — balance: ${formatUnits(t.balance, t.decimals)}` : ''}
-                      </option>
-                    ))}
-                  </select>
-                </FormControl>
+                <p className="text-sm text-destructive">{tokensError}</p>
               )}
               <FormMessage />
             </FormItem>
@@ -157,13 +163,13 @@ export default function QuestForm({
               <FormItem>
                 <FormLabel>Reward amount</FormLabel>
                 <FormControl>
-                  <input
-                    className="input"
+                  <Input
                     inputMode="decimal"
-                    placeholder="25.50"
-                    value={field.state.value as string}
+                    name={field.name}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value.trim())}
+                    placeholder="25.50"
+                    value={field.state.value}
                   />
                 </FormControl>
                 <FormMessage />
@@ -177,12 +183,12 @@ export default function QuestForm({
               <FormItem>
                 <FormLabel>Deadline</FormLabel>
                 <FormControl>
-                  <input
-                    className="input"
-                    type="datetime-local"
-                    value={field.state.value as string}
+                  <Input
+                    name={field.name}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
+                    type="datetime-local"
+                    value={field.state.value}
                   />
                 </FormControl>
                 <FormMessage />
@@ -194,7 +200,7 @@ export default function QuestForm({
         <FormField
           name="milestones"
           render={({ field }) => {
-            const list = field.state.value as string[];
+            const list: string[] = field.state.value;
             const add = () => {
               const v = milestone.trim();
               if (!v) return;
@@ -206,10 +212,7 @@ export default function QuestForm({
                 <FormLabel>Expected milestones</FormLabel>
                 <div className="flex gap-2">
                   <FormControl>
-                    <input
-                      className="input"
-                      value={milestone}
-                      placeholder="E.g.: Post on X with the hashtag…"
+                    <Input
                       onChange={(e) => setMilestone(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -217,9 +220,11 @@ export default function QuestForm({
                           add();
                         }
                       }}
+                      placeholder="E.g.: Post on X with the hashtag…"
+                      value={milestone}
                     />
                   </FormControl>
-                  <button type="button" className="btn" onClick={add}>Add</button>
+                  <Button type="button" variant="legacy" onClick={add}>Add</Button>
                 </div>
                 <ul className="mt-2 space-y-1">
                   {list.map((m, i) => (
@@ -228,13 +233,13 @@ export default function QuestForm({
                       className="surface-2 flex items-center justify-between gap-2 px-3 py-2 text-sm"
                     >
                       <span>{i + 1}. {m}</span>
-                      <button
+                      <Button
                         type="button"
-                        className="muted-2 text-xs"
+                        variant="legacy-link"
                         onClick={() => field.handleChange(list.filter((_, j) => j !== i))}
                       >
                         Remove
-                      </button>
+                      </Button>
                     </li>
                   ))}
                 </ul>
@@ -250,12 +255,12 @@ export default function QuestForm({
             <FormItem>
               <FormLabel>Category (optional)</FormLabel>
               <FormControl>
-                <input
-                  className="input"
+                <Input
                   maxLength={60}
-                  value={field.state.value as string}
+                  name={field.name}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  value={field.state.value}
                 />
               </FormControl>
               <FormMessage />
@@ -269,11 +274,12 @@ export default function QuestForm({
             <FormItem>
               <FormLabel>Acceptance criteria (optional)</FormLabel>
               <FormControl>
-                <textarea
-                  className="input min-h-20"
-                  value={field.state.value as string}
+                <Textarea
+                  className="min-h-20"
+                  name={field.name}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  value={field.state.value}
                 />
               </FormControl>
               <FormMessage />
@@ -284,7 +290,7 @@ export default function QuestForm({
         <FormField
           name="validationChecklist"
           render={({ field }) => {
-            const list = field.state.value as string[];
+            const list: string[] = field.state.value;
             const add = () => {
               const v = item.trim();
               if (!v) return;
@@ -296,10 +302,7 @@ export default function QuestForm({
                 <FormLabel>Validation checklist (optional)</FormLabel>
                 <div className="flex gap-2">
                   <FormControl>
-                    <input
-                      className="input"
-                      value={item}
-                      placeholder="Add a point to validate"
+                    <Input
                       onChange={(e) => setItem(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -307,9 +310,11 @@ export default function QuestForm({
                           add();
                         }
                       }}
+                      placeholder="Add a point to validate"
+                      value={item}
                     />
                   </FormControl>
-                  <button type="button" className="btn" onClick={add}>Add</button>
+                  <Button type="button" variant="legacy" onClick={add}>Add</Button>
                 </div>
                 <ul className="mt-2 space-y-1">
                   {list.map((c, i) => (
@@ -318,13 +323,13 @@ export default function QuestForm({
                       className="surface-2 flex items-center justify-between gap-2 px-3 py-2 text-sm"
                     >
                       {c}
-                      <button
+                      <Button
                         type="button"
-                        className="muted-2 text-xs"
+                        variant="legacy-link"
                         onClick={() => field.handleChange(list.filter((_, j) => j !== i))}
                       >
                         Remove
-                      </button>
+                      </Button>
                     </li>
                   ))}
                 </ul>
@@ -334,13 +339,14 @@ export default function QuestForm({
           }}
         />
 
-        {err && <p className="text-sm" style={{ color: 'var(--danger)' }}>{err}</p>}
+        {err && <p className="text-sm text-destructive">{err}</p>}
 
         <form.Subscribe selector={(s) => s.isSubmitting}>
           {(isSubmitting) => (
-            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+            <Button type="submit" variant="legacy-primary" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="animate-spin" /> : null}
               {isSubmitting ? 'Saving…' : submitLabel}
-            </button>
+            </Button>
           )}
         </form.Subscribe>
       </form>
