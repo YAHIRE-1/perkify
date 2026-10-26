@@ -1,5 +1,5 @@
 import { ORPCError } from "@orpc/server";
-import { tokens } from "@perkify/db";
+import { tokens } from "@perkify/db/schema/tokens";
 import { eq } from "drizzle-orm";
 import { parseUnits } from "viem";
 

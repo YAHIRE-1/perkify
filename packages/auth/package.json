@@ -1,14 +1,30 @@
 {
   "name": "@perkify/auth",
-  "version": "0.0.1",
-  "private": true,
-  "main": "index.ts",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "scripts": {
+    "auth:generate": "npx auth@latest generate",
+    "env:load": "varlock load"
+  },
   "dependencies": {
+    "@better-auth/core": "1.7.9",
+    "@better-auth/drizzle-adapter": "1.7.5",
+    "@perkify/db": "workspace:*",
+    "@react-email/render": "^2.1.0",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
+    "evlog": "catalog:",
+    "nodemailer": "^10.0.14",
     "varlock": "catalog:",
     "viem": "catalog:",
-    "zod": "^4.6.5",
-    "@perkify/db": "workspace:*"
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@perkify/config": "workspace:*",
+    "@types/nodemailer": "^8.0.2",
+    "typescript": "catalog:"
   }
 }

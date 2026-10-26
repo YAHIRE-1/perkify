@@ -7,7 +7,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { config } from '@/lib/wagmi';
 import { authClient } from '@/lib/auth-client';
 import { signInWithWallet } from '@/lib/wallet-auth';
-import type { UserRow as User } from '@perkify/db';
+import type { UserRow as User } from '@perkify/db/schema/auth';
 
 // ---------- Tema (oscuro/claro) ----------
 type Theme = 'dark' | 'light';

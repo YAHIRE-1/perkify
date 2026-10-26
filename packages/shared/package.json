@@ -6,7 +6,7 @@
   "types": "./src/index.ts",
   "dependencies": {
     "@perkify/db": "workspace:*",
-    "zod": "4.6.5"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "drizzle-zod": "0.6.1"

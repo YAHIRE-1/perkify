@@ -17,7 +17,7 @@
     "@perkify/auth": "workspace:*",
     "@perkify/db": "workspace:*",
     "@perkify/contracts": "workspace:*",
-    "zod": "^4.6.5",
+    "zod": "catalog:",
     "drizzle-orm": "catalog:",
     "varlock": "catalog:",
     "viem": "catalog:",

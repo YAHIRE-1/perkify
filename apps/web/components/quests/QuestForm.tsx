@@ -1,39 +1,127 @@
 'use client';
 import { useState } from 'react';
 import { revalidateLogic, useForm } from '@tanstack/react-form';
+import { useNavigate } from '@tanstack/react-router';
 import { Loader2 } from 'lucide-react';
 import { formatUnits } from 'viem';
-import type { CreateQuestInput } from '@perkify/db';
 import { Button } from '@perkify/ui/components/button';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@perkify/ui/components/form';
 import { Input } from '@perkify/ui/components/input';
+import { Label } from '@perkify/ui/components/label';
 import { ReactSelect } from '@perkify/ui/components/react-select';
 import { Textarea } from '@perkify/ui/components/textarea';
+import { useCreateQuest } from '@/hooks/quest/use-quest';
 import { useAcceptedTokens } from '@/hooks/useAcceptedTokens';
-import { questFormSchema, EMPTY_QUEST_FORM, type QuestFormValues } from '@/lib/validations/quest';
+import {
+  questFormSchema,
+  EMPTY_QUEST_FORM,
+  type QuestFormValues,
+} from '@/lib/validations/quest';
 
 type TokenOption = ReturnType<typeof useAcceptedTokens>['tokens'][number];
 
-export default function QuestForm({
-  submitLabel,
-  onSubmit,
-}: {
-  submitLabel: string;
-  onSubmit: (d: CreateQuestInput) => Promise<void>;
-}) {
-  const [item, setItem] = useState('');
-  const [milestone, setMilestone] = useState('');
+function FieldError({ id, message }: { id: string; message?: string }) {
+  if (!message) {
+    return null;
+  }
+
+  return (
+    <p className="text-destructive text-sm" id={id} role="alert">
+      {message}
+    </p>
+  );
+}
+
+// Los errores pueden llegar como string (validador de formulario) o como issue con `message`.
+function getErrorMessage(errors: unknown[]): string | undefined {
+  const [error] = errors;
+  if (!error) return undefined;
+  if (typeof error === 'string') return error;
+  return (error as { message?: string }).message;
+}
+
+interface StringListFieldProps {
+  id: string;
+  value: string[];
+  onChange: (value: string[]) => void;
+  placeholder: string;
+  numbered?: boolean;
+  invalid?: boolean;
+  describedBy?: string;
+}
+
+function StringListField({
+  id,
+  value,
+  onChange,
+  placeholder,
+  numbered = false,
+  invalid,
+  describedBy,
+}: StringListFieldProps) {
+  const [draft, setDraft] = useState('');
+
+  const add = () => {
+    const v = draft.trim();
+    if (!v) return;
+    onChange([...value, v]);
+    setDraft('');
+  };
+
+  return (
+    <>
+      <div className="flex gap-2">
+        <Input
+          aria-describedby={describedBy}
+          aria-invalid={invalid}
+          id={id}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              add();
+            }
+          }}
+          placeholder={placeholder}
+          value={draft}
+        />
+        <Button type="button" variant="legacy" onClick={add}>
+          Add
+        </Button>
+      </div>
+      <ul className="mt-2 space-y-1">
+        {value.map((text, i) => (
+          <li
+            key={`${i}-${text}`}
+            className="surface-2 flex items-center justify-between gap-2 px-3 py-2 text-sm"
+          >
+            <span>
+              {numbered ? `${i + 1}. ` : ''}
+              {text}
+            </span>
+            <Button
+              type="button"
+              variant="legacy-link"
+              onClick={() => onChange(value.filter((_, j) => j !== i))}
+            >
+              Remove
+            </Button>
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+}
+
+export default function QuestForm() {
+  const navigate = useNavigate();
+  const createQuest = useCreateQuest();
   const [err, setErr] = useState<string | null>(null);
 
   const { tokens, isLoading, isConnected, error: tokensError } = useAcceptedTokens();
 
+  const goToQuests = () => navigate({ to: '/quests' });
+
+  // El schema depende de los decimales del token seleccionado.
   const validate = (value: QuestFormValues) => {
     const token = tokens.find((t) => t.id === value.tokenId);
     return questFormSchema(token?.decimals ?? 18).safeParse(value);
@@ -41,6 +129,7 @@ export default function QuestForm({
 
   const form = useForm({
     defaultValues: EMPTY_QUEST_FORM as QuestFormValues,
+    // Valida al enviar y, después del primer envío, en cada cambio.
     validationLogic: revalidateLogic(),
     validators: {
       onDynamic: ({ value }) => {
@@ -62,294 +151,301 @@ export default function QuestForm({
       const d = result.data;
       setErr(null);
       try {
-        await onSubmit({
+        await createQuest.mutateAsync({
           ...d,
           category: d.category || null,
           criteria: d.criteria || null,
-          deadline: new Date(d.deadline).toISOString(),
+          deadline: new Date(d.deadline),
         });
+        await goToQuests();
       } catch (e) {
         setErr(e instanceof Error ? e.message : 'Error saving the quest.');
       }
     },
   });
 
+  const submitting = createQuest.isPending;
+
   return (
-    <Form form={form}>
-      <form
-        className="surface space-y-4 p-6"
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
+    <form
+      className="surface space-y-4 p-6"
+      onSubmit={(event) => {
+        event.preventDefault();
+        form.handleSubmit();
+      }}
+    >
+      <form.Field name="title">
+        {(field) => {
+          const error = getErrorMessage(field.state.meta.errors);
+          const errorId = `${field.name}-error`;
+
+          return (
+            <div className="space-y-2">
+              <Label htmlFor={field.name}>
+                Title<span className="text-destructive">*</span>
+              </Label>
+              <Input
+                aria-describedby={error && errorId}
+                aria-invalid={Boolean(error)}
+                id={field.name}
+                maxLength={120}
+                name={field.name}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                value={field.state.value}
+              />
+              <FieldError id={errorId} message={error} />
+            </div>
+          );
         }}
-      >
-        <FormField
-          name="title"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Title</FormLabel>
-              <FormControl>
-                <Input
-                  maxLength={120}
-                  name={field.name}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  value={field.state.value}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      </form.Field>
 
-        <FormField
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Description</FormLabel>
-              <FormControl>
-                <Textarea
-                  className="min-h-28"
-                  name={field.name}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  value={field.state.value}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+      <form.Field name="description">
+        {(field) => {
+          const error = getErrorMessage(field.state.meta.errors);
+          const errorId = `${field.name}-error`;
 
-        <FormField
-          name="tokenId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Reward token</FormLabel>
-              <FormControl>
-                <ReactSelect<TokenOption>
-                  getOptionLabel={(t) =>
-                    t.balance !== null
-                      ? `${t.symbol} — balance: ${formatUnits(t.balance, t.decimals)}`
-                      : t.symbol
-                  }
-                  getOptionValue={(t) => t.id}
-                  isDisabled={!isConnected}
-                  isLoading={isLoading}
-                  noOptionsMessage={() => 'No accepted tokens'}
-                  onBlur={field.handleBlur}
-                  onChange={(option) => field.handleChange(option?.id ?? '')}
-                  options={tokens}
-                  placeholder={
-                    isConnected
-                      ? 'Choose a token'
-                      : 'Connect your wallet to see the accepted tokens'
-                  }
-                  value={tokens.find((t) => t.id === field.state.value) ?? null}
-                />
-              </FormControl>
+          return (
+            <div className="space-y-2">
+              <Label htmlFor={field.name}>
+                Description<span className="text-destructive">*</span>
+              </Label>
+              <Textarea
+                aria-describedby={error && errorId}
+                aria-invalid={Boolean(error)}
+                className="min-h-28"
+                id={field.name}
+                name={field.name}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                value={field.state.value}
+              />
+              <FieldError id={errorId} message={error} />
+            </div>
+          );
+        }}
+      </form.Field>
+
+      <form.Field name="tokenId">
+        {(field) => {
+          const error = getErrorMessage(field.state.meta.errors);
+          const errorId = `${field.name}-error`;
+
+          return (
+            <div className="space-y-2">
+              <Label htmlFor={field.name}>
+                Reward token<span className="text-destructive">*</span>
+              </Label>
+              <ReactSelect<TokenOption>
+                aria-describedby={error && errorId}
+                aria-invalid={Boolean(error)}
+                getOptionLabel={(t) =>
+                  t.balance !== null
+                    ? `${t.symbol} — balance: ${formatUnits(t.balance, t.decimals)}`
+                    : t.symbol
+                }
+                getOptionValue={(t) => t.id}
+                inputId={field.name}
+                isDisabled={!isConnected}
+                isLoading={isLoading}
+                noOptionsMessage={() => 'No accepted tokens'}
+                onBlur={field.handleBlur}
+                onChange={(option) => field.handleChange(option?.id ?? '')}
+                options={tokens}
+                placeholder={
+                  isConnected
+                    ? 'Choose a token'
+                    : 'Connect your wallet to see the accepted tokens'
+                }
+                value={tokens.find((t) => t.id === field.state.value) ?? null}
+              />
               {tokensError && (
                 <p className="text-sm text-destructive">{tokensError}</p>
               )}
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+              <FieldError id={errorId} message={error} />
+            </div>
+          );
+        }}
+      </form.Field>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FormField
-            name="rewardAmount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Reward amount</FormLabel>
-                <FormControl>
-                  <Input
-                    inputMode="decimal"
-                    name={field.name}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value.trim())}
-                    placeholder="25.50"
-                    value={field.state.value}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <form.Field name="rewardAmount">
+          {(field) => {
+            const error = getErrorMessage(field.state.meta.errors);
+            const errorId = `${field.name}-error`;
 
-          <FormField
-            name="deadline"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Deadline</FormLabel>
-                <FormControl>
-                  <Input
-                    name={field.name}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    type="datetime-local"
-                    value={field.state.value}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          name="milestones"
-          render={({ field }) => {
-            const list: string[] = field.state.value;
-            const add = () => {
-              const v = milestone.trim();
-              if (!v) return;
-              field.handleChange([...list, v]);
-              setMilestone('');
-            };
             return (
-              <FormItem>
-                <FormLabel>Expected milestones</FormLabel>
-                <div className="flex gap-2">
-                  <FormControl>
-                    <Input
-                      onChange={(e) => setMilestone(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          add();
-                        }
-                      }}
-                      placeholder="E.g.: Post on X with the hashtag…"
-                      value={milestone}
-                    />
-                  </FormControl>
-                  <Button type="button" variant="legacy" onClick={add}>Add</Button>
-                </div>
-                <ul className="mt-2 space-y-1">
-                  {list.map((m, i) => (
-                    <li
-                      key={i}
-                      className="surface-2 flex items-center justify-between gap-2 px-3 py-2 text-sm"
-                    >
-                      <span>{i + 1}. {m}</span>
-                      <Button
-                        type="button"
-                        variant="legacy-link"
-                        onClick={() => field.handleChange(list.filter((_, j) => j !== i))}
-                      >
-                        Remove
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-                <FormMessage />
-              </FormItem>
-            );
-          }}
-        />
-
-        <FormField
-          name="category"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Category (optional)</FormLabel>
-              <FormControl>
+              <div className="space-y-2">
+                <Label htmlFor={field.name}>
+                  Reward amount<span className="text-destructive">*</span>
+                </Label>
                 <Input
-                  maxLength={60}
+                  aria-describedby={error && errorId}
+                  aria-invalid={Boolean(error)}
+                  id={field.name}
+                  inputMode="decimal"
                   name={field.name}
                   onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
+                  onChange={(e) => field.handleChange(e.target.value.trim())}
+                  placeholder="25.50"
                   value={field.state.value}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          name="criteria"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Acceptance criteria (optional)</FormLabel>
-              <FormControl>
-                <Textarea
-                  className="min-h-20"
-                  name={field.name}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  value={field.state.value}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          name="validationChecklist"
-          render={({ field }) => {
-            const list: string[] = field.state.value;
-            const add = () => {
-              const v = item.trim();
-              if (!v) return;
-              field.handleChange([...list, v]);
-              setItem('');
-            };
-            return (
-              <FormItem>
-                <FormLabel>Validation checklist (optional)</FormLabel>
-                <div className="flex gap-2">
-                  <FormControl>
-                    <Input
-                      onChange={(e) => setItem(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          add();
-                        }
-                      }}
-                      placeholder="Add a point to validate"
-                      value={item}
-                    />
-                  </FormControl>
-                  <Button type="button" variant="legacy" onClick={add}>Add</Button>
-                </div>
-                <ul className="mt-2 space-y-1">
-                  {list.map((c, i) => (
-                    <li
-                      key={i}
-                      className="surface-2 flex items-center justify-between gap-2 px-3 py-2 text-sm"
-                    >
-                      {c}
-                      <Button
-                        type="button"
-                        variant="legacy-link"
-                        onClick={() => field.handleChange(list.filter((_, j) => j !== i))}
-                      >
-                        Remove
-                      </Button>
-                    </li>
-                  ))}
-                </ul>
-                <FormMessage />
-              </FormItem>
+                <FieldError id={errorId} message={error} />
+              </div>
             );
           }}
-        />
+        </form.Field>
 
-        {err && <p className="text-sm text-destructive">{err}</p>}
+        <form.Field name="deadline">
+          {(field) => {
+            const error = getErrorMessage(field.state.meta.errors);
+            const errorId = `${field.name}-error`;
 
+            return (
+              <div className="space-y-2">
+                <Label htmlFor={field.name}>
+                  Deadline<span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  aria-describedby={error && errorId}
+                  aria-invalid={Boolean(error)}
+                  id={field.name}
+                  name={field.name}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  type="datetime-local"
+                  value={field.state.value}
+                />
+                <FieldError id={errorId} message={error} />
+              </div>
+            );
+          }}
+        </form.Field>
+      </div>
+
+      <form.Field name="milestones">
+        {(field) => {
+          const error = getErrorMessage(field.state.meta.errors);
+          const errorId = `${field.name}-error`;
+
+          return (
+            <div className="space-y-2">
+              <Label htmlFor={field.name}>
+                Expected milestones<span className="text-destructive">*</span>
+              </Label>
+              <StringListField
+                describedBy={error && errorId}
+                id={field.name}
+                invalid={Boolean(error)}
+                numbered
+                onChange={field.handleChange}
+                placeholder="E.g.: Post on X with the hashtag…"
+                value={field.state.value}
+              />
+              <FieldError id={errorId} message={error} />
+            </div>
+          );
+        }}
+      </form.Field>
+
+      <form.Field name="category">
+        {(field) => {
+          const error = getErrorMessage(field.state.meta.errors);
+          const errorId = `${field.name}-error`;
+
+          return (
+            <div className="space-y-2">
+              <Label htmlFor={field.name}>Category (optional)</Label>
+              <Input
+                aria-describedby={error && errorId}
+                aria-invalid={Boolean(error)}
+                id={field.name}
+                maxLength={60}
+                name={field.name}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                value={field.state.value}
+              />
+              <FieldError id={errorId} message={error} />
+            </div>
+          );
+        }}
+      </form.Field>
+
+      <form.Field name="criteria">
+        {(field) => {
+          const error = getErrorMessage(field.state.meta.errors);
+          const errorId = `${field.name}-error`;
+
+          return (
+            <div className="space-y-2">
+              <Label htmlFor={field.name}>Acceptance criteria (optional)</Label>
+              <Textarea
+                aria-describedby={error && errorId}
+                aria-invalid={Boolean(error)}
+                className="min-h-20"
+                id={field.name}
+                name={field.name}
+                onBlur={field.handleBlur}
+                onChange={(e) => field.handleChange(e.target.value)}
+                value={field.state.value}
+              />
+              <FieldError id={errorId} message={error} />
+            </div>
+          );
+        }}
+      </form.Field>
+
+      <form.Field name="validationChecklist">
+        {(field) => {
+          const error = getErrorMessage(field.state.meta.errors);
+          const errorId = `${field.name}-error`;
+
+          return (
+            <div className="space-y-2">
+              <Label htmlFor={field.name}>Validation checklist (optional)</Label>
+              <StringListField
+                describedBy={error && errorId}
+                id={field.name}
+                invalid={Boolean(error)}
+                onChange={field.handleChange}
+                placeholder="Add a point to validate"
+                value={field.state.value}
+              />
+              <FieldError id={errorId} message={error} />
+            </div>
+          );
+        }}
+      </form.Field>
+
+      {err && (
+        <p className="text-sm text-destructive" role="alert">
+          {err}
+        </p>
+      )}
+
+      <div className="flex justify-end gap-4">
+        <Button
+          disabled={submitting}
+          onClick={goToQuests}
+          type="button"
+          variant="legacy"
+        >
+          Cancel
+        </Button>
         <form.Subscribe selector={(s) => s.isSubmitting}>
           {(isSubmitting) => (
-            <Button type="submit" variant="legacy-primary" disabled={isSubmitting}>
+            <Button
+              disabled={isSubmitting || submitting}
+              type="submit"
+              variant="legacy-primary"
+            >
               {isSubmitting ? <Loader2 className="animate-spin" /> : null}
-              {isSubmitting ? 'Saving…' : submitLabel}
+              {isSubmitting ? 'Saving…' : 'Create quest'}
             </Button>
           )}
         </form.Subscribe>
-      </form>
-    </Form>
+      </div>
+    </form>
   );
 }
