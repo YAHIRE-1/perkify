@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@import "@perkify/ui/globals.css";
+
+@source "../../../packages//ui/src";
+
 @layer base {
   * { box-sizing: border-box; margin: 0; padding: 0; }
 }

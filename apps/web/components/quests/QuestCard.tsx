@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { QuestSummary } from '@perkify/db';
+import type { QuestSummary } from '@perkify/db/schema/quests';
 import { fmtAmount, fmtDate } from '@/lib/format';
 import StatusBadge from './StatusBadge';
 
