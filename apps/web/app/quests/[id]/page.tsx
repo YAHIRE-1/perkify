@@ -2,10 +2,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/api/client';
-import type { Quest } from '@perkify/db';
+import type { Quest } from '@perkify/db/schema/quests';
 import StatusBadge from '@/components/StatusBadge';
 import EscrowPanel from '@/components/EscrowPanel';
-import QuestForm from '@/components/QuestForm';
+import QuestForm from '@/components/quests/QuestForm';
 import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/components/Providers';
 
@@ -44,14 +44,7 @@ export default function QuestDetail() {
   if (editing) return (
     <div className="mx-auto max-w-2xl space-y-4">
       <h1 className="font-display text-3xl font-bold">Edit quest</h1>
-      <QuestForm
-        initial={q}
-        submitLabel="Save changes"
-        onSubmit={async (d) => {
-          setQ(await api.quests.update(q.id, d));
-          setEditing(false);
-        }}
-      />
+      <QuestForm />
     </div>
   );
 

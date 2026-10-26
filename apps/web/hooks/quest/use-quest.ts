@@ -2,16 +2,21 @@ import type {
   AppRouterInputs,
   AppRouterOutputs,
 } from "@perkify/api/routers/index";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation,keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { client, orpc } from "@/utils/orpc";
 
-type QuestRow = AppRouterOutputs["quests"]["list"][number];
+type ListInput = AppRouterInputs["quests"]["list"];
+type QuestRow = AppRouterOutputs["quests"]["list"]["items"][number]
 
-export function useListquests(params: AppRouterInputs["quests"]["list"]) {
-  return useQuery(orpc.quests.list.queryOptions({ input: params }));
+export function useListQuests(params: ListInput) {
+  return useQuery({
+    ...orpc.quests.list.queryOptions({ input: params }),
+    placeholderData: keepPreviousData,
+  });
 }
+
 
 export function useGetQuest(id: string) {
   return useQuery(orpc.quests.get.queryOptions({ input: { id } }));

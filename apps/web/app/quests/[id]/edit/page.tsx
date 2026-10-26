@@ -1,25 +1,20 @@
 'use client';
-import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { api } from '@/api/client';
-import type { Quest } from '@perkify/db';
-import QuestForm from '@/components/QuestForm';
+import QuestForm from '@/components/quests/QuestForm';
 import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/components/Providers';
+import { useGetQuest, useUpdateQuest } from '@/hooks/quest/use-quest';
 
 export default function EditQuestPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const [q, setQ] = useState<Quest | null>(null);
-  const [err, setErr] = useState<string | null>(null);
 
-  useEffect(() => {
-    api.quests.get(id).then(setQ).catch((e) => setErr(e.message));
-  }, [id]);
+  const { data: q, error, isPending } = useGetQuest(id);
+  const updateQuest = useUpdateQuest();
 
-  if (err) return <EmptyState title="Quest not found" hint={err} />;
-  if (!q) return <div className="muted">Loading…</div>;
+  if (error) return <EmptyState title="Quest not found" hint={error.message} />;
+  if (isPending) return <div className="muted">Loading…</div>;
 
   if (!user || user.id !== q.creatorId) {
     return <EmptyState title="Not authorized" hint="You can only edit quests you created." />;
@@ -40,14 +35,7 @@ export default function EditQuestPage() {
         ← Back to quest
       </button>
       <h1 className="font-display text-3xl font-bold">Edit quest</h1>
-      <QuestForm
-        initial={q}
-        submitLabel="Save changes"
-        onSubmit={async (d) => {
-          await api.quests.update(q.id, d);
-          router.push(`/quests/${q.id}`);
-        }}
-      />
+      <QuestForm />
     </div>
   );
 }
