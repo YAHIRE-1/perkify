@@ -17,7 +17,7 @@
     "db:migrate": "pnpm --filter @perkify/db db:migrate",
     "db:seed": "turbo run db:seed --filter=@perkify/db",
     "db:studio": "pnpm --filter @perkify/db db:studio",
-    "env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./packages/db/ && varlock codegen --path ./packages/contracts/",
+    "env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./packages/db/ && varlock codegen --path ./packages/auth/ && varlock codegen --path ./packages/contracts/",
     "typecheck": "turbo run typecheck",
 
     "contracts:build": "pnpm --filter @perkify/contracts build",

@@ -9,7 +9,7 @@ import { createAuthMiddleware } from "better-auth/api";
 import { siwe } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 import { log } from "evlog";
-import { ENV } from "varlock/env";
+import { ENV } from "./env";
 import {
   createPublicClient,
   http,
