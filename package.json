@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "scripts": {
+"scripts": {
     "dev": "turbo run dev",
     "start": "pnpm --filter server start",
     "build": "turbo run build",
@@ -17,8 +17,16 @@
     "db:migrate": "pnpm --filter @perkify/db db:migrate",
     "db:seed": "turbo run db:seed --filter=@perkify/db",
     "db:studio": "pnpm --filter @perkify/db db:studio",
-    "env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./packages/db/",
-    "typecheck": "turbo run typecheck"
+    "env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./packages/db/ && varlock codegen --path ./packages/contracts/",
+    "typecheck": "turbo run typecheck",
+
+    "contracts:build": "pnpm --filter @perkify/contracts build",
+    "contracts:abi": "pnpm --filter @perkify/contracts build:abi",
+    "contracts:test": "pnpm --filter @perkify/contracts test",
+    "contracts:gas": "pnpm --filter @perkify/contracts test:gas",
+    "contracts:deploy:local": "pnpm --filter @perkify/contracts deploy:local",
+    "contracts:deploy:sepolia": "pnpm --filter @perkify/contracts deploy:sepolia",
+    "contracts:deploy:mainnet": "pnpm --filter @perkify/contracts deploy:mainnet"
   },
   "engines": {
     "node": ">=22"
