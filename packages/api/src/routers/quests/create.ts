@@ -50,6 +50,7 @@ export const create = protectedProcedure
         .values({
           ...rest,
           deadline: deadlineDate,
+          chainId: token.chainId, // confirm usa este valor, no el del cliente
           creatorId: userId,
           modifiedBy: userId,
           status: "DRAFT",
