@@ -2,13 +2,13 @@ import type {
   AppRouterInputs,
   AppRouterOutputs,
 } from "@perkify/api/routers/index";
-import { useMutation,keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { client, orpc } from "@/utils/orpc";
 
 type ListInput = AppRouterInputs["quests"]["list"];
-type QuestRow = AppRouterOutputs["quests"]["list"]["items"][number]
+type QuestRow = AppRouterOutputs["quests"]["list"]["items"][number];
 
 export function useListQuests(params: ListInput) {
   return useQuery({
@@ -16,7 +16,6 @@ export function useListQuests(params: ListInput) {
     placeholderData: keepPreviousData,
   });
 }
-
 
 export function useGetQuest(id: string) {
   return useQuery(orpc.quests.get.queryOptions({ input: { id } }));
@@ -27,10 +26,23 @@ export function useCreateQuest() {
   return useMutation(
     orpc.quests.create.mutationOptions({
       onSuccess: async () => {
-        toast.success("Cliente creado");
         await queryClient.invalidateQueries({ queryKey: orpc.quests.key() });
       },
-      onError: (error: Error) => toast.error(error.message),    })
+      onError: (error: Error) => toast.error(error.message),
+    })
+  );
+}
+
+export function useConfirmQuest() {
+  const queryClient = useQueryClient();
+  return useMutation(
+    orpc.quests.confirm.mutationOptions({
+      onSuccess: async () => {
+        toast.success("Quest fondeada");
+        await queryClient.invalidateQueries({ queryKey: orpc.quests.key() });
+      },
+      onError: (error: Error) => toast.error(error.message),
+    })
   );
 }
 
@@ -43,7 +55,7 @@ export function useUpdateQuest() {
         toast.success("Cliente actualizado");
         await queryClient.invalidateQueries({ queryKey: orpc.quests.key() });
       },
-      onError: (error: Error ) => toast.error(error.message),
+      onError: (error: Error) => toast.error(error.message),
     })
   );
 }
