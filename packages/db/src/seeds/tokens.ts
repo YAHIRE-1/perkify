@@ -7,6 +7,19 @@ import { tokens } from "../schema/tokens";
  * de Circle antes de usarlas en producción, y mantén el mismo formato
  * (checksum o minúsculas) que las filas que ya existan en la tabla.
  */
+const LOCAL_TOKENS =
+  ENV.NODE_ENV === "production"
+    ? []
+    : [
+        {
+          address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+          chainId: 31_337, // Anvil (local)
+          decimals: 6,
+          symbol: "mUSDC",
+        },
+      ];
+
+
 const ACCEPTED_TOKENS = [
   {
     address: "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
@@ -41,7 +54,7 @@ export async function seedTokens() {
 
   const inserted = await db
     .insert(tokens)
-    .values(ACCEPTED_TOKENS)
+    .values([...ACCEPTED_TOKENS, ...LOCAL_TOKENS])
     .onConflictDoNothing({ target: [tokens.chainId, tokens.address] })
     .returning({ chainId: tokens.chainId, id: tokens.id, symbol: tokens.symbol });
 
