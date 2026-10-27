@@ -2,6 +2,10 @@
 import { useEffect, useState } from 'react';
 import { erc20Abi } from 'viem';
 import { useAccount, useReadContracts } from 'wagmi';
+import {
+  questEscrowAddresses,
+  type SupportedChainId,
+} from '@perkify/contracts/addresses';
 import { orpc, errorMessage } from '@/lib/orpc';
 
 export type AcceptedToken = {
@@ -12,6 +16,9 @@ export type AcceptedToken = {
   decimals: number;
 };
 export type AcceptedTokenWithBalance = AcceptedToken & { balance: bigint | null };
+
+const hasEscrow = (chainId: number) =>
+  Boolean(questEscrowAddresses[chainId as SupportedChainId]);
 
 /**
  * Tokens que acepta la plataforma en la chain de la wallet conectada (ERC-20 únicamente),
@@ -31,6 +38,15 @@ export function useAcceptedTokens() {
       setLoading(false);
       return;
     }
+
+    // Sin escrow en esta red no se puede crear una quest: avisar en vez de listar tokens inútiles.
+    if (!hasEscrow(chainId)) {
+      setList([]);
+      setLoading(false);
+      setError('QuestEscrow is not deployed on this network. Switch networks in your wallet.');
+      return;
+    }
+
     let cancelled = false;
     setLoading(true);
     setError(null);

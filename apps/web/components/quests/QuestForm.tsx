@@ -1,9 +1,17 @@
 'use client';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { revalidateLogic, useForm } from '@tanstack/react-form';
 import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
-import { formatUnits } from 'viem';
+import { erc20Abi, formatUnits } from 'viem';
+import { useAccount, useConfig } from 'wagmi';
+import {
+  readContract,
+  switchChain,
+  waitForTransactionReceipt,
+  writeContract,
+} from 'wagmi/actions';
+import { questEscrowAbi } from '@perkify/contracts';
 import { Button } from '@perkify/ui/components/button';
 import {
   Form,
@@ -16,7 +24,8 @@ import {
 import { Input } from '@perkify/ui/components/input';
 import { ReactSelect } from '@perkify/ui/components/react-select';
 import { Textarea } from '@perkify/ui/components/textarea';
-import { useCreateQuest } from '@/hooks/quest/use-quest';
+import { authClient } from '@/lib/auth-client';
+import { useConfirmQuest, useCreateQuest } from '@/hooks/quest/use-quest';
 import { useAcceptedTokens } from '@/hooks/useAcceptedTokens';
 import {
   questFormSchema,
@@ -324,13 +333,68 @@ function DetailsSection() {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Fondeo on-chain                                                           */
+/* -------------------------------------------------------------------------- */
+
+type Step =
+  | 'idle'
+  | 'creating'
+  | 'switching'
+  | 'approving'
+  | 'depositing'
+  | 'confirming';
+
+const STEP_LABEL: Record<Step, string> = {
+  idle: 'Create quest',
+  creating: 'Creating draft…',
+  switching: 'Switching network…',
+  approving: 'Approve the token in your wallet…',
+  depositing: 'Confirm the deposit in your wallet…',
+  confirming: 'Verifying on-chain…',
+};
+
+interface EscrowParams {
+  chainId: number;
+  escrowAddress: `0x${string}`;
+  args: {
+    token: `0x${string}`;
+    reward: string;
+    deadline: number;
+    refundGrace: number;
+    reviewWindow: number;
+    uri: string;
+  };
+}
+
+// Borrador ya creado: permite reintentar sin crear otro.
+interface Pending {
+  questId: string;
+  escrow: EscrowParams;
+  txHash?: `0x${string}`;
+}
+
+function errorMessage(e: unknown) {
+  if (e instanceof Error) {
+    return /user rejected|user denied/i.test(e.message)
+      ? 'You rejected the request in your wallet.'
+      : e.message;
+  }
+  return 'Error saving the quest.';
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Formulario                                                                */
 /* -------------------------------------------------------------------------- */
 
 export default function QuestForm() {
   const router = useRouter();
+  const config = useConfig();
+  const { address, chainId: walletChainId } = useAccount();
   const createQuest = useCreateQuest();
+  const confirmQuest = useConfirmQuest();
   const [err, setErr] = useState<string | null>(null);
+  const [step, setStep] = useState<Step>('idle');
+  const pending = useRef<Pending | null>(null);
 
   const {
     tokens,
@@ -345,6 +409,76 @@ export default function QuestForm() {
   const validate = (value: QuestFormValues) => {
     const token = tokens.find((t) => t.id === value.tokenId);
     return questFormSchema(token?.decimals ?? 18).safeParse(value);
+  };
+
+  // Pasos on-chain + confirmación. Se puede reanudar desde donde falló.
+  const fund = async (p: Pending) => {
+    if (!address) throw new Error('Connect your wallet first.');
+    const { escrow } = p;
+    const chainId = escrow.chainId as (typeof config.chains)[number]['id'];
+    const amount = BigInt(escrow.args.reward);
+
+    if (!p.txHash) {
+      if (walletChainId !== escrow.chainId) {
+        setStep('switching');
+        await switchChain(config, { chainId });
+      }
+
+      const allowance = await readContract(config, {
+        address: escrow.args.token,
+        abi: erc20Abi,
+        functionName: 'allowance',
+        args: [address, escrow.escrowAddress],
+        chainId,
+      });
+
+      if (allowance < amount) {
+        setStep('approving');
+        const approveHash = await writeContract(config, {
+          address: escrow.args.token,
+          abi: erc20Abi,
+          functionName: 'approve',
+          args: [escrow.escrowAddress, amount],
+          chainId,
+        });
+        const approveReceipt = await waitForTransactionReceipt(config, {
+          hash: approveHash,
+          chainId,
+        });
+        if (approveReceipt.status !== 'success') {
+          throw new Error('Approval failed.');
+        }
+      }
+
+      setStep('depositing');
+      p.txHash = await writeContract(config, {
+        address: escrow.escrowAddress,
+        abi: questEscrowAbi,
+        functionName: 'createQuest',
+        args: [
+          escrow.args.token,
+          amount,
+          BigInt(escrow.args.deadline),
+          BigInt(escrow.args.refundGrace),
+          BigInt(escrow.args.reviewWindow),
+          escrow.args.uri,
+        ],
+        chainId,
+      });
+    }
+
+    setStep('confirming');
+    const receipt = await waitForTransactionReceipt(config, {
+      hash: p.txHash,
+      chainId,
+    });
+    if (receipt.status !== 'success') {
+      p.txHash = undefined; // la tx revirtió: el reintento vuelve a depositar
+      throw new Error('The deposit transaction failed.');
+    }
+
+    await confirmQuest.mutateAsync({ id: p.questId, txHash: p.txHash });
+    pending.current = null;
   };
 
   const form = useForm({
@@ -364,32 +498,64 @@ export default function QuestForm() {
         return { fields };
       },
     },
-    onSubmit: ({ value }) => {
+    onSubmit: async ({ value }) => {
       const result = validate(value);
       if (!result.success) return;
 
-      const d = result.data;
       setErr(null);
-      createQuest.mutate(
-        {
-          ...d,
-          category: d.category || null,
-          criteria: d.criteria || null,
-          deadline: new Date(d.deadline),
-        },
-        {
-          onSuccess: () => {
-            goToQuests();
-          },
-          onError: (e) => {
-            setErr(e instanceof Error ? e.message : 'Error saving the quest.');
-          },
+
+      if (!address) {
+        setErr('Connect your wallet first.');
+        return;
+      }
+
+      try {
+        // Solo al empezar de cero: con un borrador pendiente ya se validó.
+        if (!pending.current) {
+          // Sesión fresca: la cacheada puede no traer walletAddress tras el login.
+          // El depósito sale de la wallet conectada, pero confirm exige que
+          // el creador on-chain sea la wallet de la sesión.
+          const { data: fresh } = await authClient.getSession({
+            query: { disableCookieCache: true },
+          });
+          const sessionWallet = fresh?.user.walletAddress;
+
+          if (!sessionWallet) {
+            setErr('Your session has no linked wallet. Sign in again.');
+            return;
+          }
+          if (address.toLowerCase() !== sessionWallet.toLowerCase()) {
+            setErr(
+              'The connected wallet differs from the one you signed in with. Switch accounts in your wallet.'
+            );
+            return;
+          }
+
+          setStep('creating');
+          const d = result.data;
+          const created = await createQuest.mutateAsync({
+            ...d,
+            category: d.category || null,
+            criteria: d.criteria || null,
+            deadline: new Date(d.deadline).toISOString(),
+          });
+          pending.current = {
+            questId: created.quest.id,
+            escrow: created.escrow as EscrowParams,
+          };
         }
-      );
+
+        await fund(pending.current);
+        goToQuests();
+      } catch (e) {
+        setErr(errorMessage(e));
+      } finally {
+        setStep('idle');
+      }
     },
   });
 
-  const submitting = createQuest.isPending;
+  const submitting = step !== 'idle';
 
   return (
     <Form form={form}>
@@ -412,6 +578,7 @@ export default function QuestForm() {
         {err && (
           <p className="text-sm text-destructive" role="alert">
             {err}
+            {pending.current ? ' You can retry: the draft is kept.' : ''}
           </p>
         )}
 
@@ -424,13 +591,9 @@ export default function QuestForm() {
           >
             Cancel
           </Button>
-          <Button
-            disabled={submitting}
-            type="submit"
-            variant="legacy-primary"
-          >
+          <Button disabled={submitting} type="submit" variant="legacy-primary">
             {submitting ? <Loader2 className="animate-spin" /> : null}
-            {submitting ? 'Saving…' : 'Create quest'}
+            {STEP_LABEL[step]}
           </Button>
         </div>
       </form>
