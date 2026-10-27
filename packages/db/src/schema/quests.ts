@@ -1,5 +1,5 @@
 import {
-  pgTable, pgEnum, uuid, text, numeric, timestamp, boolean, integer, index,
+  pgTable, pgEnum, uuid, text, numeric, timestamp, boolean, integer, index, uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { defineRelationsPart } from "drizzle-orm";
 import { z } from "zod";
@@ -34,6 +34,8 @@ export const quest = pgTable("quests", {
   submittedAt: timestamp("submitted_at", { withTimezone: true }),
   reviewDeadline: timestamp("review_deadline", { withTimezone: true }),
   escrowId: text("escrow_id"),
+  chainId: integer("chain_id"),
+  createTxHash: text("create_tx_hash"),
   escrowStatus: escrowStatusEnum("escrow_status").default("NONE").notNull(),
   lastChainEventAt: timestamp("last_chain_event_at", { withTimezone: true }),
   validationChecklist: text("validation_checklist").array().notNull().default([]),
@@ -48,6 +50,8 @@ export const quest = pgTable("quests", {
   index("idx_quest_creator").on(t.creatorId),
   index("idx_quest_hunter").on(t.hunterId),
   index("idx_quest_token").on(t.tokenId),
+  uniqueIndex("uq_quest_create_tx").on(t.createTxHash),
+  uniqueIndex("uq_quest_chain_escrow").on(t.chainId, t.escrowId),
 ]);
 
 export const questMilestones = pgTable("quest_milestones", {
