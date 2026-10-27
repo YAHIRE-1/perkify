@@ -1,8 +1,8 @@
-import { arbitrum, arbitrumSepolia } from "viem/chains";
+import { arbitrum, arbitrumSepolia, foundry } from "viem/chains";
 
-/// Direcciones del contrato por red. Se llenan después de cada despliegue
-/// (el script Deploy.s.sol imprime la dirección).
 export const questEscrowAddresses = {
+  // Local (anvil), chain id 31337. Solo desarrollo.
+  [foundry.id]: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512" as `0x${string}`,
   [arbitrumSepolia.id]: undefined as `0x${string}` | undefined,
   [arbitrum.id]: undefined as `0x${string}` | undefined,
 } as const;

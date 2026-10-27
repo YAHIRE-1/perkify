@@ -1,7 +1,7 @@
 import type { Context as ApiContext } from "@perkify/api/context";
 import type { Context as HonoContext } from "hono";
 
-import { auth, db } from "./services";
+import { auth, db, getPublicClient } from "./services";
 
 export interface CreateContextOptions {
   context: HonoContext;
@@ -17,6 +17,7 @@ export async function createContext({
   return {
     db,
     session,
+    getPublicClient,
   };
 }
 
