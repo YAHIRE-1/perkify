@@ -16,9 +16,11 @@
     "test:gas": "forge test --gas-report",
     "typecheck": "tsc --noEmit",
     "deploy:sepolia": "varlock run -- forge script script/Deploy.s.sol --rpc-url arbitrum_sepolia --broadcast --verify",
-    "deploy:mainnet": "varlock run -- forge script script/Deploy.s.sol --rpc-url arbitrum --broadcast --verify",
-    "deploy:local": "forge script script/DeployLocal.s.sol --rpc-url http://127.0.0.1:8545 --broadcast"
-  },
+    "deploy:eth-sepolia": "varlock run -- forge script script/Deploy.s.sol --rpc-url sepolia --broadcast --gas-estimate-multiplier 1000",
+
+    "deploy:local": "forge script script/DeployLocal.s.sol --rpc-url http://127.0.0.1:8545 --broadcast"  
+    },
+
   "dependencies": {
     "viem": "catalog:"
   },

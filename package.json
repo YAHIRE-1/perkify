@@ -26,6 +26,7 @@
     "contracts:gas": "pnpm --filter @perkify/contracts test:gas",
     "contracts:deploy:local": "pnpm --filter @perkify/contracts deploy:local",
     "contracts:deploy:sepolia": "pnpm --filter @perkify/contracts deploy:sepolia",
+    "contracts:deploy:eth-sepolia": "pnpm --filter @perkify/contracts deploy:eth-sepolia",
     "contracts:deploy:mainnet": "pnpm --filter @perkify/contracts deploy:mainnet"
   },
   "engines": {
