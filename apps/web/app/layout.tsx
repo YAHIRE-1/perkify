@@ -3,7 +3,7 @@ import { Space_Grotesk, JetBrains_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import "./theme.css";
 import Providers from "@/components/Providers";
-import Navbar from "@/components/Navbar";
+import AppShell from "@/components/global/AppShell";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -57,8 +57,7 @@ export default function RootLayout({
       </head>
       <body style={{ fontFamily: "var(--font-body), system-ui, sans-serif" }}>
         <Providers>
-          <Navbar />
-          <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+          <AppShell>{children}</AppShell>
         </Providers>
       </body>
     </html>

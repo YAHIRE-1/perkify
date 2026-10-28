@@ -1,40 +1,107 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { api } from '@/api/client';
-import StatusBadge from './StatusBadge';
+import { useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import StatusBadge from '@/components/StatusBadge';
+import EscrowPanel from '@/components/EscrowPanel';
+import QuestForm from '@/components/quests/QuestForm';
+import EmptyState from '@/components/EmptyState';
+import { useAuth } from '@/components/Providers';
+import { useArchiveQuest, useGetQuest } from '@/hooks/quest/use-quest';
 
-export default function EscrowPanel({ questId, canDeposit }: { questId: string; canDeposit: boolean }) {
-  const [status, setStatus] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+export default function QuestDetail() {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const { user } = useAuth();
+  const [editing, setEditing] = useState(false);
 
-  const load = () => api.escrow.status(questId).then((s) => setStatus(s.status)).catch(() => setStatus(null));
-  useEffect(() => { load(); }, [questId]);
+  const { data: q, isLoading, error } = useGetQuest(id);
+  const archive = useArchiveQuest();
 
-  const deposit = async () => {
-    setBusy(true); setMsg(null);
-    try {
-      const tx = await api.escrow.prepareDeposit(questId);
-      const [from] = await window.ethereum!.request({ method: 'eth_requestAccounts' });
-      const hash = await window.ethereum!.request({
-        method: 'eth_sendTransaction',
-        params: [{ from, to: tx.to, data: tx.data, value: tx.value ? `0x${BigInt(tx.value).toString(16)}` : undefined }],
-      });
-      setMsg(`Deposit sent (${String(hash).slice(0, 10)}…). Status will update once confirmed on-chain.`);
-      setTimeout(load, 4000);
-    } catch (e: any) { setMsg(e.message ?? 'Failed to send deposit.'); }
-    setBusy(false);
+  if (isLoading) return <div className="muted">Cargando…</div>;
+  if (error || !q) {
+    return <EmptyState title="Quest no encontrada" hint={error?.message} />;
+  }
+
+  const isDraft = q.status === 'DRAFT';
+  const isOwner = user?.id === q.creatorId;
+  const canDeposit = isOwner && isDraft && q.escrowStatus === 'NONE';
+  const busy = archive.isPending;
+
+  const cancel = () => {
+    if (busy || !window.confirm('¿Cancelar esta quest?')) return;
+    archive.mutate(
+      { id: q.id, title: q.title, archived: q.archived },
+      { onSuccess: () => router.push('/') },
+    );
   };
 
-  return (
-    <div className="surface p-5">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-display font-semibold">Escrow (Kleros)</h3>
-        {status && <StatusBadge status={status} />}
+  if (editing) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-4">
+        <h1 className="font-display text-3xl font-bold">Editar quest</h1>
+        <QuestForm />
       </div>
-      <p className="muted mb-4 text-sm">Funds are held in the smart contract until the quest is completed or a dispute is resolved.</p>
-      {canDeposit && <button className="btn btn-primary w-full" disabled={busy} onClick={deposit}>{busy ? 'Awaiting wallet…' : 'Deposit funds'}</button>}
-      {msg && <p className="muted mt-3 text-sm">{msg}</p>}
+    );
+  }
+
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+      <article className="surface space-y-5 p-6">
+        <div className="flex flex-wrap items-center gap-2">
+          {q.isBoosted && <span className="chip chip-boost">Boosted · $PRKY</span>}
+          {q.category && <span className="chip">{q.category}</span>}
+          <StatusBadge status={q.status} />
+        </div>
+
+        <h1 className="font-display text-3xl font-bold">{q.title}</h1>
+        <p className="muted whitespace-pre-wrap leading-relaxed">{q.description}</p>
+
+        {q.criteria && (
+          <section>
+            <h2 className="font-display mb-2 font-semibold">Criterios de aceptación</h2>
+            <p className="muted whitespace-pre-wrap text-sm leading-relaxed">{q.criteria}</p>
+          </section>
+        )}
+
+        {!!q.validationChecklist.length && (
+          <section>
+            <h2 className="font-display mb-2 font-semibold">Checklist de validación</h2>
+            <ul className="space-y-2">
+              {q.validationChecklist.map((c, i) => (
+                <li key={i} className="surface-2 flex gap-2 px-3 py-2 text-sm">
+                  <span style={{ color: 'var(--cyan-text)' }}>✓</span>
+                  {c}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+      </article>
+
+      <aside className="space-y-4">
+        <div className="surface p-5">
+          <div className="muted-2 text-xs">Recompensa</div>
+          <div className="font-display text-4xl font-bold" style={{ color: 'var(--accent-text)' }}>
+            {q.rewardAmount}
+          </div>
+          <div className="muted mt-2 text-sm">
+            Fecha límite: {new Date(q.deadline).toLocaleDateString()}
+          </div>
+          {isOwner && isDraft && (
+            <div className="mt-4 flex gap-2">
+              <button className="btn flex-1" onClick={() => setEditing(true)} disabled={busy}>
+                Editar
+              </button>
+              <button className="btn flex-1" onClick={cancel} disabled={busy}>
+                Cancelar
+              </button>
+            </div>
+          )}
+        </div>
+
+        {user && <EscrowPanel quest={q} token={q.token} canDeposit={canDeposit} />}
+      </aside>
     </div>
   );
 }
