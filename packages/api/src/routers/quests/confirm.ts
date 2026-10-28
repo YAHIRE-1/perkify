@@ -1,5 +1,6 @@
+import { ORPCError } from "@orpc/server";
 import { getQuestEscrowAddress, questEscrowAbi, questEscrowAddresses, type SupportedChainId } from "@perkify/contracts";
-import { user } from "@perkify/db/schema/auth";
+import { user, walletAddress } from "@perkify/db/schema/auth";
 import { confirmQuestSchema, quest, questIdSchema } from "@perkify/db/schema/quests";
 import { tokens } from "@perkify/db/schema/tokens";
 import { and, eq } from "drizzle-orm";
@@ -35,12 +36,29 @@ export const confirm = protectedProcedure
     const [token] = await context.db.select().from(tokens).where(eq(tokens.id, q.tokenId));
     if (!token) throw new Error("Token no encontrado");
 
-    // 3. Wallet del usuario (de la DB: la sesión cacheada puede no traerla)
-    const [owner] = await context.db
-      .select({ walletAddress: user.walletAddress })
-      .from(user)
-      .where(eq(user.id, userId));
-    if (!owner?.walletAddress) throw new Error("Tu usuario no tiene una wallet vinculada");
+    // 3. Wallets del usuario: la tabla del plugin SIWE es la fuente confiable;
+    //    user.walletAddress (sincronizada por un hook) queda como respaldo.
+    const [wallets, [owner]] = await Promise.all([
+      context.db
+        .select({ address: walletAddress.address })
+        .from(walletAddress)
+        .where(eq(walletAddress.userId, userId)),
+      context.db
+        .select({ walletAddress: user.walletAddress })
+        .from(user)
+        .where(eq(user.id, userId)),
+    ]);
+
+    const ownerAddresses = new Set(
+      [...wallets.map((w) => w.address), owner?.walletAddress]
+        .filter((a): a is string => !!a)
+        .map((a) => a.toLowerCase()),
+    );
+    if (ownerAddresses.size === 0) {
+      throw new ORPCError("PRECONDITION_FAILED", {
+        message: "Tu usuario no tiene una wallet vinculada",
+      });
+    }
 
     // 4. Leer la tx on-chain
     const client = context.getPublicClient(q.chainId);
@@ -79,7 +97,7 @@ export const confirm = protectedProcedure
       if (refundGrace !== BigInt(REFUND_GRACE_S) || reviewWindow !== BigInt(REVIEW_WINDOW_S)) {
         throw new Error("Parámetros de escrow inválidos");
       }
-      if (creator.toLowerCase() !== owner.walletAddress.toLowerCase()) {
+      if (!ownerAddresses.has(creator.toLowerCase())) {
         throw new Error("La quest fue creada por otra wallet");
       }
       onchainId = ev.args.id;
