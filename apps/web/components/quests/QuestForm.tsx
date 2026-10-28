@@ -37,6 +37,28 @@ type TokenOption = ReturnType<typeof useAcceptedTokens>['tokens'][number];
 
 const required = <span className="text-destructive">*</span>;
 
+const WALLET_MISMATCH_MESSAGE =
+  'The connected wallet differs from the one you signed in with. Switch accounts in your wallet.';
+
+// Límites de UI: deben coincidir con los de `questFormSchema`.
+const LIMITS = {
+  title: 120,
+  description: 10_000,
+  category: 60,
+  criteria: 5_000,
+  milestoneItems: 20,
+  milestoneLength: 300,
+  checklistItems: 20,
+  checklistLength: 200,
+} as const;
+
+// Valor "ahora" en formato de <input type="datetime-local"> (hora local).
+const nowForDatetimeLocal = () => {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 16);
+};
+
 /* -------------------------------------------------------------------------- */
 /*  StringListField                                                           */
 /*  FormControl le inyecta id / aria-*, así que los reenviamos al Input.      */
@@ -50,6 +72,8 @@ interface StringListFieldProps {
   onChange: (value: string[]) => void;
   placeholder: string;
   numbered?: boolean;
+  maxItems: number;
+  maxLength: number;
 }
 
 function StringListField({
@@ -57,13 +81,17 @@ function StringListField({
   onChange,
   placeholder,
   numbered = false,
+  maxItems,
+  maxLength,
   ...inputProps
 }: StringListFieldProps) {
   const [draft, setDraft] = useState('');
 
+  const atLimit = value.length >= maxItems;
+
   const add = () => {
     const v = draft.trim();
-    if (!v) return;
+    if (!v || atLimit) return;
     onChange([...value, v]);
     setDraft('');
   };
@@ -73,6 +101,8 @@ function StringListField({
       <div className="flex gap-2">
         <Input
           {...inputProps}
+          disabled={atLimit}
+          maxLength={maxLength}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -83,10 +113,18 @@ function StringListField({
           placeholder={placeholder}
           value={draft}
         />
-        <Button type="button" variant="legacy" onClick={add}>
+        <Button
+          type="button"
+          variant="legacy"
+          disabled={!draft.trim() || atLimit}
+          onClick={add}
+        >
           Add
         </Button>
       </div>
+      <p className="mt-1 text-xs text-muted-foreground">
+        {value.length}/{maxItems}
+      </p>
       <ul className="mt-2 space-y-1">
         {value.map((text, i) => (
           <li
@@ -125,7 +163,7 @@ function BasicInfoSection() {
             <FormLabel>Title{required}</FormLabel>
             <FormControl>
               <Input
-                maxLength={120}
+                maxLength={LIMITS.title}
                 name={field.name}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -145,6 +183,7 @@ function BasicInfoSection() {
             <FormControl>
               <Textarea
                 className="min-h-28"
+                maxLength={LIMITS.description}
                 name={field.name}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -237,6 +276,7 @@ function RewardSection({
               <FormLabel>Deadline{required}</FormLabel>
               <FormControl>
                 <Input
+                  min={nowForDatetimeLocal()}
                   name={field.name}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
@@ -263,6 +303,8 @@ function DetailsSection() {
             <FormLabel>Expected milestones{required}</FormLabel>
             <FormControl>
               <StringListField
+                maxItems={LIMITS.milestoneItems}
+                maxLength={LIMITS.milestoneLength}
                 numbered
                 onChange={field.handleChange}
                 placeholder="E.g.: Post on X with the hashtag…"
@@ -281,7 +323,7 @@ function DetailsSection() {
             <FormLabel>Category (optional)</FormLabel>
             <FormControl>
               <Input
-                maxLength={60}
+                maxLength={LIMITS.category}
                 name={field.name}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -301,6 +343,7 @@ function DetailsSection() {
             <FormControl>
               <Textarea
                 className="min-h-20"
+                maxLength={LIMITS.criteria}
                 name={field.name}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
@@ -319,6 +362,8 @@ function DetailsSection() {
             <FormLabel>Validation checklist (optional)</FormLabel>
             <FormControl>
               <StringListField
+                maxItems={LIMITS.checklistItems}
+                maxLength={LIMITS.checklistLength}
                 onChange={field.handleChange}
                 placeholder="Add a point to validate"
                 value={field.state.value}
@@ -390,6 +435,7 @@ export default function QuestForm() {
   const router = useRouter();
   const config = useConfig();
   const { address, chainId: walletChainId } = useAccount();
+  const { data: session } = authClient.useSession();
   const createQuest = useCreateQuest();
   const confirmQuest = useConfirmQuest();
   const [err, setErr] = useState<string | null>(null);
@@ -403,9 +449,20 @@ export default function QuestForm() {
     error: tokensError,
   } = useAcceptedTokens();
 
+  // Feedback temprano en la UI. La autoridad real es el servidor: `createQuest`
+  // y `confirm` validan que el creador sea la wallet de la sesión. Si la sesión
+  // aún no trae walletAddress no bloqueamos; el servidor decide.
+  const sessionWallet = session?.user.walletAddress;
+  const walletMismatch =
+    !!address &&
+    !!sessionWallet &&
+    address.toLowerCase() !== sessionWallet.toLowerCase();
+
   const goToQuests = () => router.push('/dashboard');
 
   // El schema depende de los decimales del token seleccionado.
+  // Toda la validación de formulario (mínimos, mensajes, deadline futuro,
+  // límites) vive en `questFormSchema`; el servidor solo valida el contrato.
   const validate = (value: QuestFormValues) => {
     const token = tokens.find((t) => t.id === value.tokenId);
     return questFormSchema(token?.decimals ?? 18).safeParse(value);
@@ -490,6 +547,8 @@ export default function QuestForm() {
         const result = validate(value);
         if (result.success) return undefined;
 
+        // Un mensaje por campo (el primero). Los errores de elementos de
+        // arrays (path: ['milestones', 2]) se asignan al campo del array.
         const fields: Record<string, string> = {};
         for (const issue of result.error.issues) {
           const key = String(issue.path[0] ?? '');
@@ -509,34 +568,23 @@ export default function QuestForm() {
         return;
       }
 
+      if (walletMismatch) {
+        setErr(WALLET_MISMATCH_MESSAGE);
+        return;
+      }
+
       try {
         // Solo al empezar de cero: con un borrador pendiente ya se validó.
         if (!pending.current) {
-          // Sesión fresca: la cacheada puede no traer walletAddress tras el login.
-          // El depósito sale de la wallet conectada, pero confirm exige que
-          // el creador on-chain sea la wallet de la sesión.
-          const { data: fresh } = await authClient.getSession({
-            query: { disableCookieCache: true },
-          });
-          const sessionWallet = fresh?.user.walletAddress;
-
-          if (!sessionWallet) {
-            setErr('Your session has no linked wallet. Sign in again.');
-            return;
-          }
-          if (address.toLowerCase() !== sessionWallet.toLowerCase()) {
-            setErr(
-              'The connected wallet differs from the one you signed in with. Switch accounts in your wallet.'
-            );
-            return;
-          }
-
           setStep('creating');
+          // `result.data` ya viene con trim aplicado por el schema.
           const d = result.data;
+          // El servidor valida que la wallet de la sesión sea la que deposita.
           const created = await createQuest.mutateAsync({
             ...d,
             category: d.category || null,
             criteria: d.criteria || null,
+            // datetime-local no trae offset; el servidor exige ISO con offset.
             deadline: new Date(d.deadline).toISOString(),
           });
           pending.current = {
@@ -566,6 +614,12 @@ export default function QuestForm() {
           form.handleSubmit();
         }}
       >
+        {walletMismatch && (
+          <p className="text-sm text-destructive" role="alert">
+            {WALLET_MISMATCH_MESSAGE}
+          </p>
+        )}
+
         <BasicInfoSection />
         <RewardSection
           isConnected={isConnected}
@@ -591,7 +645,11 @@ export default function QuestForm() {
           >
             Cancel
           </Button>
-          <Button disabled={submitting} type="submit" variant="legacy-primary">
+          <Button
+            disabled={submitting || walletMismatch}
+            type="submit"
+            variant="legacy-primary"
+          >
             {submitting ? <Loader2 className="animate-spin" /> : null}
             {STEP_LABEL[step]}
           </Button>

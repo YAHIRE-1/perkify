@@ -120,14 +120,16 @@ export type CreateQuestInput = Pick<
 export type UpdateQuestInput = Partial<CreateQuestInput>;
 
 // ---- Validación (Zod) ----
+// Solo contrato con la API / protección de la BD.
+// Las reglas de UX (mínimos, mensajes, "deadline futuro", etc.) viven en el formulario del cliente.
 const questStatusSchema = z.enum(questStatusEnum.enumValues);
 
 export const createQuestSchema = z.object({
-  title: z.string().trim().min(5).max(120),
-  description: z.string().trim().min(20).max(10_000),
+  title: z.string().trim().max(120),
+  description: z.string().trim().max(10_000),
   category: z.string().trim().max(60).nullish(),
   criteria: z.string().trim().max(5_000).nullish(),
-  rewardAmount: z.string().regex(/^\d{1,18}(\.\d{1,18})?$/, "Monto inválido"),
+  rewardAmount: z.string().regex(/^\d{1,18}(\.\d{1,18})?$/),
   tokenId: z.string().uuid(),
   isBoosted: z.boolean().optional(),
   validationChecklist: z.array(z.string().trim().min(1).max(200)).max(20).optional(),
@@ -137,14 +139,14 @@ export const createQuestSchema = z.object({
 
 export const updateQuestSchema = z.object({
   id: z.string().uuid(),
-  data: createQuestSchema.partial().refine((d) => Object.keys(d).length > 0, "Nada que actualizar"),
+  data: createQuestSchema.partial(),
 });
 
 export const questIdSchema = z.object({ id: z.string().uuid() });
 
 export const confirmQuestSchema = z.object({
   chainId: z.number().int().positive(),
-  txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/, "Hash inválido"),
+  txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/),
 });
 
 export const listQuestsSchema = z.object({
