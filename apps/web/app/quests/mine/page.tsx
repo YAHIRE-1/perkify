@@ -2,12 +2,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QuestCard from '@/components/QuestCard';
-import QuestFiltersBar from '@/components/QuestFilters';
+import { QuestsFilters, type QuestFilterValues } from '@/components/quests/quests-filters';
 import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/components/Providers';
 import { useListQuests, type ListInput } from '@/hooks/quest/use-quest';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
+
 
 const LIMIT = 9;
 
@@ -30,6 +31,10 @@ export default function MyQuests() {
     { enabled: !!user }
   );
 
+  // `mine` siempre es true en esta vista, y cualquier cambio de filtro regresa a la página 1
+  const handleFilterChange = (patch: Partial<QuestFilterValues>) =>
+    setFilters((prev) => ({ ...prev, ...patch, mine: true, page: 1 }));
+
   if (authLoading || !user) return <div className="muted">Loading…</div>;
 
   return (
@@ -38,10 +43,10 @@ export default function MyQuests() {
         <h1 className="font-display text-4xl font-bold">My quests</h1>
       </div>
 
-      <QuestFiltersBar
+      <QuestsFilters
         value={filters}
-        onChange={(next) => setFilters({ ...next, mine: true, page: 1 })}
-        hideTokenAndBoostFilters={false}
+        onChange={handleFilterChange}
+        showMineFilter={false}
       />
 
       {error ? (

@@ -7,13 +7,17 @@ import { toast } from "sonner";
 
 import { client, orpc } from "@/utils/orpc";
 
-type ListInput = AppRouterInputs["quests"]["list"];
+export type ListInput = AppRouterInputs["quests"]["list"];
 type QuestRow = AppRouterOutputs["quests"]["list"]["items"][number];
 
-export function useListQuests(params: ListInput) {
+export function useListQuests(
+  params: ListInput,
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     ...orpc.quests.list.queryOptions({ input: params }),
     placeholderData: keepPreviousData,
+    enabled: options?.enabled ?? true,
   });
 }
 

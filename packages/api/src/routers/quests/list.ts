@@ -11,16 +11,24 @@ export const list = protectedProcedure
       includeArchived: z.boolean().default(false),
       mine: z.boolean().default(false),
       search: z.string().trim().optional(),
+      category: z.string().trim().max(60).optional(),
+      tokenId: z.string().uuid().optional(),
+      isBoosted: z.boolean().optional(),
       page: z.number().int().min(1).default(1),
       limit: z.number().int().min(1).max(50).default(9),
     })
   )
   .handler(async ({ input, context }) => {
-    const { includeArchived, mine, search, page, limit } = input;
+    const {
+      includeArchived, mine, search, category, tokenId, isBoosted, page, limit,
+    } = input;
 
     const where = and(
       includeArchived ? undefined : isNull(quest.archived),
       search ? ilike(quest.title, `%${search}%`) : undefined,
+      category ? ilike(quest.category, `%${category}%`) : undefined,
+      tokenId ? eq(quest.tokenId, tokenId) : undefined,
+      isBoosted ? eq(quest.isBoosted, true) : undefined,
       // El creador sale de la sesión, nunca del input
       mine ? eq(quest.creatorId, context.session.user.id) : undefined
     );

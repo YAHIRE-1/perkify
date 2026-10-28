@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import type { AppRouterInputs } from '@perkify/api/routers/index';
 import QuestCard from '@/components/QuestCard';
-import QuestFiltersBar from '@/components/QuestFilters';
+import { QuestsFilters, type QuestFilterValues } from '@/components/quests/quests-filters';
 import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/components/Providers';
@@ -21,6 +21,9 @@ export default function Marketplace() {
 
   const { data, error, isPending, isPlaceholderData } = useListQuests(debouncedFilters);
 
+  const handleFilterChange = (patch: Partial<QuestFilterValues>) =>
+    setFilters((prev) => ({ ...prev, ...patch, page: 1 }));
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
@@ -31,9 +34,10 @@ export default function Marketplace() {
         {user && <Link href="/quests/new" className="btn btn-primary">Create quest</Link>}
       </div>
 
-      <QuestFiltersBar
+      <QuestsFilters
         value={filters}
-        onChange={(next) => setFilters({ ...next, page: 1 })}
+        onChange={handleFilterChange}
+        showMineFilter={!!user}
       />
 
       {error ? (
