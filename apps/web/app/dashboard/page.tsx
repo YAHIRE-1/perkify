@@ -15,7 +15,7 @@ const LIMIT = 9;
 type Filters = AppRouterInputs['quests']['list'];
 
 export default function Marketplace() {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const [filters, setFilters] = useState<Filters>({ page: 1, limit: LIMIT });
   const debouncedFilters = useDebouncedValue(filters, 250);
 
@@ -26,13 +26,22 @@ export default function Marketplace() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-display text-4xl font-bold">Open quests</h1>
-          <p className="muted mt-1">Take a quest, submit evidence, and get paid from escrow.</p>
+      {!user && (
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="font-display text-4xl font-bold">Open quests</h1>
+            <p className="muted mt-1">
+              Take a quest, submit evidence, and get paid from escrow.
+            </p>
+          </div>
+          <button
+            className="btn btn-primary"
+            onClick={() => login().catch((e) => alert(e.message))}
+          >
+            Create quest
+          </button>
         </div>
-        {user && <Link href="/quests/new" className="btn btn-primary">Create quest</Link>}
-      </div>
+      )}
 
       <QuestsFilters
         value={filters}
