@@ -10,24 +10,19 @@ type ListInput = AppRouterInputs["quests"]["list"];
 
 export type QuestFilterValues = Pick<
 	ListInput,
-	"search" | "category" | "tokenId" | "isBoosted" | "includeArchived" | "mine"
+	"search" | "category" | "tokenId" | "isBoosted" | "mine"
 >;
 
 export type TokenOption = { id: string; symbol: string };
 
 const boostedOptions = [
-	{ value: "all", label: "Todas" },
-	{ value: "boosted", label: "Solo boosted" },
-];
-
-const statusOptions = [
-	{ value: "active", label: "Solo activas" },
-	{ value: "all", label: "Incluir archivadas" },
+	{ value: "all", label: "All" },
+	{ value: "boosted", label: "Boosted only" },
 ];
 
 const ownerOptions = [
-	{ value: "all", label: "Todas las quests" },
-	{ value: "mine", label: "Mis quests" },
+	{ value: "all", label: "All quests" },
+	{ value: "mine", label: "My quests" },
 ];
 
 type QuestsFiltersProps = {
@@ -47,7 +42,7 @@ export function QuestsFilters({
 }: QuestsFiltersProps) {
 	const tokenOptions = useMemo(
 		() => [
-			{ value: "all", label: "Todos los tokens" },
+			{ value: "all", label: "All tokens" },
 			...tokens.map((t) => ({ value: t.id, label: t.symbol })),
 		],
 		[tokens],
@@ -59,10 +54,9 @@ export function QuestsFilters({
 	const hasCategory = !!value.category?.trim();
 	const hasToken = showTokenAndBoostFilters && !!value.tokenId;
 	const hasBoosted = showTokenAndBoostFilters && !!value.isBoosted;
-	const hasArchived = !!value.includeArchived;
 	const hasMine = showMineFilter && !!value.mine;
 	const hasActiveFilters =
-		hasSearch || hasCategory || hasToken || hasBoosted || hasArchived || hasMine;
+		hasSearch || hasCategory || hasToken || hasBoosted || hasMine;
 
 	const clearAllFilters = () =>
 		onChange({
@@ -70,33 +64,32 @@ export function QuestsFilters({
 			category: undefined,
 			tokenId: undefined,
 			isBoosted: undefined,
-			includeArchived: undefined,
 			mine: undefined,
 		});
 
 	return (
 		<div className="space-y-4">
-			{/* Fila 1: Buscadores */}
+			{/* Row 1: Search inputs */}
 			<div className="flex flex-col gap-3 sm:flex-row">
 				<Input
-					aria-label="Buscar"
+					aria-label="Search"
 					className="h-9 flex-1"
 					onChange={(e) => onChange({ search: e.target.value || undefined })}
-					placeholder="Buscar quests..."
+					placeholder="Search quests..."
 					type="text"
 					value={value.search ?? ""}
 				/>
 				<Input
-					aria-label="Categoría"
+					aria-label="Category"
 					className="h-9 flex-1"
 					onChange={(e) => onChange({ category: e.target.value || undefined })}
-					placeholder="Categoría"
+					placeholder="Category"
 					type="text"
 					value={value.category ?? ""}
 				/>
 			</div>
 
-			{/* Fila 2: Dropdowns */}
+			{/* Row 2: Dropdowns */}
 			<div className="flex flex-wrap gap-3">
 				{showTokenAndBoostFilters && (
 					<>
@@ -128,19 +121,6 @@ export function QuestsFilters({
 						/>
 					</>
 				)}
-				<ReactSelect
-					className="min-w-40 flex-1"
-					onChange={(option) =>
-						onChange({
-							includeArchived: option?.value === "all" ? true : undefined,
-						})
-					}
-					options={statusOptions}
-					placeholder="Estatus"
-					value={statusOptions.find(
-						(opt) => opt.value === (value.includeArchived ? "all" : "active"),
-					)}
-				/>
 				{showMineFilter && (
 					<ReactSelect
 						className="min-w-40 flex-1"
@@ -148,7 +128,7 @@ export function QuestsFilters({
 							onChange({ mine: option?.value === "mine" ? true : undefined })
 						}
 						options={ownerOptions}
-						placeholder="Propietario"
+						placeholder="Owner"
 						value={ownerOptions.find(
 							(opt) => opt.value === (value.mine ? "mine" : "all"),
 						)}
@@ -156,11 +136,11 @@ export function QuestsFilters({
 				)}
 			</div>
 
-			{/* Fila 3: Badges de filtros activos */}
+			{/* Row 3: Active filter badges */}
 			{hasActiveFilters && (
 				<div className="flex flex-wrap items-center gap-2 border-t pt-2">
 					<span className="mr-1 text-muted-foreground text-xs">
-						Filtros activos:
+						Active filters:
 					</span>
 					{hasSearch && (
 						<Badge
@@ -168,7 +148,7 @@ export function QuestsFilters({
 							onClick={() => onChange({ search: undefined })}
 							variant="outline"
 						>
-							Búsqueda: "{value.search}"
+							Search: "{value.search}"
 							<X className="ml-1 size-3" />
 						</Badge>
 					)}
@@ -178,7 +158,7 @@ export function QuestsFilters({
 							onClick={() => onChange({ category: undefined })}
 							variant="outline"
 						>
-							Categoría: {value.category}
+							Category: {value.category}
 							<X className="ml-1 size-3" />
 						</Badge>
 					)}
@@ -198,17 +178,7 @@ export function QuestsFilters({
 							onClick={() => onChange({ isBoosted: undefined })}
 							variant="outline"
 						>
-							Solo boosted
-							<X className="ml-1 size-3" />
-						</Badge>
-					)}
-					{hasArchived && (
-						<Badge
-							className="cursor-pointer hover:bg-muted"
-							onClick={() => onChange({ includeArchived: undefined })}
-							variant="outline"
-						>
-							Incluye archivadas
+							Boosted only
 							<X className="ml-1 size-3" />
 						</Badge>
 					)}
@@ -218,7 +188,7 @@ export function QuestsFilters({
 							onClick={() => onChange({ mine: undefined })}
 							variant="outline"
 						>
-							Mis quests
+							My quests
 							<X className="ml-1 size-3" />
 						</Badge>
 					)}
@@ -227,7 +197,7 @@ export function QuestsFilters({
 						onClick={clearAllFilters}
 						variant="ghost"
 					>
-						Limpiar todo
+						Clear all
 						<X className="ml-1 size-3" />
 					</Button>
 				</div>
