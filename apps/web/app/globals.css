@@ -405,3 +405,32 @@ footer { border-top: 1px solid var(--border); padding: 40px 0 30px; }
   color: var(--muted-2);
 }
 @media (min-width: 700px) { .footer-bottom { flex-direction: row; justify-content: space-between; align-items: center; } }
+
+
+/* ---------- Puente: tokens shadcn → tus tokens ---------- */
+:root,
+:root[data-theme="dark"],
+:root[data-theme="light"] {
+  --background: var(--bg);
+  --foreground: var(--fg);
+
+  --card: var(--surface);
+  --card-foreground: var(--fg);
+  --popover: var(--surface);
+  --popover-foreground: var(--fg);
+
+  --primary: var(--lime);
+  --primary-foreground: var(--on-lime);
+
+  --secondary: var(--surface-2);
+  --secondary-foreground: var(--fg);
+
+  --muted-foreground: var(--muted);
+  --accent: var(--surface-2);
+  --accent-foreground: var(--fg);
+
+  --destructive: var(--danger);
+
+  --input: var(--border);
+  --ring: var(--lime);
+}
