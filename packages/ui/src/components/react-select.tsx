@@ -1,4 +1,5 @@
 import { cn } from "@perkify/ui/lib/utils";
+import { useId } from "react";
 import type { Ref } from "react";
 import Select from "react-select";
 import type { ClassNamesConfig, GroupBase, Props, SelectInstance } from "react-select";
@@ -46,12 +47,22 @@ export function ReactSelect<
   Option,
   IsMulti extends boolean = false,
   Group extends GroupBase<Option> = GroupBase<Option>,
->({ classNames, ref, ...props }: ReactSelectProps<Option, IsMulti, Group>) {
+>({
+  classNames,
+  ref,
+  instanceId,
+  ...props
+}: ReactSelectProps<Option, IsMulti, Group>) {
+  
+  const generatedId = useId();
+
   return (
     <div className="notranslate" translate="no">
       <Select<Option, IsMulti, Group>
+        instanceId={instanceId ?? generatedId}
         classNames={{
-        ...(selectClassNames as unknown as ClassNamesConfig<Option, IsMulti, Group>),          ...classNames,
+          ...(selectClassNames as unknown as ClassNamesConfig<Option, IsMulti, Group>),
+          ...classNames,
         }}
         ref={ref}
         unstyled
