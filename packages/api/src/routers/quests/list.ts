@@ -1,14 +1,14 @@
 import { quest } from "@perkify/db/schema/quests";
+import { ORPCError } from "@orpc/server";
 import { and, asc, count, eq, ilike, isNull } from "drizzle-orm";
 import { z } from "zod";
 
-import { protectedProcedure } from "../../index";
+import { publicProcedure } from "../../index";
 
-export const list = protectedProcedure
+export const list = publicProcedure
   .route({ method: "GET", path: "/" })
   .input(
     z.object({
-      includeArchived: z.boolean().default(false),
       mine: z.boolean().default(false),
       search: z.string().trim().optional(),
       category: z.string().trim().max(60).optional(),
@@ -19,18 +19,21 @@ export const list = protectedProcedure
     })
   )
   .handler(async ({ input, context }) => {
-    const {
-      includeArchived, mine, search, category, tokenId, isBoosted, page, limit,
-    } = input;
+    const { mine, search, category, tokenId, isBoosted, page, limit } = input;
+
+    const userId = context.session?.user?.id;
+    if (mine && !userId) {
+      throw new ORPCError("UNAUTHORIZED");
+    }
 
     const where = and(
-      includeArchived ? undefined : isNull(quest.archived),
+      isNull(quest.archived),
       search ? ilike(quest.title, `%${search}%`) : undefined,
       category ? ilike(quest.category, `%${category}%`) : undefined,
       tokenId ? eq(quest.tokenId, tokenId) : undefined,
       isBoosted ? eq(quest.isBoosted, true) : undefined,
       // El creador sale de la sesión, nunca del input
-      mine ? eq(quest.creatorId, context.session.user.id) : undefined
+      mine && userId ? eq(quest.creatorId, userId) : undefined
     );
 
     const [items, countRows] = await Promise.all([
