@@ -1,26 +1,19 @@
-// 1. Enums y tipos base (sin dependencias)
+// 1. Enums y tipos base
 export * from "./enums";
+export * from "./quest.enums";
 
-// 2. Tablas base e independientes (auth define a "user", base de casi todo)
+// 2. Tablas base
 export * from "./auth";
 export * from "./tokens";
 export * from "./siwe_nonces";
 
-// 3. Tablas dependientes principales (quests depende de auth y tokens)
+// 3. Quests (depende de auth y tokens)
 export * from "./quests";
 
-// 1. Enums y tipos base (sin dependencias)
-export * from "./enums";
-
-// 2. Tablas base e independientes (auth define a "user", base de casi todo)
-export * from "./auth";
-export * from "./tokens";
-export * from "./siwe_nonces";
-
-// 3. Tablas dependientes principales (quests depende de auth y tokens)
-export * from "./quests";
-
-// 4. Tablas secundarias y cruzadas (evidence, disputes, transactions)
+// 4. Proceso (depende de quests y auth)
+export * from "./participations";
 export * from "./evidence";
+
+// 5. Cruzadas
 export * from "./disputes";
 export * from "./transactions";

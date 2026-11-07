@@ -14,6 +14,10 @@ export const createQuestSchema = z.object({
   validationChecklist: z.array(z.string().trim().min(1).max(200)).max(20).optional(),
   deadline: z.string().datetime({ offset: true }),
   milestones: z.array(z.string().trim().min(1).max(300)).max(20).optional(),
+  maxParticipants: z.number().int().min(0).max(100).default(3),
+  submitWindowHours: z.number().int().min(1).max(720).default(72),
+  reviewWindowHours: z.number().int().min(1).max(168).default(72),
+  maxAttempts: z.number().int().min(1).max(5).default(3),
 });
 
 export const updateQuestSchema = z.object({
