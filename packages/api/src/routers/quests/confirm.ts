@@ -1,7 +1,8 @@
 import { ORPCError } from "@orpc/server";
 import { getQuestEscrowAddress, questEscrowAbi, questEscrowAddresses, type SupportedChainId } from "@perkify/contracts";
 import { user, walletAddress } from "@perkify/db/schema/auth";
-import { confirmQuestSchema, quest, questIdSchema } from "@perkify/db/schema/quests";
+import { quest } from "@perkify/db/schema/quests";
+import { confirmQuestSchema, questIdSchema } from "@perkify/db/validations/quest";
 import { tokens } from "@perkify/db/schema/tokens";
 import { and, eq } from "drizzle-orm";
 import { getAddress, parseEventLogs, parseUnits } from "viem";

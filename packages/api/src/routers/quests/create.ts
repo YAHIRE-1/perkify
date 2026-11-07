@@ -1,8 +1,9 @@
-import { createQuestSchema, quest, questMilestones } from "@perkify/db/schema/quests";
+import { quest, questMilestones } from "@perkify/db/schema/quests";
 import { tokens } from "@perkify/db/schema/tokens";
 import { eq } from "drizzle-orm";
 import { parseUnits } from "viem";
 import { getQuestEscrowAddress } from "@perkify/contracts";
+import { createQuestSchema } from "@perkify/db/validations/quest";
 
 import { protectedProcedure } from "../../index";
 

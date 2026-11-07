@@ -1,20 +1,11 @@
 import {
-  pgTable, pgEnum, uuid, text, numeric, timestamp, boolean, integer, index, uniqueIndex,
+  pgTable, uuid, text, numeric, timestamp, boolean, integer, index, uniqueIndex,
 } from "drizzle-orm/pg-core";
-import { defineRelationsPart } from "drizzle-orm";
-import { z } from "zod";
 import { user } from "./auth";
 import { tokens } from "./tokens";
 import { createdAt, updatedAt } from "./helpers";
+import { questStatusEnum, escrowStatusEnum } from "./quest.enums";
 
-export const questStatusEnum = pgEnum("quest_status", [
-  "DRAFT", "FUNDED", "CLAIMED", "SUBMITTED", "COMPLETED", "CANCELLED", "EXPIRED",
-  "APPROVED", "DISPUTED",
-]);
-
-export const escrowStatusEnum = pgEnum("escrow_status", [
-  "NONE", "PENDING", "LOCKED", "RELEASED", "REFUNDED",
-]);
 
 export const quest = pgTable("quests", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -62,43 +53,7 @@ export const questMilestones = pgTable("quest_milestones", {
   createdAt: createdAt(),
 }, (t) => [index("idx_milestone_quest").on(t.questId, t.position)]);
 
-// ---- Relaciones (parte) ----
-export const questRelations = defineRelationsPart(
-  { quest, questMilestones, user, tokens },
-  (r) => ({
-    quest: {
-      creator: r.one.user({
-        from: r.quest.creatorId,
-        to: r.user.id,
-        alias: "creator",
-      }),
-      hunter: r.one.user({
-        from: r.quest.hunterId,
-        to: r.user.id,
-        alias: "hunter",
-        optional: true,
-      }),
-      token: r.one.tokens({
-        from: r.quest.tokenId,
-        to: r.tokens.id,
-      }),
-      milestones: r.many.questMilestones({
-        from: r.quest.id,
-        to: r.questMilestones.questId,
-      }),
-    },
-    questMilestones: {
-      quest: r.one.quest({
-        from: r.questMilestones.questId,
-        to: r.quest.id,
-      }),
-    },
-  }),
-);
-
 // ---- Tipos ----
-export type QuestStatus = (typeof questStatusEnum.enumValues)[number];
-export type EscrowStatus = (typeof escrowStatusEnum.enumValues)[number];
 export type QuestRow = typeof quest.$inferSelect;
 export type NewQuest = typeof quest.$inferInsert;
 export type MilestoneRow = typeof questMilestones.$inferSelect;
@@ -118,46 +73,3 @@ export type CreateQuestInput = Pick<
   "title" | "description" | "category" | "criteria" | "rewardAmount" | "tokenId" | "isBoosted" | "validationChecklist"
 > & { deadline: string; milestones?: string[] };
 export type UpdateQuestInput = Partial<CreateQuestInput>;
-
-// ---- Validación (Zod) ----
-// Solo contrato con la API / protección de la BD.
-// Las reglas de UX (mínimos, mensajes, "deadline futuro", etc.) viven en el formulario del cliente.
-const questStatusSchema = z.enum(questStatusEnum.enumValues);
-
-export const createQuestSchema = z.object({
-  title: z.string().trim().max(120),
-  description: z.string().trim().max(10_000),
-  category: z.string().trim().max(60).nullish(),
-  criteria: z.string().trim().max(5_000).nullish(),
-  rewardAmount: z.string().regex(/^\d{1,18}(\.\d{1,18})?$/),
-  tokenId: z.string().uuid(),
-  isBoosted: z.boolean().optional(),
-  validationChecklist: z.array(z.string().trim().min(1).max(200)).max(20).optional(),
-  deadline: z.string().datetime({ offset: true }),
-  milestones: z.array(z.string().trim().min(1).max(300)).max(20).optional(),
-});
-
-export const updateQuestSchema = z.object({
-  id: z.string().uuid(),
-  data: createQuestSchema.partial(),
-});
-
-export const questIdSchema = z.object({ id: z.string().uuid() });
-
-export const confirmQuestSchema = z.object({
-  chainId: z.number().int().positive(),
-  txHash: z.string().regex(/^0x[a-fA-F0-9]{64}$/),
-});
-
-export const listQuestsSchema = z.object({
-  status: questStatusSchema.exclude(["DRAFT"]).optional(),
-  chainId: z.number().int().positive().optional(),
-  tokenId: z.string().uuid().optional(),
-  category: z.string().trim().max(60).optional(),
-  limit: z.number().int().min(1).max(50).default(20),
-  cursor: z.string().max(200).optional(),
-});
-
-export const mineQuestsSchema = listQuestsSchema
-  .pick({ limit: true, cursor: true })
-  .extend({ status: questStatusSchema.optional() });
