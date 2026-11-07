@@ -3,23 +3,37 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-"scripts": {
+  "scripts": {
     "dev": "turbo run dev",
     "start": "pnpm --filter server start",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "db:up": "docker compose up -d",
-    "db:delete": "docker compose down -v",
-    "db:down": "docker compose down",
-    "db:logs": "docker compose logs -f postgres",
+    "typecheck": "turbo run typecheck",
+
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "infra:ps": "docker compose ps",
+
+    "db:up": "docker compose up -d db",
+    "db:down": "docker compose stop db",
+    "db:delete": "docker compose rm -sfv db && docker volume rm perkify-full_perkify_pgdata",
+    "db:logs": "docker compose logs -f db",
     "db:generate": "pnpm --filter @perkify/db db:generate",
     "db:push": "pnpm --filter @perkify/db db:push",
     "db:migrate": "pnpm --filter @perkify/db db:migrate",
     "db:seed": "turbo run db:seed --filter=@perkify/db",
     "db:studio": "pnpm --filter @perkify/db db:studio",
+
+    "storage:up": "docker compose up -d s3",
+    "storage:down": "docker compose stop s3",
+    "storage:delete": "docker compose rm -sfv s3 && docker volume rm perkify-full_perkify_s3",
+    "storage:logs": "docker compose logs -f s3",
+    "storage:bucket": "pnpm --filter @perkify/api exec node --experimental-strip-types scripts/create-bucket.ts",
+    "storage:test": "pnpm --filter @perkify/api exec node --experimental-strip-types scripts/test-presign.ts",
+    "storage:console": "start http://localhost:9001",
+
     "env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./packages/db/ && varlock codegen --path ./packages/auth/ && varlock codegen --path ./packages/contracts/",
-    "typecheck": "turbo run typecheck",
 
     "contracts:build": "pnpm --filter @perkify/contracts build",
     "contracts:abi": "pnpm --filter @perkify/contracts build:abi",

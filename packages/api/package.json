@@ -10,18 +10,20 @@
     "check-types": "tsc -b"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1163.0",
+    "@aws-sdk/s3-request-presigner": "^3.1163.0",
     "@orpc/client": "catalog:",
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/zod": "catalog:",
     "@perkify/auth": "workspace:*",
-    "@perkify/db": "workspace:*",
     "@perkify/contracts": "workspace:*",
-    "zod": "catalog:",
+    "@perkify/db": "workspace:*",
+    "@perkify/shared": "workspace:*",
     "drizzle-orm": "catalog:",
     "varlock": "catalog:",
     "viem": "catalog:",
-    "@perkify/shared": "workspace:*"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@perkify/config": "workspace:*",

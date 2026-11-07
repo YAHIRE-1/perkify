@@ -8,9 +8,28 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: perkify
     ports:
-      - "5439:5432"
+      - "5433:5432"
     volumes:
       - perkify_pgdata:/var/lib/postgresql/data
 
+  s3:
+    image: rustfs/rustfs:latest
+    container_name: perkify-s3
+    restart: always
+    environment:
+      RUSTFS_ACCESS_KEY: minio
+      RUSTFS_SECRET_KEY: minio12345
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_CORS_ALLOWED_ORIGINS: "http://localhost:3001"
+    ports:
+      - "9000:9000" # API S3
+      - "9001:9001" # consola
+    volumes:
+      - perkify_s3:/data
+
 volumes:
   perkify_pgdata:
+  perkify_s3:
+  
