@@ -39,8 +39,8 @@ export function NavMain() {
               aria-current={active ? 'page' : undefined}
               className={cn(
                 'flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-sm transition-colors',
-                'hover:bg-[var(--sidebar-accent)] [&_svg]:size-4 [&_svg]:shrink-0',
-                active && 'bg-[var(--sidebar-accent)] font-medium'
+                'hover:bg-sidebar-accent [&_svg]:size-4 [&_svg]:shrink-0',
+                active && 'bg-sidebar-accent font-medium'
               )}
               style={{ color: active ? 'var(--accent-text)' : 'var(--muted)' }}
             >

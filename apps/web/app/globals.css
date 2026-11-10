@@ -433,4 +433,14 @@ footer { border-top: 1px solid var(--border); padding: 40px 0 30px; }
 
   --input: var(--border);
   --ring: var(--lime);
+
+    --sidebar: var(--surface);
+  --sidebar-foreground: var(--fg);
+  --sidebar-accent: var(--surface-2);
+  --sidebar-accent-foreground: var(--accent-text);
+  --sidebar-border: var(--border);
+  --sidebar-primary: var(--lime);
+  --sidebar-primary-foreground: var(--on-lime);
+  --sidebar-ring: var(--lime);
+
 }
