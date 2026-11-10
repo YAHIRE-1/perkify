@@ -1,14 +1,14 @@
+import { ORPCError } from "@orpc/server";
+import { getQuestEscrowAddress } from "@perkify/contracts";
 import { quest, questMilestones } from "@perkify/db/schema/quests";
 import { tokens } from "@perkify/db/schema/tokens";
+import { createQuestSchema } from "@perkify/db/validations/quest";
 import { eq } from "drizzle-orm";
 import { parseUnits } from "viem";
-import { getQuestEscrowAddress } from "@perkify/contracts";
-import { createQuestSchema } from "@perkify/db/validations/quest";
 
 import { protectedProcedure } from "../../index";
+import { escrowTimes } from "../../lib/escrow-params";
 
-const REVIEW_WINDOW_S = 3 * 24 * 3600; // plazo del creador para responder un claim
-const REFUND_GRACE_S = 7 * 24 * 3600; // margen tras el deadline antes del refund
 const MIN_LEAD_MS = 60 * 60 * 1000; // deadline al menos 1h en el futuro
 
 export const create = protectedProcedure
@@ -20,59 +20,53 @@ export const create = protectedProcedure
 
     const deadlineDate = new Date(deadline);
     if (deadlineDate.getTime() < Date.now() + MIN_LEAD_MS) {
-      throw new Error("Deadline demasiado cercano");
+      throw new ORPCError("BAD_REQUEST", { message: "Deadline demasiado cercano" });
     }
 
-    const [token] = await context.db
-      .select()
-      .from(tokens)
-      .where(eq(tokens.id, rest.tokenId));
-    if (!token) throw new Error("Token no aceptado");
+    const [token] = await context.db.select().from(tokens).where(eq(tokens.id, rest.tokenId));
+    if (!token) throw new ORPCError("BAD_REQUEST", { message: "Token no aceptado" });
 
-    // Todo lo que puede fallar, ANTES de escribir en la DB
     const escrowAddress = getQuestEscrowAddress(token.chainId);
 
     const fraction = rest.rewardAmount.split(".")[1] ?? "";
     if (fraction.length > token.decimals) {
-      throw new Error(`Máximo ${token.decimals} decimales para ${token.symbol}`);
+      throw new ORPCError("BAD_REQUEST", {
+        message: `Máximo ${token.decimals} decimales para ${token.symbol}`,
+      });
     }
 
     let reward: bigint;
     try {
       reward = parseUnits(rest.rewardAmount, token.decimals);
     } catch {
-      throw new Error("Monto inválido");
+      throw new ORPCError("BAD_REQUEST", { message: "Monto inválido" });
     }
-    if (reward <= 0n) throw new Error("El monto debe ser mayor a 0");
+    if (reward <= 0n) throw new ORPCError("BAD_REQUEST", { message: "El monto debe ser mayor a 0" });
 
     const created = await context.db.transaction(async (tx) => {
       const [q] = await tx
         .insert(quest)
         .values({
-          ...rest,
+          ...rest, // incluye maxParticipants, submitWindowHours, reviewWindowHours, maxAttempts
           deadline: deadlineDate,
-          chainId: token.chainId, // confirm usa este valor, no el del cliente
+          chainId: token.chainId,
           creatorId: userId,
           modifiedBy: userId,
           status: "DRAFT",
           escrowStatus: "NONE",
         })
         .returning();
-
-      if (!q) throw new Error("No se pudo crear la quest");
+      if (!q) throw new ORPCError("INTERNAL_SERVER_ERROR", { message: "No se pudo crear la quest" });
 
       if (milestones.length) {
         await tx.insert(questMilestones).values(
-          milestones.map((description, position) => ({
-            questId: q.id,
-            description,
-            position,
-          }))
+          milestones.map((description, position) => ({ questId: q.id, description, position })),
         );
       }
-
       return q;
     });
+
+    const { refundGrace, reviewWindow } = escrowTimes(created.reviewWindowHours);
 
     return {
       quest: created,
@@ -83,9 +77,9 @@ export const create = protectedProcedure
           token: token.address,
           reward: reward.toString(),
           deadline: Math.floor(deadlineDate.getTime() / 1000),
-          refundGrace: REFUND_GRACE_S,
-          reviewWindow: REVIEW_WINDOW_S,
-          uri: created.id, // vincula la quest on-chain con esta fila
+          refundGrace,
+          reviewWindow,
+          uri: created.id,
         },
       },
     };

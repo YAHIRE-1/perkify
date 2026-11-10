@@ -1,16 +1,19 @@
 import { ORPCError } from "@orpc/server";
-import { getQuestEscrowAddress, questEscrowAbi, questEscrowAddresses, type SupportedChainId } from "@perkify/contracts";
+import {
+  getQuestEscrowAddress,
+  questEscrowAbi,
+  questEscrowAddresses,
+  type SupportedChainId,
+} from "@perkify/contracts";
 import { user, walletAddress } from "@perkify/db/schema/auth";
 import { quest } from "@perkify/db/schema/quests";
-import { confirmQuestSchema, questIdSchema } from "@perkify/db/validations/quest";
 import { tokens } from "@perkify/db/schema/tokens";
+import { confirmQuestSchema, questIdSchema } from "@perkify/db/validations/quest";
 import { and, eq } from "drizzle-orm";
 import { getAddress, parseEventLogs, parseUnits } from "viem";
 
 import { protectedProcedure } from "../../index";
-
-const REVIEW_WINDOW_S = 3 * 24 * 3600; // mismos valores que create.ts
-const REFUND_GRACE_S = 7 * 24 * 3600;
+import { escrowTimes } from "../../lib/escrow-params";
 
 const isSupportedChain = (id: number): id is SupportedChainId => id in questEscrowAddresses;
 
@@ -25,17 +28,17 @@ export const confirm = protectedProcedure
       .select()
       .from(quest)
       .where(and(eq(quest.id, input.id), eq(quest.creatorId, userId)));
-    if (!q) throw new Error("Quest no encontrada");
+    if (!q) throw new ORPCError("NOT_FOUND", { message: "Quest no encontrada" });
     if (q.status !== "DRAFT") return q; // idempotente
 
     // 2. Chain guardada por create, no la que mande el cliente
     if (q.chainId === null || !isSupportedChain(q.chainId)) {
-      throw new Error("Chain no soportada");
+      throw new ORPCError("BAD_REQUEST", { message: "Chain no soportada" });
     }
     const escrow = getAddress(getQuestEscrowAddress(q.chainId));
 
     const [token] = await context.db.select().from(tokens).where(eq(tokens.id, q.tokenId));
-    if (!token) throw new Error("Token no encontrado");
+    if (!token) throw new ORPCError("NOT_FOUND", { message: "Token no encontrado" });
 
     // 3. Wallets del usuario: la tabla del plugin SIWE es la fuente confiable;
     //    user.walletAddress (sincronizada por un hook) queda como respaldo.
@@ -67,9 +70,14 @@ export const confirm = protectedProcedure
     try {
       receipt = await client.getTransactionReceipt({ hash: input.txHash as `0x${string}` });
     } catch {
-      throw new Error("Transacción no encontrada todavía, reintenta en unos segundos");
+      // CONFLICT para que el cliente pueda reintentar automáticamente
+      throw new ORPCError("CONFLICT", {
+        message: "Transacción no encontrada todavía, reintenta en unos segundos",
+      });
     }
-    if (receipt.status !== "success") throw new Error("La transacción falló");
+    if (receipt.status !== "success") {
+      throw new ORPCError("BAD_REQUEST", { message: "La transacción falló" });
+    }
 
     const events = parseEventLogs({
       abi: questEscrowAbi,
@@ -80,6 +88,7 @@ export const confirm = protectedProcedure
     // 5. Buscar el evento que corresponde a ESTA quest (uri === quest.id)
     const expectedReward = parseUnits(q.rewardAmount, token.decimals);
     const expectedDeadline = BigInt(Math.floor(q.deadline.getTime() / 1000));
+    const expectedTimes = escrowTimes(q.reviewWindowHours); // mismo cálculo que create
     let onchainId: bigint | null = null;
 
     for (const ev of events) {
@@ -92,19 +101,30 @@ export const confirm = protectedProcedure
         });
 
       if (uri !== q.id) continue;
-      if (getAddress(tok) !== getAddress(token.address)) throw new Error("Token no coincide");
-      if (reward !== expectedReward) throw new Error("Monto no coincide");
-      if (deadline !== expectedDeadline) throw new Error("Deadline no coincide");
-      if (refundGrace !== BigInt(REFUND_GRACE_S) || reviewWindow !== BigInt(REVIEW_WINDOW_S)) {
-        throw new Error("Parámetros de escrow inválidos");
+      if (getAddress(tok) !== getAddress(token.address)) {
+        throw new ORPCError("BAD_REQUEST", { message: "Token no coincide" });
+      }
+      if (reward !== expectedReward) {
+        throw new ORPCError("BAD_REQUEST", { message: "Monto no coincide" });
+      }
+      if (deadline !== expectedDeadline) {
+        throw new ORPCError("BAD_REQUEST", { message: "Deadline no coincide" });
+      }
+      if (
+        refundGrace !== BigInt(expectedTimes.refundGrace) ||
+        reviewWindow !== BigInt(expectedTimes.reviewWindow)
+      ) {
+        throw new ORPCError("BAD_REQUEST", { message: "Parámetros de escrow inválidos" });
       }
       if (!ownerAddresses.has(creator.toLowerCase())) {
-        throw new Error("La quest fue creada por otra wallet");
+        throw new ORPCError("FORBIDDEN", { message: "La quest fue creada por otra wallet" });
       }
       onchainId = ev.args.id;
       break;
     }
-    if (onchainId === null) throw new Error("Quest no encontrada en la transacción");
+    if (onchainId === null) {
+      throw new ORPCError("NOT_FOUND", { message: "Quest no encontrada en la transacción" });
+    }
 
     // 6. Pasar a FUNDED (el where evita doble confirmación)
     const [updated] = await context.db
@@ -123,7 +143,7 @@ export const confirm = protectedProcedure
     if (!updated) {
       // otra request la confirmó primero
       const [current] = await context.db.select().from(quest).where(eq(quest.id, q.id));
-      if (!current) throw new Error("Quest no encontrada");
+      if (!current) throw new ORPCError("NOT_FOUND", { message: "Quest no encontrada" });
       return current;
     }
     return updated;

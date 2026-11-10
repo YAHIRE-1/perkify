@@ -1,42 +1,52 @@
+import { ORPCError } from "@orpc/server";
+import { questParticipation } from "@perkify/db/schema/participations";
 import { quest } from "@perkify/db/schema/quests";
 import { tokens } from "@perkify/db/schema/tokens";
-import { ORPCError } from "@orpc/server";
-import { and, asc, count, eq, ilike, isNull, ne } from "drizzle-orm";
+import { and, asc, count, eq, gt, ilike, isNull, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { publicProcedure } from "../../index";
+import { occupiesSlot } from "../../lib/participations";
+
+const escapeLike = (s: string) => s.replace(/[\\%_]/g, "\\$&");
 
 export const list = publicProcedure
   .route({ method: "GET", path: "/" })
   .input(
     z.object({
       mine: z.boolean().default(false),
-      search: z.string().trim().optional(),
+      // true = solo quests abiertas a participantes (FUNDED y antes del deadline)
+      open: z.boolean().default(false),
+      search: z.string().trim().max(100).optional(),
       category: z.string().trim().max(60).optional(),
       tokenId: z.string().uuid().optional(),
       isBoosted: z.boolean().optional(),
       page: z.number().int().min(1).default(1),
       limit: z.number().int().min(1).max(50).default(9),
-    })
+    }),
   )
   .handler(async ({ input, context }) => {
-    const { mine, search, category, tokenId, isBoosted, page, limit } = input;
+    const { mine, open, search, category, tokenId, isBoosted, page, limit } = input;
 
     const userId = context.session?.user?.id;
     if (mine && !userId) {
       throw new ORPCError("UNAUTHORIZED");
     }
 
+    const now = new Date();
+
     const where = and(
       isNull(quest.archived),
-      // Drafts are never public; the creator still sees their own with `mine`
+      // Los borradores nunca son públicos; el creador ve los suyos con `mine`
       mine ? undefined : ne(quest.status, "DRAFT"),
-      search ? ilike(quest.title, `%${search}%`) : undefined,
-      category ? ilike(quest.category, `%${category}%`) : undefined,
+      open ? eq(quest.status, "FUNDED") : undefined,
+      open ? gt(quest.deadline, now) : undefined,
+      search ? ilike(quest.title, `%${escapeLike(search)}%`) : undefined,
+      category ? ilike(quest.category, `%${escapeLike(category)}%`) : undefined,
       tokenId ? eq(quest.tokenId, tokenId) : undefined,
       isBoosted ? eq(quest.isBoosted, true) : undefined,
-      // The creator comes from the session, never from the input
-      mine && userId ? eq(quest.creatorId, userId) : undefined
+      // El creador sale de la sesión, nunca del input
+      mine && userId ? eq(quest.creatorId, userId) : undefined,
     );
 
     const [rows, countRows] = await Promise.all([
@@ -50,7 +60,13 @@ export const list = publicProcedure
           isBoosted: quest.isBoosted,
           deadline: quest.deadline,
           rewardAmount: quest.rewardAmount,
-          creatorId: quest.creatorId, // only used to compute isOwner, not returned
+          maxParticipants: quest.maxParticipants,
+          taken: sql<number>`(
+            select count(*)::int from ${questParticipation}
+            where ${questParticipation.questId} = ${quest.id}
+              and ${occupiesSlot(now)}
+          )`,
+          creatorId: quest.creatorId, // solo para calcular isOwner, no se devuelve
           tokenSymbol: tokens.symbol,
         })
         .from(quest)
