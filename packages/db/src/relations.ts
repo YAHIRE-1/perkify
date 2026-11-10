@@ -57,6 +57,7 @@ const questRelations = defineRelationsPart(
         from: r.questParticipation.hunterId,
         to: r.user.id,
         alias: "hunter",
+        optional: false,
       }),
       submissions: r.many.questSubmission({
         from: r.questParticipation.id,
