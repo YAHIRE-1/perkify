@@ -1,4 +1,18 @@
-import {Category, Mission} from "@/types/landing_types";
+import type { ReactNode } from 'react';
+
+export type Category = {
+  name: string;
+  desc: string;
+  icon: ReactNode;
+};
+
+export type Mission = {
+  badge: string;
+  reward: string;
+  title: string;
+  hunters: string;
+  percent: number;
+};
 
 export const categories: Category[] = [
   {

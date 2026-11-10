@@ -1,8 +1,27 @@
+import type { ComponentProps } from 'react';
 import Link from 'next/link';
 import StatusBadge from './StatusBadge';
 
+type QuestCardQuest = {
+  id: string;
+  title: string;
+  description?: string | null;
+  category?: string | null;
+  status: ComponentProps<typeof StatusBadge>['status'];
+  rewardAmount?: string | number | null;
+  token?: { symbol?: string | null } | null;
+  deadline: string | number | Date;
+  isBoosted?: boolean;
+  isOwner?: boolean;
+};
+
+type QuestCardProps = {
+  quest: QuestCardQuest;
+  isOwner?: boolean;
+};
+
 // rewardAmount comes from numeric(36,18) → string like "0050.500000000000000000"
-function formatReward(value, maxDecimals = 4) {
+function formatReward(value: string | number | null | undefined, maxDecimals = 4) {
   const raw = String(value ?? '').trim();
   if (!/^\d*\.?\d*$/.test(raw) || raw === '' || raw === '.') {
     return { text: '0', full: '0' };
@@ -24,8 +43,9 @@ function formatReward(value, maxDecimals = 4) {
   return { text: shownDec ? `${grouped}.${shownDec}` : grouped, full };
 }
 
-export default function QuestCard({ quest: q }) {
-  const canEdit = q.isOwner && q.status === 'DRAFT';
+export default function QuestCard({ quest: q, isOwner }: QuestCardProps) {
+  const owner = isOwner ?? q.isOwner ?? false;
+  const canEdit = owner && q.status === 'DRAFT';
   const reward = formatReward(q.rewardAmount);
   const symbol = q.token?.symbol ?? '???';
 
