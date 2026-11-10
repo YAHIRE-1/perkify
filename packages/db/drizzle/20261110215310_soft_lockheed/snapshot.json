@@ -1,0 +1,2158 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "f057e231-df91-4e1f-ae8a-dcff0e8e335b",
+  "prevIds": [
+    "a4f3d6a9-77d0-47a0-9649-f4b1a6ae62b5"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "participation_status"
+      ],
+      "writes": [
+        "s|enum|public.participation_status",
+        "n|enum|public.participation_status",
+        "e|enum|public.participation_status",
+        "n|type|public.participation_status"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "submission_status"
+      ],
+      "writes": [
+        "s|enum|public.submission_status",
+        "n|enum|public.submission_status",
+        "e|enum|public.submission_status",
+        "n|type|public.submission_status"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "quest_participations"
+      ],
+      "writes": [
+        "s|tbl|public.quest_participations",
+        "n|tbl|public.quest_participations",
+        "e|tbl|public.quest_participations",
+        "n|rel|public.quest_participations",
+        "n|type|public.quest_participations",
+        "n|rel|public.quest_participations_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.participation_status"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "quest_evidence_files"
+      ],
+      "writes": [
+        "s|tbl|public.quest_evidence_files",
+        "n|tbl|public.quest_evidence_files",
+        "e|tbl|public.quest_evidence_files",
+        "n|rel|public.quest_evidence_files",
+        "n|type|public.quest_evidence_files",
+        "n|rel|public.quest_evidence_files_pkey",
+        "n|rel|public.quest_evidence_files_key_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "quest_submissions"
+      ],
+      "writes": [
+        "s|tbl|public.quest_submissions",
+        "n|tbl|public.quest_submissions",
+        "e|tbl|public.quest_submissions",
+        "n|rel|public.quest_submissions",
+        "n|type|public.quest_submissions",
+        "n|rel|public.quest_submissions_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.submission_status"
+      ]
+    },
+    {
+      "statementType": "drop_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "disputes"
+      ],
+      "writes": [
+        "s|fk|public.disputes.disputes_creator_id_user_id_fkey",
+        "n|fk|public.disputes.disputes_creator_id_user_id_fkey",
+        "e|fk|public.disputes.disputes_creator_id_user_id_fkey",
+        "n|con|public.disputes.disputes_creator_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public",
+        "e|col|public.disputes.creator_id"
+      ]
+    },
+    {
+      "statementType": "drop_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "quests"
+      ],
+      "writes": [
+        "s|fk|public.quests.quests_hunter_id_user_id_fkey",
+        "n|fk|public.quests.quests_hunter_id_user_id_fkey",
+        "e|fk|public.quests.quests_hunter_id_user_id_fkey",
+        "n|con|public.quests.quests_hunter_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public",
+        "e|col|public.quests.hunter_id"
+      ]
+    },
+    {
+      "statementType": "drop_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "evidence"
+      ],
+      "writes": [
+        "s|tbl|public.evidence",
+        "n|tbl|public.evidence",
+        "e|tbl|public.evidence",
+        "n|rel|public.evidence",
+        "n|type|public.evidence"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "disputes",
+        "unq_open_dispute"
+      ],
+      "writes": [
+        "s|idx|public.unq_open_dispute",
+        "n|idx|public.unq_open_dispute",
+        "e|idx|public.unq_open_dispute",
+        "n|rel|public.unq_open_dispute"
+      ],
+      "reads": [
+        "e|tbl|public.disputes",
+        "n|sch|public",
+        "e|col|public.disputes.quest_id"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quests",
+        "idx_quest_hunter"
+      ],
+      "writes": [
+        "s|idx|public.idx_quest_hunter",
+        "n|idx|public.idx_quest_hunter",
+        "e|idx|public.idx_quest_hunter",
+        "n|rel|public.idx_quest_hunter"
+      ],
+      "reads": [
+        "e|tbl|public.quests",
+        "n|sch|public",
+        "e|col|public.quests.hunter_id"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "max_participants"
+      ],
+      "writes": [
+        "s|col|public.quests.max_participants",
+        "n|col|public.quests.max_participants",
+        "e|col|public.quests.max_participants"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "submit_window_hours"
+      ],
+      "writes": [
+        "s|col|public.quests.submit_window_hours",
+        "n|col|public.quests.submit_window_hours",
+        "e|col|public.quests.submit_window_hours"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "review_window_hours"
+      ],
+      "writes": [
+        "s|col|public.quests.review_window_hours",
+        "n|col|public.quests.review_window_hours",
+        "e|col|public.quests.review_window_hours"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "max_attempts"
+      ],
+      "writes": [
+        "s|col|public.quests.max_attempts",
+        "n|col|public.quests.max_attempts",
+        "e|col|public.quests.max_attempts"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "disputes",
+        "participation_id"
+      ],
+      "writes": [
+        "s|col|public.disputes.participation_id",
+        "n|col|public.disputes.participation_id",
+        "e|col|public.disputes.participation_id"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "disputes",
+        "submission_id"
+      ],
+      "writes": [
+        "s|col|public.disputes.submission_id",
+        "n|col|public.disputes.submission_id",
+        "e|col|public.disputes.submission_id"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "disputes",
+        "opened_by"
+      ],
+      "writes": [
+        "s|col|public.disputes.opened_by",
+        "n|col|public.disputes.opened_by",
+        "e|col|public.disputes.opened_by"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "disputes",
+        "freeze_tx_hash"
+      ],
+      "writes": [
+        "s|col|public.disputes.freeze_tx_hash",
+        "n|col|public.disputes.freeze_tx_hash",
+        "e|col|public.disputes.freeze_tx_hash"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "disputes",
+        "resolve_tx_hash"
+      ],
+      "writes": [
+        "s|col|public.disputes.resolve_tx_hash",
+        "n|col|public.disputes.resolve_tx_hash",
+        "e|col|public.disputes.resolve_tx_hash"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "hunter_id"
+      ],
+      "writes": [
+        "s|col|public.quests.hunter_id",
+        "n|col|public.quests.hunter_id",
+        "e|col|public.quests.hunter_id"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "claimed_at"
+      ],
+      "writes": [
+        "s|col|public.quests.claimed_at",
+        "n|col|public.quests.claimed_at",
+        "e|col|public.quests.claimed_at"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "claim_deadline"
+      ],
+      "writes": [
+        "s|col|public.quests.claim_deadline",
+        "n|col|public.quests.claim_deadline",
+        "e|col|public.quests.claim_deadline"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "submitted_at"
+      ],
+      "writes": [
+        "s|col|public.quests.submitted_at",
+        "n|col|public.quests.submitted_at",
+        "e|col|public.quests.submitted_at"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "review_deadline"
+      ],
+      "writes": [
+        "s|col|public.quests.review_deadline",
+        "n|col|public.quests.review_deadline",
+        "e|col|public.quests.review_deadline"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "disputes",
+        "creator_id"
+      ],
+      "writes": [
+        "s|col|public.disputes.creator_id",
+        "n|col|public.disputes.creator_id",
+        "e|col|public.disputes.creator_id"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quest_participations",
+        "uq_participation_quest_hunter"
+      ],
+      "writes": [
+        "s|idx|public.uq_participation_quest_hunter",
+        "n|idx|public.uq_participation_quest_hunter",
+        "e|idx|public.uq_participation_quest_hunter",
+        "n|rel|public.uq_participation_quest_hunter"
+      ],
+      "reads": [
+        "n|tbl|public.quest_participations",
+        "n|sch|public",
+        "n|col|public.quest_participations.quest_id",
+        "n|col|public.quest_participations.hunter_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quest_participations",
+        "uq_one_winner_per_quest"
+      ],
+      "writes": [
+        "s|idx|public.uq_one_winner_per_quest",
+        "n|idx|public.uq_one_winner_per_quest",
+        "e|idx|public.uq_one_winner_per_quest",
+        "n|rel|public.uq_one_winner_per_quest"
+      ],
+      "reads": [
+        "n|tbl|public.quest_participations",
+        "n|sch|public",
+        "n|col|public.quest_participations.quest_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quest_participations",
+        "uq_participation_payout_tx"
+      ],
+      "writes": [
+        "s|idx|public.uq_participation_payout_tx",
+        "n|idx|public.uq_participation_payout_tx",
+        "e|idx|public.uq_participation_payout_tx",
+        "n|rel|public.uq_participation_payout_tx"
+      ],
+      "reads": [
+        "n|tbl|public.quest_participations",
+        "n|sch|public",
+        "n|col|public.quest_participations.payout_tx_hash"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quest_participations",
+        "idx_participation_hunter"
+      ],
+      "writes": [
+        "s|idx|public.idx_participation_hunter",
+        "n|idx|public.idx_participation_hunter",
+        "e|idx|public.idx_participation_hunter",
+        "n|rel|public.idx_participation_hunter"
+      ],
+      "reads": [
+        "n|tbl|public.quest_participations",
+        "n|sch|public",
+        "n|col|public.quest_participations.hunter_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quest_participations",
+        "idx_participation_quest_status"
+      ],
+      "writes": [
+        "s|idx|public.idx_participation_quest_status",
+        "n|idx|public.idx_participation_quest_status",
+        "e|idx|public.idx_participation_quest_status",
+        "n|rel|public.idx_participation_quest_status"
+      ],
+      "reads": [
+        "n|tbl|public.quest_participations",
+        "n|sch|public",
+        "n|col|public.quest_participations.quest_id",
+        "n|col|public.quest_participations.status"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quest_evidence_files",
+        "idx_evidence_file_submission"
+      ],
+      "writes": [
+        "s|idx|public.idx_evidence_file_submission",
+        "n|idx|public.idx_evidence_file_submission",
+        "e|idx|public.idx_evidence_file_submission",
+        "n|rel|public.idx_evidence_file_submission"
+      ],
+      "reads": [
+        "n|tbl|public.quest_evidence_files",
+        "n|sch|public",
+        "n|col|public.quest_evidence_files.submission_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quest_submissions",
+        "uq_one_pending_per_participation"
+      ],
+      "writes": [
+        "s|idx|public.uq_one_pending_per_participation",
+        "n|idx|public.uq_one_pending_per_participation",
+        "e|idx|public.uq_one_pending_per_participation",
+        "n|rel|public.uq_one_pending_per_participation"
+      ],
+      "reads": [
+        "n|tbl|public.quest_submissions",
+        "n|sch|public",
+        "n|col|public.quest_submissions.participation_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quest_submissions",
+        "idx_submission_participation"
+      ],
+      "writes": [
+        "s|idx|public.idx_submission_participation",
+        "n|idx|public.idx_submission_participation",
+        "e|idx|public.idx_submission_participation",
+        "n|rel|public.idx_submission_participation"
+      ],
+      "reads": [
+        "n|tbl|public.quest_submissions",
+        "n|sch|public",
+        "n|col|public.quest_submissions.participation_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "disputes",
+        "unq_open_dispute_per_participation"
+      ],
+      "writes": [
+        "s|idx|public.unq_open_dispute_per_participation",
+        "n|idx|public.unq_open_dispute_per_participation",
+        "e|idx|public.unq_open_dispute_per_participation",
+        "n|rel|public.unq_open_dispute_per_participation"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public",
+        "n|col|public.disputes.participation_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "disputes",
+        "unq_dispute_freeze_tx"
+      ],
+      "writes": [
+        "s|idx|public.unq_dispute_freeze_tx",
+        "n|idx|public.unq_dispute_freeze_tx",
+        "e|idx|public.unq_dispute_freeze_tx",
+        "n|rel|public.unq_dispute_freeze_tx"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public",
+        "n|col|public.disputes.freeze_tx_hash"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "disputes",
+        "unq_dispute_resolve_tx"
+      ],
+      "writes": [
+        "s|idx|public.unq_dispute_resolve_tx",
+        "n|idx|public.unq_dispute_resolve_tx",
+        "e|idx|public.unq_dispute_resolve_tx",
+        "n|rel|public.unq_dispute_resolve_tx"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public",
+        "n|col|public.disputes.resolve_tx_hash"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "disputes",
+        "idx_dispute_quest"
+      ],
+      "writes": [
+        "s|idx|public.idx_dispute_quest",
+        "n|idx|public.idx_dispute_quest",
+        "e|idx|public.idx_dispute_quest",
+        "n|rel|public.idx_dispute_quest"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public",
+        "n|col|public.disputes.quest_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "disputes",
+        "idx_dispute_submission"
+      ],
+      "writes": [
+        "s|idx|public.idx_dispute_submission",
+        "n|idx|public.idx_dispute_submission",
+        "e|idx|public.idx_dispute_submission",
+        "n|rel|public.idx_dispute_submission"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public",
+        "n|col|public.disputes.submission_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "quest_participations"
+      ],
+      "writes": [
+        "s|fk|public.quest_participations.quest_participations_quest_id_quests_id_fkey",
+        "n|fk|public.quest_participations.quest_participations_quest_id_quests_id_fkey",
+        "e|fk|public.quest_participations.quest_participations_quest_id_quests_id_fkey",
+        "n|con|public.quest_participations.quest_participations_quest_id_quests_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.quest_participations",
+        "n|sch|public",
+        "n|tbl|public.quests",
+        "n|sch|public",
+        "n|col|public.quest_participations.quest_id",
+        "n|col|public.quests.id",
+        "e|uniqueness|public.quests.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "quest_participations"
+      ],
+      "writes": [
+        "s|fk|public.quest_participations.quest_participations_hunter_id_user_id_fkey",
+        "n|fk|public.quest_participations.quest_participations_hunter_id_user_id_fkey",
+        "e|fk|public.quest_participations.quest_participations_hunter_id_user_id_fkey",
+        "n|con|public.quest_participations.quest_participations_hunter_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.quest_participations",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.quest_participations.hunter_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "quest_evidence_files"
+      ],
+      "writes": [
+        "s|fk|public.quest_evidence_files.quest_evidence_files_submission_id_quest_submissions_id_fkey",
+        "n|fk|public.quest_evidence_files.quest_evidence_files_submission_id_quest_submissions_id_fkey",
+        "e|fk|public.quest_evidence_files.quest_evidence_files_submission_id_quest_submissions_id_fkey",
+        "n|con|public.quest_evidence_files.quest_evidence_files_submission_id_quest_submissions_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.quest_evidence_files",
+        "n|sch|public",
+        "n|tbl|public.quest_submissions",
+        "n|sch|public",
+        "n|col|public.quest_evidence_files.submission_id",
+        "n|col|public.quest_submissions.id",
+        "e|uniqueness|public.quest_submissions.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "quest_submissions"
+      ],
+      "writes": [
+        "s|fk|public.quest_submissions.quest_submissions_participation_id_quest_participations_id_fkey",
+        "n|fk|public.quest_submissions.quest_submissions_participation_id_quest_participations_id_fkey",
+        "e|fk|public.quest_submissions.quest_submissions_participation_id_quest_participations_id_fkey",
+        "n|con|public.quest_submissions.quest_submissions_participation_id_quest_participations_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.quest_submissions",
+        "n|sch|public",
+        "n|tbl|public.quest_participations",
+        "n|sch|public",
+        "n|col|public.quest_submissions.participation_id",
+        "n|col|public.quest_participations.id",
+        "e|uniqueness|public.quest_participations.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "disputes"
+      ],
+      "writes": [
+        "s|fk|public.disputes.disputes_participation_id_quest_participations_id_fkey",
+        "n|fk|public.disputes.disputes_participation_id_quest_participations_id_fkey",
+        "e|fk|public.disputes.disputes_participation_id_quest_participations_id_fkey",
+        "n|con|public.disputes.disputes_participation_id_quest_participations_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public",
+        "n|tbl|public.quest_participations",
+        "n|sch|public",
+        "n|col|public.disputes.participation_id",
+        "n|col|public.quest_participations.id",
+        "e|uniqueness|public.quest_participations.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "disputes"
+      ],
+      "writes": [
+        "s|fk|public.disputes.disputes_submission_id_quest_submissions_id_fkey",
+        "n|fk|public.disputes.disputes_submission_id_quest_submissions_id_fkey",
+        "e|fk|public.disputes.disputes_submission_id_quest_submissions_id_fkey",
+        "n|con|public.disputes.disputes_submission_id_quest_submissions_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public",
+        "n|tbl|public.quest_submissions",
+        "n|sch|public",
+        "n|col|public.disputes.submission_id",
+        "n|col|public.quest_submissions.id",
+        "e|uniqueness|public.quest_submissions.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "disputes"
+      ],
+      "writes": [
+        "s|fk|public.disputes.disputes_opened_by_user_id_fkey",
+        "n|fk|public.disputes.disputes_opened_by_user_id_fkey",
+        "e|fk|public.disputes.disputes_opened_by_user_id_fkey",
+        "n|con|public.disputes.disputes_opened_by_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.disputes.opened_by",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "quest_participations",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "quest_evidence_files",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "quest_submissions",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "participation_status",
+        "values": [
+          "JOINED",
+          "SUBMITTED",
+          "APPROVED",
+          "PAID",
+          "REJECTED",
+          "LOST",
+          "ABANDONED"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "submission_status",
+        "values": [
+          "PENDING",
+          "APPROVED",
+          "REJECTED"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "max_participants",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "3",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "submit_window_hours",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "72",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "review_window_hours",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "72",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "max_attempts",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "3",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "quest_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "hunter_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "status",
+        "type": "participation_status",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'JOINED'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "attempts",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "1",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "wallet_address",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "joined_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "expires_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "approved_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "payout_tx_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "paid_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_evidence_files",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_evidence_files",
+        "name": "submission_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_evidence_files",
+        "name": "key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_evidence_files",
+        "name": "name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_evidence_files",
+        "name": "content_type",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_evidence_files",
+        "name": "size",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_evidence_files",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "participation_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "notes",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "links",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'[]'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "status",
+        "type": "submission_status",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'PENDING'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "rejection_reason",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "review_deadline",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "reviewed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "participation_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "submission_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "opened_by",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "freeze_tx_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "resolve_tx_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "uq_participation_quest_hunter",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "quest_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "hunter_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "uq_one_winner_per_quest",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "quest_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"status\" in ('APPROVED','PAID')",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "uq_participation_payout_tx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "payout_tx_hash",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "idx_participation_hunter",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "hunter_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "idx_participation_quest_status",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "quest_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "status",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_evidence_files",
+        "name": "idx_evidence_file_submission",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "submission_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "uq_one_pending_per_participation",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "participation_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"status\" = 'PENDING'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "idx_submission_participation",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "participation_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "unq_open_dispute_per_participation",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "participation_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"status\" = 'open'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "unq_dispute_freeze_tx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "freeze_tx_hash",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "unq_dispute_resolve_tx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "resolve_tx_hash",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "idx_dispute_quest",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "quest_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "idx_dispute_submission",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "submission_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "quest_participations_quest_id_quests_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "quest_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "quests",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "quest_participations_hunter_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "hunter_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_evidence_files",
+        "name": "quest_evidence_files_submission_id_quest_submissions_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "submission_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "quest_submissions",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "quest_submissions_participation_id_quest_participations_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "participation_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "quest_participations",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "disputes_participation_id_quest_participations_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "participation_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "quest_participations",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "disputes_submission_id_quest_submissions_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "submission_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "quest_submissions",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "disputes_opened_by_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "opened_by"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_participations",
+        "name": "quest_participations_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_evidence_files",
+        "name": "quest_evidence_files_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "quest_submissions_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_evidence_files",
+        "name": "quest_evidence_files_key_key",
+        "nameExplicit": false,
+        "columns": [
+          "key"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"evidence\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"quests\",\"hunter_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"quests\",\"claimed_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"quests\",\"claim_deadline\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"quests\",\"submitted_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"quests\",\"review_deadline\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"evidence\",\"id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"evidence\",\"dispute_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"evidence\",\"uploader_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"evidence\",\"content_url\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"evidence\",\"description\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"evidence\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"disputes\",\"creator_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"idx_quest_hunter\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"unq_open_dispute\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"quests\",\"quests_hunter_id_user_id_fkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"evidence\",\"evidence_uploader_id_user_id_fkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"disputes\",\"disputes_creator_id_user_id_fkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"evidence\",\"evidence_pkey\"]"
+    }
+  ]
+}

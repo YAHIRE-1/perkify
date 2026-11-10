@@ -10,11 +10,9 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
-
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down",
     "infra:ps": "docker compose ps",
-
     "db:up": "docker compose up -d db",
     "db:down": "docker compose stop db",
     "db:delete": "docker compose rm -sfv db && docker volume rm perkify-full_perkify_pgdata",
@@ -24,7 +22,6 @@
     "db:migrate": "pnpm --filter @perkify/db db:migrate",
     "db:seed": "turbo run db:seed --filter=@perkify/db",
     "db:studio": "pnpm --filter @perkify/db db:studio",
-
     "storage:up": "docker compose up -d s3",
     "storage:down": "docker compose stop s3",
     "storage:delete": "docker compose rm -sfv s3 && docker volume rm perkify-full_perkify_s3",
@@ -32,11 +29,10 @@
     "storage:bucket": "pnpm --filter @perkify/api exec node --experimental-strip-types scripts/create-bucket.ts",
     "storage:test": "pnpm --filter @perkify/api exec node --experimental-strip-types scripts/test-presign.ts",
     "storage:console": "start http://localhost:9001",
-
-    "env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./packages/api/ && varlock codegen --path ./packages/db/ && varlock codegen --path ./packages/auth/ && varlock codegen --path ./packages/contracts/",    "env:check": "varlock load --path ./apps/server/",
+    "env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./packages/api/ && varlock codegen --path ./packages/db/ && varlock codegen --path ./packages/auth/ && varlock codegen --path ./packages/contracts/",
+    "env:check": "varlock load --path ./apps/server/",
     "env:check:all": "varlock load --path ./apps/web/ && varlock load --path ./apps/server/ && varlock load --path ./packages/db/ && varlock load --path ./packages/auth/ && varlock load --path ./packages/contracts/",
     "predev": "pnpm env:check",
-
     "contracts:build": "pnpm --filter @perkify/contracts build",
     "contracts:abi": "pnpm --filter @perkify/contracts build:abi",
     "contracts:test": "pnpm --filter @perkify/contracts test",
@@ -58,6 +54,6 @@
   },
   "license": "ISC",
   "dependencies": {
-    "@varlock/nextjs-integration": "^1.2.5"
+    "@varlock/nextjs-integration": "^2.0.0"
   }
 }
