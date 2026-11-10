@@ -207,6 +207,17 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
   const p = quest.myParticipation;
   const evidence = useMyEvidence(quest.id, !!p);
 
+  // justo después de calcular `p`, `evidence`, etc.
+  console.log('[claim] QuestRoad render', {
+    questId: quest.id,
+    isOwner: quest.isOwner,
+    participationStatus: p?.status,
+    payoutTxHash: p?.payoutTxHash,
+    claimStep: claim.step,
+    claimPending: claim.isPending,
+    claimError: claim.error,
+  });
+
   if (quest.isOwner) return null; // el creador revisa desde su propio panel
 
   const now = new Date();
@@ -294,7 +305,10 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
         </p>
         <Button
           disabled={claim.isPending}
-          onClick={() => claim.mutate(quest.id)}
+          onClick={() => {
+            console.log('[claim] click en Claim reward', { questId: quest.id });
+            claim.mutate(quest.id);
+          }}
           variant="legacy-primary"
         >
           {claim.isPending ? <Loader2 className="animate-spin" /> : null}
