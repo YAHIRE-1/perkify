@@ -10,6 +10,8 @@ import { ORPCError } from "@orpc/client";
 import { client, orpc } from "@/utils/orpc";
 
 export type QuestDetail = AppRouterOutputs["quests"]["get"];
+export type QuestEvidence = AppRouterOutputs["quests"]["getEvidence"];
+
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const short = (a: string) => `${a.slice(0, 6)}…${a.slice(-4)}`;
@@ -172,4 +174,28 @@ export function useClaimReward() {
   });
 
   return { ...mutation, step };
+}
+
+/** Para el creador devuelve TODAS las participaciones con sus envíos. */
+export function useQuestSubmissions(questId: string, enabled: boolean) {
+  return useQuery({
+    ...orpc.quests.getEvidence.queryOptions({ input: { id: questId } }),
+    enabled,
+  });
+}
+
+export function useReviewSubmission() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (
+      input:
+        | { submissionId: string; decision: "APPROVE" }
+        | { submissionId: string; decision: "REJECT"; reason: string },
+    ) => client.quests.review(input),
+    onSuccess: async (_d, vars) => {
+      toast.success(vars.decision === "APPROVE" ? "Evidencia aprobada" : "Evidencia rechazada");
+      await qc.invalidateQueries({ queryKey: orpc.quests.key() });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 }

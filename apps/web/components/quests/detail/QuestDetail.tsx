@@ -11,6 +11,7 @@ import QuestMilestones from './QuestMilestones';
 import QuestRules from './QuestRules';
 import QuestReward from './QuestReward';
 import QuestEscrow from './QuestEscrow';
+import QuestReviewPanel from '../QuestReviewPanel';
 
 import { useGetQuest } from '@/hooks/quest/use-quest';
 import { authClient } from '@/lib/auth-client';
@@ -90,12 +91,18 @@ export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
 
           {/* Camino del participante: se oculta solo si eres el creador */}
           <div id={ROAD_ID} className="scroll-mt-6">
-            <QuestRoad quest={quest} />
+            {quest.isOwner ? (
+              !isDraft && (
+                <QuestReviewPanel questId={quest.id} maxAttempts={quest.maxAttempts} />
+              )
+            ) : (
+              <QuestRoad quest={quest} />
+            )}
           </div>
         </main>
 
         {/* SIDEBAR */}
-        <aside className="order-first min-w-0 space-y-4 lg:order-none lg:sticky lg:top-6 lg:self-start">
+        <aside className="order-first min-w-0 space-y-4 lg:order-0 lg:sticky lg:top-6 lg:self-start">
           <QuestReward
             rewardAmount={quest.rewardAmount}
             tokenSymbol={quest.token.symbol}

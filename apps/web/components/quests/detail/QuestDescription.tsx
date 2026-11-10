@@ -31,14 +31,14 @@ export default function QuestDescription({
   return (
     <div className="space-y-6">
       <Section title="About this quest">
-        <p className="muted whitespace-pre-wrap break-words leading-relaxed">
+        <p className="muted whitespace-pre-wrap wrap-break-word leading-relaxed">
           {description}
         </p>
       </Section>
 
       {criteria && (
         <Section title="Acceptance criteria">
-          <p className="muted whitespace-pre-wrap break-words text-sm leading-relaxed">
+          <p className="muted whitespace-pre-wrap wrap-break-word text-sm leading-relaxed">
             {criteria}
           </p>
         </Section>
@@ -59,7 +59,7 @@ export default function QuestDescription({
                   ✓
                 </span>
 
-                <span className="min-w-0 break-words">
+                <span className="min-w-0 wrap-break-word">
                   {item}
                 </span>
               </li>
