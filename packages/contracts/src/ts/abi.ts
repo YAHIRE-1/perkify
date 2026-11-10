@@ -7,9 +7,27 @@ export const questEscrowAbi = [
         "name": "_arbiter",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "_signer",
+        "type": "address",
+        "internalType": "address"
       }
     ],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "EMERGENCY_REFUND_DELAY",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint64",
+        "internalType": "uint64"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -28,9 +46,19 @@ export const questEscrowAbi = [
         "internalType": "uint256"
       },
       {
-        "name": "claimant",
+        "name": "winner",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "expiry",
+        "type": "uint64",
+        "internalType": "uint64"
+      },
+      {
+        "name": "sig",
+        "type": "bytes",
+        "internalType": "bytes"
       }
     ],
     "outputs": [],
@@ -51,37 +79,26 @@ export const questEscrowAbi = [
   },
   {
     "type": "function",
-    "name": "claims",
+    "name": "cancelQuest",
     "inputs": [
       {
-        "name": "",
+        "name": "id",
         "type": "uint256",
         "internalType": "uint256"
       },
       {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
-    "outputs": [
-      {
-        "name": "submittedAt",
+        "name": "expiry",
         "type": "uint64",
         "internalType": "uint64"
       },
       {
-        "name": "rejected",
-        "type": "bool",
-        "internalType": "bool"
-      },
-      {
-        "name": "exists",
-        "type": "bool",
-        "internalType": "bool"
+        "name": "sig",
+        "type": "bytes",
+        "internalType": "bytes"
       }
     ],
-    "stateMutability": "view"
+    "outputs": [],
+    "stateMutability": "nonpayable"
   },
   {
     "type": "function",
@@ -103,16 +120,6 @@ export const questEscrowAbi = [
         "internalType": "uint64"
       },
       {
-        "name": "refundGrace",
-        "type": "uint64",
-        "internalType": "uint64"
-      },
-      {
-        "name": "reviewWindow",
-        "type": "uint64",
-        "internalType": "uint64"
-      },
-      {
         "name": "uri",
         "type": "string",
         "internalType": "string"
@@ -129,7 +136,50 @@ export const questEscrowAbi = [
   },
   {
     "type": "function",
-    "name": "dispute",
+    "name": "eip712Domain",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "fields",
+        "type": "bytes1",
+        "internalType": "bytes1"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "version",
+        "type": "string",
+        "internalType": "string"
+      },
+      {
+        "name": "chainId",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "verifyingContract",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "salt",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      },
+      {
+        "name": "extensions",
+        "type": "uint256[]",
+        "internalType": "uint256[]"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "openDispute",
     "inputs": [
       {
         "name": "id",
@@ -198,16 +248,6 @@ export const questEscrowAbi = [
         "internalType": "uint64"
       },
       {
-        "name": "refundGrace",
-        "type": "uint64",
-        "internalType": "uint64"
-      },
-      {
-        "name": "reviewWindow",
-        "type": "uint64",
-        "internalType": "uint64"
-      },
-      {
         "name": "status",
         "type": "uint8",
         "internalType": "enum QuestEscrow.Status"
@@ -216,11 +256,6 @@ export const questEscrowAbi = [
         "name": "winner",
         "type": "address",
         "internalType": "address"
-      },
-      {
-        "name": "pendingClaims",
-        "type": "uint32",
-        "internalType": "uint32"
       },
       {
         "name": "uri",
@@ -238,24 +273,6 @@ export const questEscrowAbi = [
         "name": "id",
         "type": "uint256",
         "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
-    "name": "reject",
-    "inputs": [
-      {
-        "name": "id",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "claimant",
-        "type": "address",
-        "internalType": "address"
       }
     ],
     "outputs": [],
@@ -281,16 +298,29 @@ export const questEscrowAbi = [
   },
   {
     "type": "function",
-    "name": "submitClaim",
+    "name": "setSigner",
     "inputs": [
       {
-        "name": "id",
-        "type": "uint256",
-        "internalType": "uint256"
+        "name": "s",
+        "type": "address",
+        "internalType": "address"
       }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "signer",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -346,44 +376,6 @@ export const questEscrowAbi = [
   },
   {
     "type": "event",
-    "name": "ClaimRejected",
-    "inputs": [
-      {
-        "name": "id",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
-      },
-      {
-        "name": "claimant",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "ClaimSubmitted",
-    "inputs": [
-      {
-        "name": "id",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
-      },
-      {
-        "name": "claimant",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
     "name": "DisputeOpened",
     "inputs": [
       {
@@ -391,12 +383,6 @@ export const questEscrowAbi = [
         "type": "uint256",
         "indexed": true,
         "internalType": "uint256"
-      },
-      {
-        "name": "claimant",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
       }
     ],
     "anonymous": false
@@ -424,6 +410,12 @@ export const questEscrowAbi = [
         "internalType": "address"
       }
     ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "EIP712DomainChanged",
+    "inputs": [],
     "anonymous": false
   },
   {
@@ -478,6 +470,12 @@ export const questEscrowAbi = [
         "type": "uint64",
         "indexed": false,
         "internalType": "uint64"
+      },
+      {
+        "name": "uri",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
       }
     ],
     "anonymous": false
@@ -533,23 +531,68 @@ export const questEscrowAbi = [
     "anonymous": false
   },
   {
+    "type": "event",
+    "name": "SignerChanged",
+    "inputs": [
+      {
+        "name": "signer",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
     "type": "error",
-    "name": "AlreadyClaimed",
+    "name": "BadParams",
     "inputs": []
   },
   {
     "type": "error",
-    "name": "DeadlinePassed",
+    "name": "BadSignature",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ECDSAInvalidSignature",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ECDSAInvalidSignatureLength",
+    "inputs": [
+      {
+        "name": "length",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "ECDSAInvalidSignatureS",
+    "inputs": [
+      {
+        "name": "s",
+        "type": "bytes32",
+        "internalType": "bytes32"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "Expired",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "InvalidShortString",
     "inputs": []
   },
   {
     "type": "error",
     "name": "NotArbiter",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "NotClaimant",
     "inputs": []
   },
   {
@@ -560,11 +603,6 @@ export const questEscrowAbi = [
   {
     "type": "error",
     "name": "NotWinner",
-    "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "PendingClaims",
     "inputs": []
   },
   {
@@ -580,6 +618,17 @@ export const questEscrowAbi = [
         "name": "token",
         "type": "address",
         "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "StringTooLong",
+    "inputs": [
+      {
+        "name": "str",
+        "type": "string",
+        "internalType": "string"
       }
     ]
   },

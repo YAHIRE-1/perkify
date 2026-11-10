@@ -4,17 +4,17 @@ pragma solidity ^0.8.20;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
-/// Flujo:
-/// 1. El creador crea y fondea la quest en una sola tx (fondos bloqueados).
-/// 2. Cualquiera se postula (submitClaim) antes del deadline.
-/// 3. El creador aprueba a un postulante (approve) o lo rechaza (reject).
-/// 4. Si el creador no responde en reviewWindow, o rechaza, el postulante
-///    puede abrir una disputa (dispute).
-/// 5. La plataforma (arbiter) resuelve: paga al postulante o devuelve al creador.
-/// 6. El creador solo puede recuperar fondos (refund) si NO hay postulaciones
-///    pendientes ni disputas abiertas, y ya pasó deadline + gracia.
-contract QuestEscrow is ReentrancyGuard {
+/// El contrato solo custodia dinero. El proceso (participantes, evidencia, plazos)
+/// vive en la plataforma, que autoriza con firmas EIP-712 lo que mueve fondos:
+///  - approve:     el creador elige ganador, con firma del backend para ESE ganador
+///  - cancelQuest: el creador cancela, con firma del backend (sin participantes activos)
+///  - withdrawReward: el ganador cobra
+///  - refund:      salida de emergencia del creador, tras deadline + 30 días
+///  - openDispute / resolveDispute: solo el árbitro
+contract QuestEscrow is ReentrancyGuard, EIP712 {
     using SafeERC20 for IERC20;
 
     enum Status { Funded, Approved, Disputed, Paid, Refunded }
@@ -24,35 +24,32 @@ contract QuestEscrow is ReentrancyGuard {
         IERC20 token;
         uint256 reward;
         uint64 deadline;
-        uint64 refundGrace;   // margen tras el deadline antes de poder hacer refund
-        uint64 reviewWindow;  // tiempo que tiene el creador para responder a un claim
         Status status;
         address winner;
-        uint32 pendingClaims; // claims ni rechazados ni resueltos
-        string uri;
+        string uri; // id de la quest en la plataforma
     }
 
-    struct Claim {
-        uint64 submittedAt;
-        bool rejected;
-        bool exists;
-    }
+    uint64 public constant EMERGENCY_REFUND_DELAY = 30 days;
 
-    address public arbiter; // plataforma (idealmente un multisig)
+    bytes32 private constant APPROVAL_TYPEHASH =
+        keccak256("Approval(uint256 id,address creator,address winner,uint64 expiry)");
+    bytes32 private constant CANCEL_TYPEHASH =
+        keccak256("Cancel(uint256 id,address creator,uint64 expiry)");
+
+    address public arbiter;
     address public pendingArbiter;
+    address public signer; // llave del backend
 
     uint256 public questCount;
     mapping(uint256 => Quest) public quests;
-    mapping(uint256 => mapping(address => Claim)) public claims;
 
-    event QuestCreated(uint256 indexed id, address indexed creator, address token, uint256 reward, uint64 deadline);
-    event ClaimSubmitted(uint256 indexed id, address indexed claimant);
-    event ClaimRejected(uint256 indexed id, address indexed claimant);
+    event QuestCreated(uint256 indexed id, address indexed creator, address token, uint256 reward, uint64 deadline, string uri);
     event QuestApproved(uint256 indexed id, address indexed winner);
-    event DisputeOpened(uint256 indexed id, address indexed claimant);
-    event DisputeResolved(uint256 indexed id, address indexed arbiter, address indexed winner);
     event RewardPaid(uint256 indexed id, address indexed winner, uint256 amount);
     event QuestRefunded(uint256 indexed id, address indexed creator, uint256 amount);
+    event DisputeOpened(uint256 indexed id);
+    event DisputeResolved(uint256 indexed id, address indexed arbiter, address indexed winner);
+    event SignerChanged(address indexed signer);
     event ArbiterTransferStarted(address indexed newArbiter);
     event ArbiterChanged(address indexed newArbiter);
 
@@ -60,42 +57,32 @@ contract QuestEscrow is ReentrancyGuard {
     error NotArbiter();
     error NotWinner();
     error WrongStatus();
-    error DeadlinePassed();
-    error NotClaimant();
     error TooEarly();
-    error PendingClaims();
-    error AlreadyClaimed();
+    error BadParams();
+    error BadSignature();
+    error Expired();
 
     modifier onlyArbiter() {
-        _onlyArbiter();
+        if (msg.sender != arbiter) revert NotArbiter();
         _;
     }
 
-    function _onlyArbiter() internal view {
-        if (msg.sender != arbiter) revert NotArbiter();
-    }
-
-    constructor(address _arbiter) {
-        require(_arbiter != address(0), "arbiter=0");
+    constructor(address _arbiter, address _signer) EIP712("QuestEscrow", "1") {
+        if (_arbiter == address(0) || _signer == address(0)) revert BadParams();
         arbiter = _arbiter;
+        signer = _signer;
     }
 
     // ---------------------------------------------------------------
-    // Creación (con fondeo incluido)
+    // Creación (con fondeo incluido). Requiere approve previo del token.
     // ---------------------------------------------------------------
-
-    /// Requiere approve previo del token a este contrato.
     function createQuest(
         IERC20 token,
         uint256 reward,
         uint64 deadline,
-        uint64 refundGrace,
-        uint64 reviewWindow,
         string calldata uri
     ) external nonReentrant returns (uint256 id) {
-        require(reward > 0, "reward=0");
-        require(deadline > block.timestamp, "bad deadline");
-        require(msg.sender != arbiter, "creator=arbiter");
+        if (reward == 0 || deadline <= block.timestamp || msg.sender == arbiter) revert BadParams();
 
         id = ++questCount;
         quests[id] = Quest({
@@ -103,78 +90,87 @@ contract QuestEscrow is ReentrancyGuard {
             token: token,
             reward: reward,
             deadline: deadline,
-            refundGrace: refundGrace,
-            reviewWindow: reviewWindow,
             status: Status.Funded,
             winner: address(0),
-            pendingClaims: 0,
             uri: uri
         });
 
+        // Rechaza tokens con comisión por transferencia: el contrato debe recibir exactamente `reward`
+        uint256 before = token.balanceOf(address(this));
         token.safeTransferFrom(msg.sender, address(this), reward);
-        emit QuestCreated(id, msg.sender, address(token), reward, deadline);
+        if (token.balanceOf(address(this)) - before != reward) revert BadParams();
+
+        emit QuestCreated(id, msg.sender, address(token), reward, deadline, uri);
     }
 
     // ---------------------------------------------------------------
-    // Postulación y decisión del creador
+    // Aprobar: el creador, con la firma del backend para este ganador
     // ---------------------------------------------------------------
-
-    function submitClaim(uint256 id) external {
-        Quest storage q = quests[id];
-        if (q.status != Status.Funded) revert WrongStatus();
-        if (block.timestamp >= q.deadline) revert DeadlinePassed();
-        require(msg.sender != q.creator, "creator can't claim");
-        if (claims[id][msg.sender].exists) revert AlreadyClaimed();
-
-        claims[id][msg.sender] = Claim({submittedAt: uint64(block.timestamp), rejected: false, exists: true});
-        q.pendingClaims++;
-        emit ClaimSubmitted(id, msg.sender);
-    }
-
-    function approve(uint256 id, address claimant) external {
+    function approve(uint256 id, address winner, uint64 expiry, bytes calldata sig) external {
         Quest storage q = quests[id];
         if (msg.sender != q.creator) revert NotCreator();
         if (q.status != Status.Funded) revert WrongStatus();
-        if (!claims[id][claimant].exists) revert NotClaimant();
+        if (winner == address(0) || winner == q.creator) revert BadParams();
+        if (block.timestamp > expiry) revert Expired();
 
-        q.winner = claimant;
+        _verify(keccak256(abi.encode(APPROVAL_TYPEHASH, id, msg.sender, winner, expiry)), sig);
+
+        q.winner = winner;
         q.status = Status.Approved;
-        emit QuestApproved(id, claimant);
+        emit QuestApproved(id, winner);
     }
 
-    /// Rechazar libera el claim del contador de pendientes, pero el
-    /// postulante conserva el derecho a disputar.
-    function reject(uint256 id, address claimant) external {
+    function withdrawReward(uint256 id) external nonReentrant {
+        Quest storage q = quests[id];
+        if (q.status != Status.Approved) revert WrongStatus();
+        if (msg.sender != q.winner) revert NotWinner();
+
+        q.status = Status.Paid;
+        q.token.safeTransfer(msg.sender, q.reward);
+        emit RewardPaid(id, msg.sender, q.reward);
+    }
+
+    // ---------------------------------------------------------------
+    // Cancelar / reembolsar
+    // ---------------------------------------------------------------
+
+    /// Cancelación normal: la plataforma firma solo si nadie está en juego.
+    function cancelQuest(uint256 id, uint64 expiry, bytes calldata sig) external nonReentrant {
         Quest storage q = quests[id];
         if (msg.sender != q.creator) revert NotCreator();
         if (q.status != Status.Funded) revert WrongStatus();
-        Claim storage c = claims[id][claimant];
-        if (!c.exists || c.rejected) revert NotClaimant();
+        if (block.timestamp > expiry) revert Expired();
 
-        c.rejected = true;
-        q.pendingClaims--;
-        emit ClaimRejected(id, claimant);
+        _verify(keccak256(abi.encode(CANCEL_TYPEHASH, id, msg.sender, expiry)), sig);
+
+        q.status = Status.Refunded;
+        q.token.safeTransfer(q.creator, q.reward);
+        emit QuestRefunded(id, q.creator, q.reward);
+    }
+
+    /// Salida de emergencia sin firma: si la plataforma desaparece, el dinero no queda bloqueado.
+    function refund(uint256 id) external nonReentrant {
+        Quest storage q = quests[id];
+        if (msg.sender != q.creator) revert NotCreator();
+        if (q.status != Status.Funded) revert WrongStatus();
+        if (block.timestamp < uint256(q.deadline) + EMERGENCY_REFUND_DELAY) revert TooEarly();
+
+        q.status = Status.Refunded;
+        q.token.safeTransfer(q.creator, q.reward);
+        emit QuestRefunded(id, q.creator, q.reward);
     }
 
     // ---------------------------------------------------------------
-    // Disputa y arbitraje
+    // Disputas (solo árbitro)
     // ---------------------------------------------------------------
-
-    /// Un postulante puede disputar si fue rechazado o si el creador no
-    /// respondió dentro de reviewWindow.
-    function dispute(uint256 id) external {
+    function openDispute(uint256 id) external onlyArbiter {
         Quest storage q = quests[id];
         if (q.status != Status.Funded) revert WrongStatus();
-        Claim storage c = claims[id][msg.sender];
-        if (!c.exists) revert NotClaimant();
-        if (!c.rejected && block.timestamp < c.submittedAt + q.reviewWindow) revert TooEarly();
-
         q.status = Status.Disputed;
-        emit DisputeOpened(id, msg.sender);
+        emit DisputeOpened(id);
     }
 
-    /// La plataforma decide. winner = un postulante, o address(0) para
-    /// devolver los fondos al creador.
+    /// winner == address(0): el fondo vuelve al creador. Si no, se paga a `winner`.
     function resolveDispute(uint256 id, address winner) external onlyArbiter nonReentrant {
         Quest storage q = quests[id];
         if (q.status != Status.Disputed) revert WrongStatus();
@@ -186,7 +182,6 @@ contract QuestEscrow is ReentrancyGuard {
             q.token.safeTransfer(q.creator, q.reward);
             emit QuestRefunded(id, q.creator, q.reward);
         } else {
-            if (!claims[id][winner].exists) revert NotClaimant();
             q.winner = winner;
             q.status = Status.Paid;
             q.token.safeTransfer(winner, q.reward);
@@ -195,36 +190,13 @@ contract QuestEscrow is ReentrancyGuard {
     }
 
     // ---------------------------------------------------------------
-    // Pagos y reembolso
+    // Administración
     // ---------------------------------------------------------------
-
-    function withdrawReward(uint256 id) external nonReentrant {
-        Quest storage q = quests[id];
-        if (q.status != Status.Approved) revert WrongStatus();
-        if (msg.sender != q.winner) revert NotWinner();
-        q.status = Status.Paid;
-        q.token.safeTransfer(msg.sender, q.reward);
-        emit RewardPaid(id, msg.sender, q.reward);
+    function setSigner(address s) external onlyArbiter {
+        if (s == address(0)) revert BadParams();
+        signer = s;
+        emit SignerChanged(s);
     }
-
-    /// El creador solo recupera fondos si ya pasó deadline + gracia y
-    /// no quedan claims pendientes. Los rechazados aún pueden disputar
-    /// hasta que se ejecute el refund.
-    function refund(uint256 id) external nonReentrant {
-        Quest storage q = quests[id];
-        if (msg.sender != q.creator) revert NotCreator();
-        if (q.status != Status.Funded) revert WrongStatus();
-        if (block.timestamp < q.deadline + q.refundGrace) revert TooEarly();
-        if (q.pendingClaims != 0) revert PendingClaims();
-
-        q.status = Status.Refunded;
-        q.token.safeTransfer(q.creator, q.reward);
-        emit QuestRefunded(id, q.creator, q.reward);
-    }
-
-    // ---------------------------------------------------------------
-    // Cambio de árbitro (dos pasos)
-    // ---------------------------------------------------------------
 
     function transferArbiter(address newArbiter) external onlyArbiter {
         pendingArbiter = newArbiter;
@@ -232,9 +204,13 @@ contract QuestEscrow is ReentrancyGuard {
     }
 
     function acceptArbiter() external {
-        require(msg.sender == pendingArbiter, "not pending");
+        if (msg.sender != pendingArbiter) revert NotArbiter();
         arbiter = pendingArbiter;
         pendingArbiter = address(0);
         emit ArbiterChanged(arbiter);
+    }
+
+    function _verify(bytes32 structHash, bytes calldata sig) private view {
+        if (ECDSA.recover(_hashTypedDataV4(structHash), sig) != signer) revert BadSignature();
     }
 }
