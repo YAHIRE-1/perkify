@@ -7,7 +7,6 @@ import { eq } from "drizzle-orm";
 import { parseUnits } from "viem";
 
 import { protectedProcedure } from "../../index";
-import { escrowTimes } from "../../lib/escrow-params";
 
 const MIN_LEAD_MS = 60 * 60 * 1000; // deadline al menos 1h en el futuro
 
@@ -66,19 +65,16 @@ export const create = protectedProcedure
       return q;
     });
 
-    const { refundGrace, reviewWindow } = escrowTimes(created.reviewWindowHours);
-
     return {
       quest: created,
       escrow: {
         chainId: token.chainId,
         escrowAddress,
+        // createQuest(token, reward, deadline, uri)
         args: {
           token: token.address,
           reward: reward.toString(),
           deadline: Math.floor(deadlineDate.getTime() / 1000),
-          refundGrace,
-          reviewWindow,
           uri: created.id,
         },
       },

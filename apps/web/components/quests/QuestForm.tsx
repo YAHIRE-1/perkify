@@ -398,6 +398,7 @@ const STEP_LABEL: Record<Step, string> = {
   confirming: 'Verifying on-chain…',
 };
 
+// createQuest(token, reward, deadline, uri)
 interface EscrowParams {
   chainId: number;
   escrowAddress: `0x${string}`;
@@ -405,8 +406,6 @@ interface EscrowParams {
     token: `0x${string}`;
     reward: string;
     deadline: number;
-    refundGrace: number;
-    reviewWindow: number;
     uri: string;
   };
 }
@@ -516,8 +515,6 @@ export default function QuestForm() {
           escrow.args.token,
           amount,
           BigInt(escrow.args.deadline),
-          BigInt(escrow.args.refundGrace),
-          BigInt(escrow.args.reviewWindow),
           escrow.args.uri,
         ],
         chainId,

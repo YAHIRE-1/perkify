@@ -13,7 +13,6 @@ import { and, eq } from "drizzle-orm";
 import { getAddress, parseEventLogs, parseUnits } from "viem";
 
 import { protectedProcedure } from "../../index";
-import { escrowTimes } from "../../lib/escrow-params";
 
 const isSupportedChain = (id: number): id is SupportedChainId => id in questEscrowAddresses;
 
@@ -88,17 +87,16 @@ export const confirm = protectedProcedure
     // 5. Buscar el evento que corresponde a ESTA quest (uri === quest.id)
     const expectedReward = parseUnits(q.rewardAmount, token.decimals);
     const expectedDeadline = BigInt(Math.floor(q.deadline.getTime() / 1000));
-    const expectedTimes = escrowTimes(q.reviewWindowHours); // mismo cálculo que create
     let onchainId: bigint | null = null;
 
     for (const ev of events) {
-      const [creator, tok, reward, deadline, refundGrace, reviewWindow, , , , uri] =
-        await client.readContract({
-          address: escrow,
-          abi: questEscrowAbi,
-          functionName: "quests",
-          args: [ev.args.id],
-        });
+      // quests(id) → creator, token, reward, deadline, status, winner, uri
+      const [creator, tok, reward, deadline, , , uri] = await client.readContract({
+        address: escrow,
+        abi: questEscrowAbi,
+        functionName: "quests",
+        args: [ev.args.id],
+      });
 
       if (uri !== q.id) continue;
       if (getAddress(tok) !== getAddress(token.address)) {
@@ -109,12 +107,6 @@ export const confirm = protectedProcedure
       }
       if (deadline !== expectedDeadline) {
         throw new ORPCError("BAD_REQUEST", { message: "Deadline no coincide" });
-      }
-      if (
-        refundGrace !== BigInt(expectedTimes.refundGrace) ||
-        reviewWindow !== BigInt(expectedTimes.reviewWindow)
-      ) {
-        throw new ORPCError("BAD_REQUEST", { message: "Parámetros de escrow inválidos" });
       }
       if (!ownerAddresses.has(creator.toLowerCase())) {
         throw new ORPCError("FORBIDDEN", { message: "La quest fue creada por otra wallet" });

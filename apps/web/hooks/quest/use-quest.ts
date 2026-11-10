@@ -68,22 +68,19 @@ export function useArchiveQuest() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (Quest: Pick<QuestRow, "id" | "title" | "archived">) =>
-      client.quests.archive({ id: Quest.id }),
-    onSuccess: async (_data, Quest) => {
+    mutationFn: (q: Pick<QuestRow, "id" | "title">) =>
+      client.quests.archive({ id: q.id }),
+    onSuccess: async (_data, q) => {
       await queryClient.invalidateQueries({ queryKey: orpc.quests.key() });
-      toast.success(
-        Quest.archived ? "Cliente desarchivado" : "Cliente archivado",
-        {
-          description: `Se ${Quest.archived ? "desarchivó" : "archivó"} a ${Quest.title} con éxito.`,
-        }
-      );
+      toast.success("Quest archivada", {
+        description: `Se archivó "${q.title}" con éxito.`,
+      });
     },
     onError: (error) => {
-      console.error("Error al archivar el cliente:", error);
+      console.error("Error al archivar la quest:", error);
       toast.error("Algo salió mal...", {
         description:
-          "Hubo un error al cambiar el estado del cliente. Intenta de nuevo.",
+          "Hubo un error al archivar la quest. Intenta de nuevo.",
       });
     },
   });
