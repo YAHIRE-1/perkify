@@ -74,15 +74,28 @@ export function createAuth(
     }),
     hooks: {
       after: createAuthMiddleware(async (ctx) => {
-        if (ctx.path !== "/siwe/verify") {
-          return;
-        }
+        if (ctx.path !== "/siwe/verify") return;
 
         const newSession = ctx.context.newSession;
-        const parsed = walletAddressSchema.safeParse(
-          (ctx.body as { walletAddress?: unknown } | undefined)?.walletAddress
-        );
-        if (!newSession || !parsed.success) {
+        if (!newSession) return;
+
+        const body = ctx.body as
+          | { message?: unknown; walletAddress?: unknown }
+          | undefined;
+
+        // 1) dirección del mensaje firmado; 2) respaldo: la del body
+        const fromMessage =
+          typeof body?.message === "string"
+            ? parseSiweMessage(body.message).address
+            : undefined;
+
+        const parsed = walletAddressSchema.safeParse(fromMessage ?? body?.walletAddress);
+        if (!parsed.success) {
+          log.warn({
+            action: "siwe.sync_wallet",
+            reason: "no_valid_address",
+            bodyKeys: Object.keys(body ?? {}),
+          });
           return;
         }
 

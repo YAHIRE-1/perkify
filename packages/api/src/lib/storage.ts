@@ -6,18 +6,20 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
+import { ENV } from "../env";
+
 const s3 = new S3Client({
-  region: process.env.S3_REGION ?? "us-east-1",
-  endpoint: process.env.S3_ENDPOINT,
-  forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+  region: ENV.S3_REGION,
+  endpoint: ENV.S3_ENDPOINT || undefined,
+  forcePathStyle: ENV.S3_FORCE_PATH_STYLE,
   credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
+    accessKeyId: ENV.S3_ACCESS_KEY_ID,
+    secretAccessKey: ENV.S3_SECRET_ACCESS_KEY,
   },
   requestChecksumCalculation: "WHEN_REQUIRED",
 });
 
-const Bucket = process.env.S3_BUCKET!;
+const Bucket = ENV.S3_BUCKET;
 
 export const presignUpload = (key: string, contentType: string, size: number) =>
   getSignedUrl(
