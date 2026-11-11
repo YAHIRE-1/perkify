@@ -19,7 +19,7 @@ const chains: Record<SupportedChainId, Chain> = {
 
 const rpcConfig: Record<SupportedChainId, { envName: string; url: string | undefined }> = {
   [foundry.id]: { envName: "(hardcoded)", url: "http://127.0.0.1:8545" },
-  [sepolia.id]: { envName: "NEXT_PUBLIC_SEPOLIA_RPC_URL", url: ENV.NEXT_PUBLIC_SEPOLIA_RPC_URL },
+  [sepolia.id]: { envName: "SEPOLIA_RPC_URL", url: ENV.SEPOLIA_RPC_URL },
   [arbitrumSepolia.id]: { envName: "ARBITRUM_SEPOLIA_RPC_URL", url: ENV.ARBITRUM_SEPOLIA_RPC_URL },
   [arbitrum.id]: { envName: "ARBITRUM_RPC_URL", url: ENV.ARBITRUM_RPC_URL },
 };
