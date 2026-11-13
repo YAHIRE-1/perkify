@@ -1,71 +1,74 @@
 'use client';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import type { ComponentProps } from 'react';
-import { LogOut, User } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
+  useSidebar,
 } from '@perkify/ui/components/sidebar';
-import { cn } from '@perkify/ui/lib/utils';
 import { NavMain } from '@/components/global/nav-main';
-import ThemeToggle from '@/components/ThemeToggle';
-import { useAuth } from '@/components/Providers';
+import { NavUser } from '@/components/global/nav-user';
 
-const short = (address?: string | null) =>
-  address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
-
-const itemClass = cn(
-  'flex min-h-10 w-full items-center gap-2 rounded-md px-3 text-sm transition-colors',
-  'hover:bg-[var(--sidebar-accent)] [&_svg]:size-4 [&_svg]:shrink-0'
-);
+function Wordmark() {
+  return (
+    <span className="font-display text-xl font-bold">
+      Prky<span className="text-(--lime)">.</span>
+    </span>
+  );
+}
 
 export function AppSidebar(props: ComponentProps<typeof Sidebar>) {
-  const { user, logout } = useAuth();
+  const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
+
+  // En móvil el menú es un sheet sobre la página; ciérralo al navegar.
+  useEffect(() => {
+    setOpenMobile(false);
+  }, [pathname, setOpenMobile]);
 
   return (
-    <Sidebar {...props}>
+    <Sidebar collapsible="icon" variant="inset" {...props}>
       <SidebarHeader>
-        <Link href="/" className="font-display px-2 py-1 text-xl font-bold">
-          Prky<span style={{ color: 'var(--lime)' }}>.</span>
-        </Link>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            {/* Expandido: wordmark completo */}
+            <SidebarMenuButton
+              className="h-12 group-data-[collapsible=icon]:hidden hover:bg-transparent"
+              render={<Link aria-label="Perkify, ir al inicio" href="/" />}
+            >
+              <Wordmark />
+            </SidebarMenuButton>
+            {/* Colapsado: solo la marca */}
+            <SidebarMenuButton
+              className="hidden justify-center group-data-[collapsible=icon]:flex hover:bg-transparent"
+              render={<Link aria-label="Perkify, ir al inicio" href="/" />}
+              tooltip="Perkify"
+            >
+              <span className="font-display text-lg font-bold">
+                P<span className="text-(--lime)">.</span>
+              </span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
 
       <SidebarContent>
-        <div className="p-2">
-          <NavMain />
-        </div>
+        <NavMain />
       </SidebarContent>
 
       <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <Link href="/profile" className={itemClass} style={{ color: 'var(--muted)' }}>
-              <User />
-              <span className="truncate">
-                {user?.name || short(user?.walletAddress)}
-              </span>
-            </Link>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <button
-              type="button"
-              onClick={logout}
-              className={itemClass}
-              style={{ color: 'var(--muted)' }}
-            >
-              <LogOut />
-              <span>Log out</span>
-            </button>
-          </SidebarMenuItem>
-        </SidebarMenu>
-        <div className="px-2">
-          <ThemeToggle />
-        </div>
+        <NavUser />
       </SidebarFooter>
+
+      <SidebarRail />
     </Sidebar>
   );
 }
