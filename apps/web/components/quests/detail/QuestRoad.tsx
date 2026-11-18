@@ -218,7 +218,7 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
 
   const now = new Date();
   const hasSpot = quest.maxParticipants === 0 || quest.taken < quest.maxParticipants;
-  const open = quest.status === 'FUNDED' && new Date(quest.deadline) > now && hasSpot;
+  const open = quest.status === 'FUNDED' && quest.cancelExpiresAt === null && new Date(quest.deadline) > now && hasSpot;
   const expired = p?.status === 'JOINED' && new Date(p.expiresAt) <= now;
   const canRetry = !!p && p.attempts < quest.maxAttempts;
 

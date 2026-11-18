@@ -10,7 +10,7 @@ type Props = {
 function getCta(quest: QuestDetail) {
   const p = quest.myParticipation;
   const full = quest.maxParticipants > 0 && quest.taken >= quest.maxParticipants;
-  const open = quest.status === 'FUNDED' && new Date(quest.deadline) > new Date();
+  const open = quest.status === 'FUNDED' && quest.cancelExpiresAt === null && new Date(quest.deadline) > new Date();
 
   if (!p) {
     if (!open) return { label: null, note: 'This quest is not accepting participants.' };

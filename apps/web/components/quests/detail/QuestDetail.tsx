@@ -16,6 +16,7 @@ import QuestEscrow from './QuestEscrow';
 import QuestHeader from './QuestHeader';
 import QuestMilestones from './QuestMilestones';
 import QuestReward from './QuestReward';
+import QuestRefundAction from './QuestRefundAction';
 import QuestRoad from './QuestRoad';
 import QuestRules from './QuestRules';
 
@@ -100,6 +101,7 @@ export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
   }
 
   const isDraft = quest.status === 'DRAFT';
+  const cancellationSubmitted = quest.status === 'FUNDED' && quest.cancelExpiresAt !== null && !!quest.refundTxHash;
   const translated = showTranslation ? translation.data : undefined;
   const translatedMilestones = new Map(translated?.milestones.map(({ id, description }) => [id, description]));
 
@@ -138,7 +140,7 @@ export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
       <QuestHeader
         title={translated?.title ?? quest.title}
         category={quest.category}
-        status={quest.status}
+        status={quest.status === 'FUNDED' && quest.cancelExpiresAt !== null ? 'CANCELLING' : quest.status}
         isBoosted={quest.isBoosted}
       />
 
@@ -150,6 +152,16 @@ export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
             deadline={quest.deadline}
           >
             <QuestAction quest={quest} />
+            {cancellationSubmitted ? (
+              <p role="status" className="text-sm text-[var(--muted)]">
+                {t("Refund submitted. Waiting for final confirmation.")}
+              </p>
+            ) : (quest.canCancel || quest.canClaimLegacyRefund) && (
+              <QuestRefundAction id={quest.id} emergency={quest.canClaimLegacyRefund} reserved={quest.cancelExpiresAt !== null} />
+            )}
+            {quest.escrowStatus === 'REFUNDED' && (
+              <p className="text-sm font-semibold text-[var(--accent-text)]">{t("Refund confirmed.")}</p>
+            )}
             {quest.isOwner && isDraft && (
               <Link href={`/quests/${quest.id}/edit`} className="btn btn-primary w-full"><Translate text={"Edit quest"} /></Link>
             )}

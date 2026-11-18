@@ -12,6 +12,8 @@ const map: Record<string, { label: string; cls: string }> = {
   rejected: { label: 'Rejected', cls: 'chip-bad' },
   paid: { label: 'Paid', cls: 'chip-ok' },
   cancelled: { label: 'Canceled', cls: 'chip-bad' },
+  cancelling: { label: 'Cancellation pending', cls: '' },
+  expired: { label: 'Expired', cls: 'chip-bad' },
 };
 
 export default function StatusBadge({ status }: { status: string }) {

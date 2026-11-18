@@ -17,6 +17,7 @@ export function useListQuests(
   return useQuery({
     ...orpc.quests.list.queryOptions({ input: params }),
     placeholderData: keepPreviousData,
+    staleTime: 15_000,
     enabled: options?.enabled ?? true,
   });
 }
@@ -26,11 +27,16 @@ export function useMyQuests(params: ListInput, enabled: boolean) {
     ...orpc.quests.mine.queryOptions({ input: params }),
     placeholderData: keepPreviousData,
     enabled,
+    refetchInterval: (query) => query.state.data?.items.some((quest) => quest.cancelExpiresAt != null) ? 15_000 : false,
   });
 }
 
 export function useGetQuest(id: string, enabled = true) {
-  return useQuery({ ...orpc.quests.get.queryOptions({ input: { id } }), enabled });
+  return useQuery({
+    ...orpc.quests.get.queryOptions({ input: { id } }),
+    enabled,
+    refetchInterval: (query) => query.state.data?.cancelExpiresAt != null ? 15_000 : false,
+  });
 }
 
 export function useCreateQuest() {

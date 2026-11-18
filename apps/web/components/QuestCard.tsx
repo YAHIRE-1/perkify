@@ -19,6 +19,7 @@ type QuestCardQuest = {
   taken?: number;
   isBoosted?: boolean;
   isOwner?: boolean;
+  cancelExpiresAt?: number | null;
 };
 
 type QuestCardProps = {
@@ -33,6 +34,7 @@ export default function QuestCard({ quest: q, isOwner }: QuestCardProps) {
   const symbol = q.token?.symbol;
   const deadline = new Date(q.deadline);
   const expired = deadline.getTime() <= Date.now();
+  const cancelling = q.status === 'FUNDED' && q.cancelExpiresAt != null;
   const spots = q.maxParticipants !== undefined && q.maxParticipants > 0 && q.taken !== undefined
     ? Math.max(0, q.maxParticipants - q.taken)
     : null;
@@ -45,7 +47,9 @@ export default function QuestCard({ quest: q, isOwner }: QuestCardProps) {
         className="flex min-w-0 flex-1 flex-col gap-4 rounded-[var(--radius)] p-5"
       >
         <div className="flex flex-wrap items-center gap-2">
-          {expired && q.status === 'FUNDED' ? (
+          {cancelling ? (
+            <StatusBadge status="CANCELLING" />
+          ) : expired && q.status === 'FUNDED' ? (
             <span className="chip"><Translate text={"Expired"} /></span>
           ) : (
             <StatusBadge status={q.status} />
@@ -76,7 +80,7 @@ export default function QuestCard({ quest: q, isOwner }: QuestCardProps) {
               {t(expired ? "Closed {date}" : "Closes {date}", { date: new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeZone: "UTC" }).format(deadline) })}
             </time>
           </li>
-          {q.status === 'FUNDED' && !expired && spots !== null && (
+          {q.status === 'FUNDED' && !cancelling && !expired && spots !== null && (
             <li className="flex items-center gap-1.5">
               <Users aria-hidden className="size-3.5" />
               {spots === 0 ? t("Full") : t(spots === 1 ? "{count} spot left" : "{count} spots left", { count: spots })}
