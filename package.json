@@ -10,6 +10,8 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
+    "translations:check": "node scripts/sync-translations.mjs --check",
+    "translations:sync": "node scripts/sync-translations.mjs",
     "infra:up": "docker compose up -d",
     "infra:down": "docker compose down",
     "infra:ps": "docker compose ps",
