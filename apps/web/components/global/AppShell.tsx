@@ -7,6 +7,7 @@ import {
   SidebarTrigger,
 } from '@perkify/ui/components/sidebar';
 import { useAuth } from '../Providers';
+import NotificationLink from '../notifications/NotificationLink';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -39,6 +40,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           }}
         >
           <SidebarTrigger />
+          <NotificationLink userId={user.id} />
         </header>
         <main className="mx-auto w-full max-w-6xl px-4 py-8">{children}</main>
       </SidebarInset>

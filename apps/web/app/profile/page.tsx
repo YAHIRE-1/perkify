@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@perkify/ui/components/avat
 import { Input } from '@perkify/ui/components/input';
 import { Textarea } from '@perkify/ui/components/textarea';
 import EmptyState from '@/components/EmptyState';
+import EmailPreferences from '@/components/notifications/EmailPreferences';
 import { useAuth } from '@/components/Providers';
 import { useMe, useUpdateMe } from '@/hooks/useAuth';
 import type { SessionUser } from '@/lib/auth-client';
@@ -141,7 +142,10 @@ export default function Profile() {
           <button className="btn" onClick={() => void refetch()} type="button">Try again</button>
         } />
       ) : user ? (
-        <ProfileEditor key={user.id} user={user} refetch={refetch} />
+        <div key={user.id} className="space-y-5">
+          <ProfileEditor user={user} refetch={refetch} />
+          <EmailPreferences userId={user.id} />
+        </div>
       ) : (
         <EmptyState title="Connect your wallet to view your profile" action={
           <button

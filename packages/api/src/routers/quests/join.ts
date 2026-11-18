@@ -6,6 +6,7 @@ import { and, count, eq, ne } from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure } from "../../index";
+import { recordNotification } from "../../lib/notification-mail";
 import { occupiesSlot, submitDeadline } from "../../lib/participations";
 
 export const join = protectedProcedure
@@ -63,6 +64,7 @@ export const join = protectedProcedure
           .insert(questParticipation)
           .values({ questId: q.id, hunterId: userId, walletAddress: u.wallet, expiresAt })
           .returning();
+        await recordNotification(tx, q.creatorId, q, "JOINED");
         return p;
       }
 

@@ -6,6 +6,7 @@ import { and, eq, gt } from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure } from "../../index";
+import { recordNotification } from "../../lib/notification-mail";
 import { EVIDENCE_LIMITS, MAX_FILES } from "../../lib/evidence";
 import { hoursFromNow } from "../../lib/participations";
 import { objectSize } from "../../lib/storage";
@@ -91,6 +92,7 @@ export const submitEvidence = protectedProcedure
           .insert(questEvidenceFile)
           .values(input.files.map((f) => ({ submissionId: sub!.id, ...f })));
       }
+      await recordNotification(tx, q.creatorId, q, "SUBMITTED");
       return sub;
     });
   });

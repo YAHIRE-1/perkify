@@ -17,3 +17,4 @@ export * from "./evidence";
 // 5. Cruzadas
 export * from "./disputes";
 export * from "./transactions";
+export * from "./notifications";

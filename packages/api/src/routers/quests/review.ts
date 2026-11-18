@@ -15,6 +15,7 @@ import { z } from "zod";
 
 import { protectedProcedure } from "../../index";
 import { approve } from "../../lib/approve";
+import { recordNotification } from "../../lib/notification-mail";
 import { submitDeadline } from "../../lib/participations";
 import { signApproval } from "../../lib/voucher";
 
@@ -127,6 +128,7 @@ export const review = protectedProcedure
         )
         .where(and(eq(questParticipation.id, p.id), eq(questParticipation.status, "SUBMITTED")));
 
+      await recordNotification(tx, p.hunterId, q, "REJECTED");
       return rejected;
     });
   });

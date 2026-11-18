@@ -4,6 +4,7 @@ import { questParticipation } from "@perkify/db/schema/participations";
 import { questSubmission } from "@perkify/db/schema/evidence";
 import { and, eq, inArray, ne } from "drizzle-orm";
 import type { Tx } from "./participations";
+import { recordNotification } from "./notification-mail";
 
 export async function approve(
   tx: Tx,
@@ -54,5 +55,6 @@ export async function approve(
       ),
     );
 
+  await recordNotification(tx, winner.hunterId, closed, "APPROVED");
   return { quest: closed, participation: winner };
 }

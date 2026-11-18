@@ -5,6 +5,7 @@ import { onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { appRouter } from "@perkify/api/routers/index";
+import { deliverNotificationEmails } from "@perkify/api/lib/notification-mail";
 import { initLogger } from "evlog";
 import { createAuthMiddleware } from "evlog/better-auth";
 import type { BetterAuthInstance } from "evlog/better-auth";
@@ -17,7 +18,8 @@ import "varlock/auto-load";
 
 import { createContext } from "./context";
 import { ENV } from "./env";
-import { auth } from "./services";
+import { notificationMailer } from "./notification-mailer";
+import { auth, db } from "./services";
 
 initLogger({
   env: { service: "perkify-server" },
@@ -99,6 +101,23 @@ app.use("/*", async (c, next) => {
 app.get("/", (c) => c.text("OK"));
 
 const port = Number(process.env.PORT ?? 3002);
+
+function startNotificationWorker(send: NonNullable<typeof notificationMailer>) {
+  let sending = false;
+  setInterval(async () => {
+    if (sending) return;
+    sending = true;
+    try {
+      await deliverNotificationEmails(db, ENV.CORS_ORIGIN, send);
+    } catch (error) {
+      console.error("Notification email worker failed", error instanceof Error ? error.name : "Unknown error");
+    } finally {
+      sending = false;
+    }
+  }, 30_000).unref();
+}
+
+if (notificationMailer) startNotificationWorker(notificationMailer);
 
 serve({ fetch: app.fetch, port, hostname: "0.0.0.0" }, (info) => {
   console.log(`Server listening on port ${info.port}`);
