@@ -1,7 +1,9 @@
 'use client';
-import { Translate } from '@/lib/i18n/provider';
+import { Translate, useLanguage } from '@/lib/i18n/provider';
 
-import { ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, Languages } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 
@@ -18,6 +20,7 @@ import QuestRoad from './QuestRoad';
 import QuestRules from './QuestRules';
 
 import { useGetQuest } from '@/hooks/quest/use-quest';
+import { orpc } from '@/utils/orpc';
 
 const dateFormat = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
@@ -43,8 +46,20 @@ type Props = {
 };
 
 export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
+  const { locale, t } = useLanguage();
+  const [translatedQuest, setTranslatedQuest] = useState<string | null>(null);
   const { user, loading, login } = useAuth();
   const { data: quest, isLoading, error } = useGetQuest(id, !!user);
+  const canTranslate = !!user && !!quest && quest.status !== 'DRAFT' && !quest.archived;
+  const showTranslation = canTranslate && translatedQuest === id;
+  const translationOptions = orpc.quests.translate.queryOptions({ input: { id, locale } });
+  const translation = useQuery({
+    ...translationOptions,
+    queryKey: [...translationOptions.queryKey, user?.id, quest?.updatedAt],
+    enabled: showTranslation,
+    retry: false,
+    staleTime: Infinity,
+  });
   const back = (
     <Link href={backHref} className="inline-flex items-center gap-2 text-sm font-medium text-[var(--muted)] hover:text-[var(--accent-text)]">
       <ArrowLeft aria-hidden className="size-4" />{' '}<Translate text={"Back to quests"} /></Link>
@@ -85,13 +100,43 @@ export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
   }
 
   const isDraft = quest.status === 'DRAFT';
+  const translated = showTranslation ? translation.data : undefined;
+  const translatedMilestones = new Map(translated?.milestones.map(({ id, description }) => [id, description]));
 
   return (
     <div className="space-y-5">
-      {back}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {back}
+        {canTranslate && (
+          <button
+            type="button"
+            className="btn inline-flex items-center gap-2"
+            onClick={() => {
+              if (showTranslation && translation.isError) {
+                void translation.refetch();
+              } else {
+                setTranslatedQuest(showTranslation ? null : id);
+              }
+            }}
+            disabled={showTranslation && translation.isFetching}
+          >
+            <Languages aria-hidden className="size-4" />
+            {showTranslation && translation.isFetching ? t("Translating quest…")
+              : showTranslation && translation.isError ? t("Retry translation")
+              : translated ? t("Show original") : t("Translate quest")}
+          </button>
+        )}
+      </div>
+      {showTranslation && (translation.isError || translated) && (
+        <p role="status" className="text-sm text-[var(--muted)]">
+          {translation.isError
+            ? t("Quest translation is currently unavailable.")
+            : t("Machine-translated quest content")}
+        </p>
+      )}
 
       <QuestHeader
-        title={quest.title}
+        title={translated?.title ?? quest.title}
         category={quest.category}
         status={quest.status}
         isBoosted={quest.isBoosted}
@@ -135,10 +180,13 @@ export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
         <div className="min-w-0 space-y-5 lg:col-start-1 lg:row-start-1">
           <article className="surface p-5 sm:p-7">
             <QuestDescription
-              description={quest.description}
-              deliverables={<QuestMilestones milestones={quest.milestones ?? []} />}
-              criteria={quest.criteria}
-              validationChecklist={quest.validationChecklist}
+              description={translated?.description ?? quest.description}
+              deliverables={<QuestMilestones milestones={(quest.milestones ?? []).map((item) => ({
+                ...item,
+                description: translatedMilestones.get(item.id) ?? item.description,
+              }))} />}
+              criteria={translated?.criteria ?? quest.criteria}
+              validationChecklist={translated?.checklist ?? quest.validationChecklist}
             />
           </article>
 

@@ -354,7 +354,13 @@
     "Connect your wallet first": "Conecta primero tu wallet",
     "Choose a token first": "Elige primero un token",
     "Add a deliverable": "Añade un entregable",
-    "Add something to check": "Añade un punto para revisar"
+    "Add something to check": "Añade un punto para revisar",
+    "Translate quest": "Traducir misión",
+    "Translating quest…": "Traduciendo misión…",
+    "Retry translation": "Reintentar traducción",
+    "Show original": "Ver original",
+    "Quest translation is currently unavailable.": "La traducción de misiones no está disponible en este momento.",
+    "Machine-translated quest content": "Contenido de la misión traducido automáticamente"
   },
   "zh-CN": {
     "Language": "语言",
@@ -711,6 +717,12 @@
     "Connect your wallet first": "请先连接钱包",
     "Choose a token first": "请先选择代币",
     "Add a deliverable": "添加交付要求",
-    "Add something to check": "添加审核项"
+    "Add something to check": "添加审核项",
+    "Translate quest": "翻译任务",
+    "Translating quest…": "正在翻译任务…",
+    "Retry translation": "重试翻译",
+    "Show original": "查看原文",
+    "Quest translation is currently unavailable.": "任务翻译暂不可用。",
+    "Machine-translated quest content": "任务内容由机器翻译"
   }
 }
