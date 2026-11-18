@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 type Props = {
   description: string;
+  deliverables: ReactNode;
   criteria?: string | null;
   validationChecklist?: string[];
 };
@@ -15,7 +16,7 @@ function Section({
 }) {
   return (
     <section className="min-w-0 space-y-2">
-      <h2 className="font-display font-semibold">
+      <h2 className="font-display text-xl font-semibold">
         {title}
       </h2>
       {children}
@@ -25,6 +26,7 @@ function Section({
 
 export default function QuestDescription({
   description,
+  deliverables,
   criteria,
   validationChecklist = [],
 }: Props) {
@@ -36,6 +38,8 @@ export default function QuestDescription({
         </p>
       </Section>
 
+      {deliverables}
+
       {criteria && (
         <Section title="Acceptance criteria">
           <p className="muted whitespace-pre-wrap wrap-break-word text-sm leading-relaxed">
@@ -45,7 +49,7 @@ export default function QuestDescription({
       )}
 
       {!!validationChecklist.length && (
-        <Section title="Validation checklist">
+        <Section title="Review checklist">
           <ul className="space-y-2">
             {validationChecklist.map((item, index) => (
               <li
@@ -53,7 +57,7 @@ export default function QuestDescription({
                 className="surface-2 flex gap-2 px-3 py-2 text-sm"
               >
                 <span
-                  className="shrink-0"
+                  aria-hidden className="shrink-0"
                   style={{ color: 'var(--cyan-text)' }}
                 >
                   ✓

@@ -1,5 +1,6 @@
-import type { ComponentProps } from 'react';
+import { ArrowUpRight, CalendarDays, Users } from 'lucide-react';
 import Link from 'next/link';
+import { formatReward } from '@/lib/format-reward';
 import StatusBadge from './StatusBadge';
 
 type QuestCardQuest = {
@@ -7,10 +8,12 @@ type QuestCardQuest = {
   title: string;
   description?: string | null;
   category?: string | null;
-  status: ComponentProps<typeof StatusBadge>['status'];
+  status: string;
   rewardAmount?: string | number | null;
   token?: { symbol?: string | null } | null;
   deadline: string | number | Date;
+  maxParticipants?: number;
+  taken?: number;
   isBoosted?: boolean;
   isOwner?: boolean;
 };
@@ -20,119 +23,92 @@ type QuestCardProps = {
   isOwner?: boolean;
 };
 
-// rewardAmount comes from numeric(36,18) → string like "0050.500000000000000000"
-function formatReward(value: string | number | null | undefined, maxDecimals = 4) {
-  const raw = String(value ?? '').trim();
-  if (!/^\d*\.?\d*$/.test(raw) || raw === '' || raw === '.') {
-    return { text: '0', full: '0' };
-  }
-
-  let [int = '', dec = ''] = raw.split('.');
-  int = int.replace(/^0+(?=\d)/, '') || '0'; // leading zeros
-  dec = dec.replace(/0+$/, '');              // trailing zeros
-
-  const full = dec ? `${int}.${dec}` : int;
-  const shownDec = dec.slice(0, maxDecimals).replace(/0+$/, '');
-  const grouped = int.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-
-  // > 0 but too small to display
-  if (int === '0' && dec && !shownDec) {
-    return { text: `<0.${'0'.repeat(maxDecimals - 1)}1`, full };
-  }
-
-  return { text: shownDec ? `${grouped}.${shownDec}` : grouped, full };
-}
+const dateFormat = new Intl.DateTimeFormat('en-US', {
+  dateStyle: 'medium',
+  timeZone: 'UTC',
+});
 
 export default function QuestCard({ quest: q, isOwner }: QuestCardProps) {
-  const owner = isOwner ?? q.isOwner ?? false;
-  const canEdit = owner && q.status === 'DRAFT';
+  const canEdit = (isOwner ?? q.isOwner) && q.status === 'DRAFT';
   const reward = formatReward(q.rewardAmount);
-  const symbol = q.token?.symbol ?? '???';
-
-  const deadlineDate = new Date(q.deadline);
-  const isExpired = deadlineDate.getTime() < Date.now();
-  const deadline = deadlineDate.toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC', // avoids server/client hydration mismatch
-  });
+  const symbol = q.token?.symbol;
+  const deadline = new Date(q.deadline);
+  const expired = deadline.getTime() <= Date.now();
+  const spots = q.maxParticipants !== undefined && q.maxParticipants > 0 && q.taken !== undefined
+    ? Math.max(0, q.maxParticipants - q.taken)
+    : null;
 
   return (
-    <div className="mission-stage w-full min-w-0">
-      <div
-        className={`mission-card flex h-full min-w-0 flex-col ${
-          q.isBoosted ? 'mission-card-boost' : ''
-        }`}
+    <article className="surface group flex min-w-0 flex-col transition-colors hover:border-[var(--accent-text)] focus-within:border-[var(--accent-text)]">
+      <Link
+        href={`/quests/${q.id}`}
+        aria-label={`View quest: ${q.title}`}
+        className="flex min-w-0 flex-1 flex-col gap-4 rounded-[var(--radius)] p-5"
       >
-        <Link
-          href={`/quests/${q.id}`}
-          className="mc-clickarea flex min-w-0 flex-1 flex-col gap-2 sm:gap-3"
-        >
-          <div className="mc-top flex min-w-0 flex-wrap items-center gap-1.5 sm:gap-2">
-            {q.category && (
-              <span className="mc-tag max-w-[9rem] truncate sm:max-w-[12rem]">
-                {q.category}
-              </span>
-            )}
-            {q.isBoosted && (
-              <span className="mc-tag mc-tag-boost whitespace-nowrap">
-                Boosted · $PRKY
-              </span>
-            )}
-            <span className="mc-status ml-auto shrink-0">
-              <StatusBadge status={q.status} />
+        <div className="flex flex-wrap items-center gap-2">
+          {expired && q.status === 'FUNDED' ? (
+            <span className="chip">Expired</span>
+          ) : (
+            <StatusBadge status={q.status} />
+          )}
+          {q.category && (
+            <span className="min-w-0 truncate text-xs font-medium text-[var(--muted)]">
+              {q.category}
             </span>
-          </div>
+          )}
+          {q.isBoosted && <span className="chip chip-boost">Boosted</span>}
+        </div>
 
-          <div className="mc-title line-clamp-2 break-words text-base sm:text-lg">
+        <div className="space-y-1.5">
+          <h2 className="font-display line-clamp-2 wrap-anywhere text-xl font-semibold leading-snug">
             {q.title}
-          </div>
+          </h2>
           {q.description && (
-            <p className="mc-desc line-clamp-2 break-words text-sm">
+            <p className="line-clamp-2 wrap-anywhere text-sm leading-relaxed text-[var(--muted)]">
               {q.description}
             </p>
           )}
+        </div>
 
-          <div className="mc-steps">
-            <div
-              className={`mc-step min-w-0 ${isExpired ? 'opacity-60' : ''}`}
-              suppressHydrationWarning
+        <ul className="mt-auto flex flex-wrap gap-x-4 gap-y-2 pt-1 text-xs text-[var(--muted)]">
+          <li className="flex items-center gap-1.5">
+            <CalendarDays aria-hidden className="size-3.5" />
+            <time dateTime={deadline.toISOString()}>
+              {expired ? 'Closed' : 'Closes'} {dateFormat.format(deadline)}
+            </time>
+          </li>
+          {q.status === 'FUNDED' && !expired && spots !== null && (
+            <li className="flex items-center gap-1.5">
+              <Users aria-hidden className="size-3.5" />
+              {spots === 0 ? 'Full' : `${spots} ${spots === 1 ? 'spot' : 'spots'} left`}
+            </li>
+          )}
+        </ul>
+
+        <div className="flex items-end justify-between gap-3 border-t border-[var(--border)] pt-3">
+          <div className="min-w-0">
+            <p className="text-xs text-[var(--muted)]">Reward</p>
+            <p
+              className="font-display flex min-w-0 items-baseline gap-1.5 text-2xl font-bold text-[var(--accent-text)]"
+              title={`${reward.full} ${symbol ?? ''}`.trim()}
             >
-              <span className="mc-check shrink-0">{isExpired ? '✕' : '✓'}</span>
-              <span className="truncate" suppressHydrationWarning>
-                {isExpired ? 'Expired' : 'Expires'} {deadline}
-              </span>
-            </div>
+              <span className="truncate">{reward.text}</span>
+              {symbol && <span className="truncate text-sm">{symbol}</span>}
+            </p>
           </div>
+          <span className="flex shrink-0 items-center gap-1 pb-0.5 text-xs font-semibold text-[var(--muted)] group-hover:text-[var(--accent-text)] group-focus-within:text-[var(--accent-text)]">
+            Details <ArrowUpRight aria-hidden className="size-4" />
+          </span>
+        </div>
+      </Link>
 
-          <div className="mt-auto flex min-w-0 items-end justify-between gap-3 pt-2">
-            <div className="min-w-0">
-              <div className="mc-reward-label">REWARD</div>
-              <div
-                className="mc-reward flex min-w-0 items-baseline gap-2"
-                title={`${reward.full} ${symbol}`}
-              >
-                <span className="truncate">{reward.text}</span>
-                <span className="mc-reward-token max-w-[6rem] shrink-0 truncate">
-                  {symbol}
-                </span>
-              </div>
-            </div>
-            <span className="shrink-0 text-xs font-semibold tracking-wider opacity-70">
-              VIEW DETAILS →
-            </span>
-          </div>
-        </Link>
-
-        {canEdit && (
-          <div className="mc-actions mt-3">
-            <Link href={`/quests/${q.id}/edit`} className="mc-btn mc-btn-ghost">
-              EDIT
-            </Link>
-          </div>
-        )}
-      </div>
-    </div>
+      {canEdit && (
+        <div className="border-t border-[var(--border)] px-5 py-3">
+          <Link href={`/quests/${q.id}/edit`} className="text-sm font-semibold text-[var(--accent-text)] hover:underline">
+            Edit draft
+          </Link>
+        </div>
+      )}
+    </article>
   );
 }

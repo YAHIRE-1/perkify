@@ -55,7 +55,7 @@ export default function Marketplace() {
           />
         ) : (
           <div
-            className={`${styles.cards} grid gap-4 transition-opacity sm:grid-cols-2 xl:grid-cols-3 ${
+            className={`grid gap-4 transition-opacity sm:grid-cols-2 xl:grid-cols-3 ${
               isPlaceholderData ? 'opacity-60' : ''
             }`}
           >

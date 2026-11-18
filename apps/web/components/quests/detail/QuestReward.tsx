@@ -1,90 +1,43 @@
+import type { ReactNode } from 'react';
+import { CalendarDays, Wallet } from 'lucide-react';
 import { formatReward } from '@/lib/format-reward';
-import type { QuestDetailData } from './quest-detail.types';
 
 type Props = {
   rewardAmount: string;
   tokenSymbol: string;
-  deadline: string;
-  createdAt: string;
-  updatedAt: string;
+  deadline: Date | string;
+  children?: ReactNode;
 };
 
-function formatDate(value: string) {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) return '—';
-
-  return date.toLocaleString('en-US', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  });
-}
-
-function DateRow({
-  label,
-  date,
-}: {
-  label: string;
-  date: string;
-}) {
-  return (
-    <div className="flex items-baseline justify-between gap-3 text-sm">
-      <span className="muted shrink-0">{label}</span>
-      <span className="min-w-0 text-right">
-        {formatDate(date)}
-      </span>
-    </div>
-  );
-}
-
-export default function QuestReward({
-  rewardAmount,
-  tokenSymbol,
-  deadline,
-  createdAt,
-  updatedAt,
-}: Props) {
+export default function QuestReward({ rewardAmount, tokenSymbol, deadline, children }: Props) {
   const reward = formatReward(rewardAmount, 6);
-  const expired = new Date(deadline).getTime() <= Date.now();
+  const date = new Date(deadline);
+  const expired = date.getTime() <= Date.now();
 
   return (
-    <section className="surface space-y-4 p-4 sm:p-5">
+    <section className="surface space-y-4 p-5 sm:p-6">
       <div>
-        <div className="muted-2 text-xs tracking-wider">
-          TOTAL REWARD
-        </div>
+        <h2 className="flex items-center gap-2 text-sm font-semibold text-[var(--muted)]">
+          <Wallet aria-hidden className="size-4" /> Quest reward
+        </h2>
+        <p className="font-display mt-2 flex min-w-0 items-baseline gap-2 text-4xl font-bold text-[var(--accent-text)]">
+          <span className="truncate" title={reward.full}>{reward.text}</span>
+          <span className="truncate text-lg" title={tokenSymbol}>{tokenSymbol}</span>
+        </p>
+      </div>
 
-        <div
-          className="font-display flex min-w-0 items-baseline gap-2 text-3xl font-bold sm:text-4xl"
-          style={{ color: 'var(--accent-text)' }}
-          title={`${reward.full} ${tokenSymbol}`}
-        >
-          <span className="truncate">{reward.text}</span>
-
-          <span className="max-w-[8rem] shrink-0 truncate text-lg">
-            {tokenSymbol}
-          </span>
+      <div className="flex items-start gap-2.5 border-t border-[var(--border)] pt-4 text-sm">
+        <CalendarDays aria-hidden className="mt-0.5 size-4 shrink-0 text-[var(--muted)]" />
+        <div>
+          <p className="text-[var(--muted)]">{expired ? 'Closed on' : 'Closes on'}</p>
+          <time dateTime={date.toISOString()} className="font-medium">
+            {date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}
+          </time>
+          <p className="text-xs text-[var(--muted)]">Your local time</p>
         </div>
       </div>
 
-      <div className="space-y-3 border-t pt-3">
-        <DateRow label="Created" date={createdAt} />
-
-        <DateRow label="Last updated" date={updatedAt} />
-
-        <div className="flex items-baseline justify-between gap-3 text-sm">
-          <span className="muted shrink-0">Deadline</span>
-
-          <span
-            className={`text-right ${
-              expired ? 'text-destructive' : ''
-            }`}
-          >
-            {formatDate(deadline)}
-            {expired && ' (expired)'}
-          </span>
-        </div>
-      </div>
+      {children}
     </section>
   );
 }

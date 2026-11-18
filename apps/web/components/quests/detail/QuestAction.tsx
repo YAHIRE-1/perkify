@@ -1,12 +1,9 @@
-'use client';
-
 import type { QuestDetail } from '@/hooks/participations/use-participation';
 
 export const ROAD_ID = 'quest-road';
 
 type Props = {
   quest: QuestDetail;
-  signedIn: boolean;
 };
 
 function getCta(quest: QuestDetail) {
@@ -17,12 +14,12 @@ function getCta(quest: QuestDetail) {
   if (!p) {
     if (!open) return { label: null, note: 'This quest is not accepting participants.' };
     if (full) return { label: null, note: 'No spots left.' };
-    return { label: 'Join quest', note: null };
+    return { label: 'How to join', note: null };
   }
 
   switch (p.status) {
     case 'JOINED':
-      return { label: 'Submit evidence', note: null };
+      return { label: new Date(p.expiresAt) > new Date() ? 'Submit evidence' : 'View participation', note: null };
     case 'SUBMITTED':
       return { label: 'View review status', note: null };
     case 'REJECTED':
@@ -34,25 +31,19 @@ function getCta(quest: QuestDetail) {
   }
 }
 
-export default function QuestAction({ quest, signedIn }: Props) {
+export default function QuestAction({ quest }: Props) {
   // El creador no participa: revisa desde su propio panel
   if (quest.isOwner) return null;
 
   const { label, note } = getCta(quest);
   if (!label && !note) return null;
 
-  const goToRoad = () =>
-    document.getElementById(ROAD_ID)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
   return (
-    <div className="surface space-y-2 p-4 sm:p-5">
+    <div className="space-y-2 border-t border-[var(--border)] pt-4">
       {label && (
-        <button type="button" className="btn btn-primary w-full" onClick={goToRoad}>
+        <a href={`#${ROAD_ID}`} className="btn btn-primary w-full">
           {label}
-        </button>
-      )}
-      {!signedIn && label && (
-        <p className="muted text-center text-xs">Sign in to join this quest.</p>
+        </a>
       )}
       {note && <p className="muted text-center text-sm">{note}</p>}
     </div>

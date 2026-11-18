@@ -29,8 +29,8 @@ export function useMyQuests(params: ListInput, enabled: boolean) {
   });
 }
 
-export function useGetQuest(id: string) {
-  return useQuery(orpc.quests.get.queryOptions({ input: { id } }));
+export function useGetQuest(id: string, enabled = true) {
+  return useQuery({ ...orpc.quests.get.queryOptions({ input: { id } }), enabled });
 }
 
 export function useCreateQuest() {

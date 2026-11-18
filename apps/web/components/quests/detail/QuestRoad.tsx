@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Check, Loader2, X } from 'lucide-react';
 import { Button } from '@perkify/ui/components/button';
 import { Textarea } from '@perkify/ui/components/textarea';
+import { formatHours } from '@perkify/db/validations/quest';
 import { authClient } from '@/lib/auth-client';
 import { formatReward } from '@/lib/format-reward';
 import {
@@ -61,7 +62,7 @@ const formatSize = (b: number) =>
 
 function Steps({ index, failed }: { index: number; failed: boolean }) {
   return (
-    <ol className="flex items-start gap-2">
+    <ol className="grid grid-cols-2 items-start gap-3 sm:grid-cols-4">
       {STEPS.map((label, i) => {
         const done = i < index;
         const current = i === index;
@@ -74,7 +75,7 @@ function Steps({ index, failed }: { index: number; failed: boolean }) {
               ? 'border-2 border-primary'
               : 'bg-muted text-muted-foreground';
         return (
-          <li key={label} className="flex flex-1 flex-col items-center gap-1 text-center text-xs">
+          <li key={label} aria-current={current ? 'step' : undefined} className="flex flex-col items-center gap-1 text-center text-xs">
             <span className={`flex size-7 items-center justify-center rounded-full ${circle}`}>
               {bad ? <X className="size-4" /> : done ? <Check className="size-4" /> : i + 1}
             </span>
@@ -248,7 +249,8 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
     panel = open ? (
       <>
         <p className="text-sm text-muted-foreground">
-          Join to start. You will have {quest.submitWindowHours}h to submit your evidence.
+          After joining, you have up to {formatHours(quest.submitWindowHours)} to submit evidence.
+          Submit before the quest closes.
         </p>
         {joinButton('Join quest')}
       </>
@@ -330,7 +332,10 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
   }
 
   return (
-    <section className="surface space-y-4 p-6">
+    <section className="surface space-y-4 p-5 sm:p-6">
+      <h2 className="font-display text-xl font-semibold">
+        {p ? 'Your participation' : 'How to participate'}
+      </h2>
       <Steps failed={p?.status === 'REJECTED'} index={currentStep(p?.status)} />
       <div className="space-y-3">{panel}</div>
     </section>

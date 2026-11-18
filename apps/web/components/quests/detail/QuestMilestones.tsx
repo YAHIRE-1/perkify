@@ -15,23 +15,15 @@ export default function QuestMilestones({
 
   return (
     <section className="space-y-3">
-      <div>
-        <h2 className="font-display font-semibold">
-          Quest milestones
-        </h2>
+      <h2 className="font-display text-xl font-semibold">What to deliver</h2>
 
-        <p className="muted text-sm">
-          Key deliverables required to complete this quest.
-        </p>
-      </div>
-
-      <ol className="space-y-3">
+      <ol className="space-y-2">
         {ordered.map((milestone, index) => (
           <li
             key={milestone.id}
             className="surface-2 flex items-start gap-3 p-3"
           >
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-semibold">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-[var(--border)] text-sm font-semibold text-[var(--accent-text)]">
               {index + 1}
             </span>
 

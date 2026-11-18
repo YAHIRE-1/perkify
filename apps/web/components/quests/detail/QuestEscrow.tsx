@@ -21,31 +21,22 @@ export default function QuestEscrow({
 
   if (escrowStatus === 'NONE') return null;
 
-  const explorer = config.chains.find(
-    (chain) => chain.id === chainId,
-  )?.blockExplorers?.default.url;
+  const chain = config.chains.find((item) => item.id === chainId);
+  const explorer = chain?.blockExplorers?.default.url;
 
   return (
-    <section className="surface space-y-3 p-4 sm:p-5">
-      <div>
-        <h2 className="font-display font-semibold">
-          Escrow
-        </h2>
-
-        <p className="muted-2 text-xs tracking-wider">
-          ON-CHAIN INFORMATION
-        </p>
-      </div>
+    <details className="surface space-y-3 p-5">
+      <summary className="cursor-pointer font-display font-semibold">Escrow details</summary>
 
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="muted">Status</span>
-        <span className="font-medium">{escrowStatus}</span>
+        <span className="font-medium capitalize">{escrowStatus.toLowerCase().replaceAll("_", " ")}</span>
       </div>
 
       {chainId && (
         <div className="flex items-center justify-between gap-3 text-sm">
-          <span className="muted">Chain ID</span>
-          <span className="font-medium">{chainId}</span>
+          <span className="muted">Network</span>
+          <span className="font-medium">{chain?.name ?? chainId}</span>
         </div>
       )}
 
@@ -82,6 +73,6 @@ export default function QuestEscrow({
           )}
         </div>
       )}
-    </section>
+    </details>
   );
 }

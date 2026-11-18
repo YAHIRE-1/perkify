@@ -1,3 +1,5 @@
+import { formatHours } from "@perkify/db/validations/quest";
+
 type Props = {
   maxParticipants: number;
   submitWindowHours: number;
@@ -13,11 +15,11 @@ function Rule({
   value: string | number;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 text-sm">
-      <span className="muted">{label}</span>
-      <span className="text-right font-medium">
+    <div className="surface-2 space-y-1 px-3 py-2.5 text-sm">
+      <dt className="muted">{label}</dt>
+      <dd className="font-medium">
         {value}
-      </span>
+      </dd>
     </div>
   );
 }
@@ -30,17 +32,9 @@ export default function QuestRules({
 }: Props) {
   return (
     <section className="surface space-y-3 p-4 sm:p-5">
-      <div>
-        <h2 className="font-display font-semibold">
-          Participation rules
-        </h2>
+      <h2 className="font-display text-xl font-semibold">Participation rules</h2>
 
-        <p className="muted text-xs">
-          Rules established by the quest creator.
-        </p>
-      </div>
-
-      <div className="space-y-3">
+      <dl className="grid grid-cols-2 gap-2">
         <Rule
           label="Max participants"
           value={
@@ -52,19 +46,19 @@ export default function QuestRules({
 
         <Rule
           label="Submission window"
-          value={`${submitWindowHours} hours`}
+          value={formatHours(submitWindowHours)}
         />
 
         <Rule
           label="Review window"
-          value={`${reviewWindowHours} hours`}
+          value={formatHours(reviewWindowHours)}
         />
 
         <Rule
           label="Maximum attempts"
           value={maxAttempts}
         />
-      </div>
+      </dl>
     </section>
   );
 }

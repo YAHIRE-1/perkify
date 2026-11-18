@@ -14,7 +14,7 @@ export default function QuestHeader({
   isBoosted,
 }: Props) {
   return (
-    <header className="space-y-4">
+    <header className="surface space-y-3 p-5 sm:p-8">
       <div className="flex flex-wrap items-center gap-2">
         {isBoosted && (
           <span className="chip chip-boost whitespace-nowrap">
@@ -28,12 +28,12 @@ export default function QuestHeader({
           </span>
         )}
 
-        <span className="ml-auto shrink-0">
+        <span className="shrink-0">
           <StatusBadge status={status} />
         </span>
       </div>
 
-      <h1 className="font-display break-words text-2xl font-bold sm:text-3xl">
+      <h1 className="font-display wrap-anywhere text-3xl font-bold tracking-tight sm:text-4xl">
         {title}
       </h1>
     </header>
