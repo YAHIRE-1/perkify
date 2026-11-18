@@ -4,6 +4,7 @@ import "./globals.css";
 import "./theme.css";
 import Providers from "@/components/Providers";
 import AppShell from "@/components/global/AppShell";
+import { LanguageProvider } from "@/lib/i18n/provider";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
@@ -56,9 +57,11 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>
       <body style={{ fontFamily: "var(--font-body), system-ui, sans-serif" }}>
-        <Providers>
-          <AppShell>{children}</AppShell>
-        </Providers>
+        <LanguageProvider>
+          <Providers>
+            <AppShell>{children}</AppShell>
+          </Providers>
+        </LanguageProvider>
       </body>
     </html>
   );

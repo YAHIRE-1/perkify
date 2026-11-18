@@ -1,7 +1,10 @@
 'use client';
+import { Translate } from '@/lib/i18n/provider';
+
 import Link from 'next/link';
 import ThemeToggle from '../ThemeToggle';
 import { useAuth } from '../Providers';
+import LanguageSelect from './LanguageSelect';
 
 export default function Navbar() {
   const { login } = useAuth();
@@ -14,18 +17,17 @@ export default function Navbar() {
         borderBottom: '1px solid var(--border)',
       }}
     >
-      <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-2 px-4 py-3">
         <Link href="/" className="font-display text-xl font-bold">
           Prky<span style={{ color: 'var(--lime)' }}>.</span>
         </Link>
         <div className="ml-auto flex items-center gap-3">
+          <LanguageSelect />
           <ThemeToggle />
           <button
             className="btn btn-primary"
             onClick={() => login().catch((e) => alert(e.message))}
-          >
-            Connect wallet
-          </button>
+          ><Translate text={"Connect wallet"} /></button>
         </div>
       </div>
     </header>
