@@ -1,4 +1,6 @@
 'use client';
+import { Translate } from '@/lib/i18n/provider';
+
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@perkify/ui/components/button';
@@ -44,8 +46,7 @@ function ReviewItem({
     <li className="surface-2 space-y-3 p-4">
       <div className="flex items-center justify-between gap-2 text-sm">
         <span className="font-medium">{hunterName}</span>
-        <span className="muted text-xs">
-          Attempt {attempt}/{maxAttempts} · {left ? `${left} left to review` : 'review window passed'}
+        <span className="muted text-xs"><Translate text={"Attempt"} />{' '}{attempt}/{maxAttempts} · {left ? `${left} left to review` : 'review window passed'}
         </span>
       </div>
 
@@ -93,12 +94,8 @@ function ReviewItem({
               }
               variant="legacy-primary"
             >
-              {review.isPending ? <Loader2 className="animate-spin" /> : null}
-              Confirm rejection
-            </Button>
-            <Button onClick={() => setRejecting(false)} type="button" variant="legacy-link">
-              Cancel
-            </Button>
+              {review.isPending ? <Loader2 className="animate-spin" /> : null}<Translate text={"Confirm rejection"} /></Button>
+            <Button onClick={() => setRejecting(false)} type="button" variant="legacy-link"><Translate text={"Cancel"} /></Button>
           </div>
         </div>
       ) : (
@@ -108,12 +105,8 @@ function ReviewItem({
             onClick={() => review.mutate({ submissionId: s.id, decision: 'APPROVE' })}
             variant="legacy-primary"
           >
-            {review.isPending ? <Loader2 className="animate-spin" /> : null}
-            Approve
-          </Button>
-          <Button disabled={review.isPending} onClick={() => setRejecting(true)} variant="legacy-link">
-            Reject
-          </Button>
+            {review.isPending ? <Loader2 className="animate-spin" /> : null}<Translate text={"Approve"} /></Button>
+          <Button disabled={review.isPending} onClick={() => setRejecting(true)} variant="legacy-link"><Translate text={"Reject"} /></Button>
         </div>
       )}
     </li>
@@ -139,18 +132,17 @@ export default function QuestReviewPanel({
   return (
     <section className="surface space-y-4 p-4 sm:p-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-display font-semibold">Review submissions</h2>
+        <h2 className="font-display font-semibold"><Translate text={"Review submissions"} /></h2>
         {pending.length > 0 && (
           <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-600">
-            {pending.length} pending
-          </span>
+            {pending.length}{' '}<Translate text={"pending"} /></span>
         )}
       </div>
 
       {isLoading ? (
         <div className="h-24 animate-pulse rounded bg-muted" />
       ) : pending.length === 0 ? (
-        <p className="muted text-sm">Nothing to review yet.</p>
+        <p className="muted text-sm"><Translate text={"Nothing to review yet."} /></p>
       ) : (
         <ul className="space-y-3">
           {pending.map(({ p, s }) => (

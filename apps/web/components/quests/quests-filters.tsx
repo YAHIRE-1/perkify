@@ -1,3 +1,4 @@
+import { Translate, useLanguage } from '@/lib/i18n/provider';
 import type { AppRouterInputs } from "@perkify/api/routers/index";
 import { Badge } from "@perkify/ui/components/badge";
 import { Button } from "@perkify/ui/components/button";
@@ -33,6 +34,7 @@ export function QuestsFilters({
 	tokens = [],
 	showTokenAndBoostFilters = true,
 }: QuestsFiltersProps) {
+	const { t } = useLanguage();
 	const tokenOptions = useMemo(
 		() => [
 			{ value: "all", label: "All tokens" },
@@ -62,18 +64,18 @@ export function QuestsFilters({
 		<div className="space-y-4">
 			<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
 				<Input
-					aria-label="Search"
+					aria-label={t("Search")}
 					className="h-9 min-w-40 flex-1"
 					onChange={(e) => onChange({ search: e.target.value || undefined })}
-					placeholder="Search quests..."
+					placeholder={t("Search quests...")}
 					type="text"
 					value={value.search ?? ""}
 				/>
 				<Input
-					aria-label="Category"
+					aria-label={t("Category")}
 					className="h-9 min-w-40 flex-1"
 					onChange={(e) => onChange({ category: e.target.value || undefined })}
-					placeholder="Category"
+					placeholder={t("Category")}
 					type="text"
 					value={value.category ?? ""}
 				/>
@@ -88,8 +90,9 @@ export function QuestsFilters({
 										tokenId: option?.value === "all" ? undefined : option?.value,
 									})
 								}
+								getOptionLabel={(option) => t(option.label)}
 								options={tokenOptions}
-								aria-label="Reward token"
+								aria-label={t("Reward token")}
 								value={tokenOptions.find(
 									(opt) => opt.value === (value.tokenId ?? "all"),
 								)}
@@ -102,8 +105,9 @@ export function QuestsFilters({
 									isBoosted: option?.value === "boosted" ? true : undefined,
 								})
 							}
+							getOptionLabel={(option) => t(option.label)}
 							options={boostedOptions}
-							aria-label="Quest boost"
+							aria-label={t("Quest boost")}
 							value={boostedOptions.find(
 								(opt) => opt.value === (value.isBoosted ? "boosted" : "all"),
 							)}
@@ -115,16 +119,13 @@ export function QuestsFilters({
 			{/* Row 3: Active filter badges */}
 			{hasActiveFilters && (
 				<div className="flex flex-wrap items-center gap-2 border-t pt-2">
-					<span className="mr-1 text-muted-foreground text-xs">
-						Active filters:
-					</span>
+					<span className="mr-1 text-muted-foreground text-xs"><Translate text={"Active filters:"} /></span>
 					{hasSearch && (
 						<Badge
 							className="cursor-pointer hover:bg-muted"
 							onClick={() => onChange({ search: undefined })}
 							variant="outline"
-						>
-							Search: "{value.search}"
+						><Translate text={"Search: \""} />{value.search}"
 							<X className="ml-1 size-3" />
 						</Badge>
 					)}
@@ -133,8 +134,7 @@ export function QuestsFilters({
 							className="cursor-pointer hover:bg-muted"
 							onClick={() => onChange({ category: undefined })}
 							variant="outline"
-						>
-							Category: {value.category}
+						><Translate text={"Category:"} />{' '}{value.category}
 							<X className="ml-1 size-3" />
 						</Badge>
 					)}
@@ -143,8 +143,7 @@ export function QuestsFilters({
 							className="cursor-pointer hover:bg-muted"
 							onClick={() => onChange({ tokenId: undefined })}
 							variant="outline"
-						>
-							Token: {selectedTokenSymbol ?? "…"}
+						><Translate text={"Token:"} />{' '}{selectedTokenSymbol ?? "…"}
 							<X className="ml-1 size-3" />
 						</Badge>
 					)}
@@ -153,18 +152,14 @@ export function QuestsFilters({
 							className="cursor-pointer hover:bg-muted"
 							onClick={() => onChange({ isBoosted: undefined })}
 							variant="outline"
-						>
-							Boosted only
-							<X className="ml-1 size-3" />
+						><Translate text={"Boosted only"} /><X className="ml-1 size-3" />
 						</Badge>
 					)}
 					<Button
 						className="ml-auto h-7 px-2 text-xs"
 						onClick={clearAllFilters}
 						variant="ghost"
-					>
-						Clear all
-						<X className="ml-1 size-3" />
+					><Translate text={"Clear all"} /><X className="ml-1 size-3" />
 					</Button>
 				</div>
 			)}

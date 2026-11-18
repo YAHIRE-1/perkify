@@ -1,4 +1,6 @@
 'use client';
+import { Translate } from '@/lib/i18n/provider';
+
 import { useParams, useRouter } from 'next/navigation';
 import QuestForm from '@/components/quests/QuestForm';
 import EmptyState from '@/components/EmptyState';
@@ -14,7 +16,7 @@ export default function EditQuestPage() {
   const updateQuest = useUpdateQuest();
 
   if (error) return <EmptyState title="Quest not found" hint={error.message} />;
-  if (isPending) return <div className="muted">Loading…</div>;
+  if (isPending) return <div className="muted"><Translate text={"Loading…"} /></div>;
 
   if (!user || user.id !== q.creatorId) {
     return <EmptyState title="Not authorized" hint="You can only edit quests you created." />;
@@ -31,10 +33,8 @@ export default function EditQuestPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <button className="muted-2 text-sm" onClick={() => router.push(`/quests/${q.id}`)}>
-        ← Back to quest
-      </button>
-      <h1 className="font-display text-3xl font-bold">Edit quest</h1>
+      <button className="muted-2 text-sm" onClick={() => router.push(`/quests/${q.id}`)}><Translate text={"← Back to quest"} /></button>
+      <h1 className="font-display text-3xl font-bold"><Translate text={"Edit quest"} /></h1>
       <QuestForm />
     </div>
   );

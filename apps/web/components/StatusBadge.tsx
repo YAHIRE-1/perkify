@@ -1,3 +1,5 @@
+import { Translate } from '@/lib/i18n/provider';
+
 const map: Record<string, { label: string; cls: string }> = {
   draft: { label: 'Draft', cls: '' },
   open: { label: 'Open', cls: 'chip-ok' },
@@ -6,10 +8,13 @@ const map: Record<string, { label: string; cls: string }> = {
   submitted: { label: 'Submitted', cls: 'chip-cyan' },
   completed: { label: 'Completed', cls: 'chip-ok' },
   disputed: { label: 'Disputed', cls: 'chip-bad' },
+  approved: { label: 'Approved', cls: 'chip-ok' },
+  rejected: { label: 'Rejected', cls: 'chip-bad' },
+  paid: { label: 'Paid', cls: 'chip-ok' },
   cancelled: { label: 'Canceled', cls: 'chip-bad' },
 };
 
 export default function StatusBadge({ status }: { status: string }) {
   const s = map[status?.toLowerCase()] ?? { label: status, cls: '' };
-  return <span className={`chip ${s.cls}`}>{s.label}</span>;
+  return <span className={`chip ${s.cls}`}><Translate text={s.label} /></span>;
 }

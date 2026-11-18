@@ -1,3 +1,4 @@
+import { Translate } from '@/lib/i18n/provider';
 import StatusBadge from '@/components/StatusBadge';
 
 type Props = {
@@ -17,9 +18,7 @@ export default function QuestHeader({
     <header className="surface space-y-3 p-5 sm:p-8">
       <div className="flex flex-wrap items-center gap-2">
         {isBoosted && (
-          <span className="chip chip-boost whitespace-nowrap">
-            Boosted · $PRKY
-          </span>
+          <span className="chip chip-boost whitespace-nowrap"><Translate text={"Boosted · $PRKY"} /></span>
         )}
 
         {category && (

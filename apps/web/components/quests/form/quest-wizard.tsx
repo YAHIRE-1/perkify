@@ -1,4 +1,6 @@
 'use client';
+import { Translate } from '@/lib/i18n/provider';
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { revalidateLogic, useForm, useStore } from '@tanstack/react-form';
 import { useRouter } from 'next/navigation';
@@ -473,11 +475,9 @@ export default function QuestWizard() {
       >
         <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-8 sm:py-10">
           <header className="mb-5 flex flex-wrap items-baseline justify-between gap-2">
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl" style={{ fontFamily: 'var(--font-display)' }}>
-              Create a quest
-            </h1>
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl" style={{ fontFamily: 'var(--font-display)' }}><Translate text={"Create a quest"} /></h1>
             <span aria-live="polite" className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              {savedAt && !hasDraft && <><Check aria-hidden className="size-3.5" /> Saved on this device</>}
+              {savedAt && !hasDraft && <><Check aria-hidden className="size-3.5" />{' '}<Translate text={"Saved on this device"} /></>}
             </span>
           </header>
           <div className="surface sticky top-12 z-10 mb-5 px-4 py-3 sm:px-5 md:static">
@@ -497,19 +497,14 @@ export default function QuestWizard() {
                 role="status"
               >
                 <div className="space-y-0.5">
-                  <p className="text-sm font-medium">Welcome back: you have an unfinished quest</p>
-                  <p className="text-xs text-muted-foreground">
-                    Saved {restorable.savedAt.toLocaleString()}
+                  <p className="text-sm font-medium"><Translate text={"Welcome back: you have an unfinished quest"} /></p>
+                  <p className="text-xs text-muted-foreground"><Translate text={"Saved"} />{' '}{restorable.savedAt.toLocaleString()}
                     {restorable.values.title.trim() ? `: “${restorable.values.title.trim()}”` : ''}
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <Button type="button" variant="legacy" onClick={discardDraft}>
-                    Start fresh
-                  </Button>
-                  <Button type="button" variant="legacy-primary" onClick={restoreDraft}>
-                    Continue draft
-                  </Button>
+                  <Button type="button" variant="legacy" onClick={discardDraft}><Translate text={"Start fresh"} /></Button>
+                  <Button type="button" variant="legacy-primary" onClick={restoreDraft}><Translate text={"Continue draft"} /></Button>
                 </div>
               </div>
             )}
@@ -518,17 +513,16 @@ export default function QuestWizard() {
             <div className="min-w-0 space-y-5">
               <div className="surface grid gap-5 p-5 sm:p-7">
                 <div className="space-y-1">
-                  <p aria-live="polite" className="sr-only">
-                    Step {index + 1} of {STEPS.length}: {current.title}
+                  <p aria-live="polite" className="sr-only"><Translate text={"Step {step} of {total}"} values={{ step: index + 1, total: STEPS.length }} />: <Translate text={current.title} />
                   </p>
                   <h2
                     ref={headingRef}
                     className="scroll-mt-24 text-2xl font-semibold tracking-tight outline-none"
                     tabIndex={-1}
                   >
-                    {current.title}
+                    <Translate text={current.title} />
                   </h2>
-                  <p className="text-sm text-muted-foreground">{current.description}</p>
+                  <p className="text-sm text-muted-foreground"><Translate text={current.description} /></p>
                 </div>
 
                 {walletMismatch && (
@@ -597,14 +591,14 @@ export default function QuestWizard() {
                   <div className="hidden lg:block">
                     <Button className="w-full" disabled={!canSubmit} type="submit" variant="legacy-primary">
                       {submitting && <Loader2 aria-hidden className="size-4 animate-spin" />}
-                      {STEP_LABEL[step]}
+                      <Translate text={STEP_LABEL[step]} />
                     </Button>
                   </div>
                   <FundingProgress step={step} />
                 </>
               ) : (
                 <details className="surface p-5 lg:hidden">
-                  <summary className="cursor-pointer text-sm font-semibold">View draft summary</summary>
+                  <summary className="cursor-pointer text-sm font-semibold"><Translate text={"View draft summary"} /></summary>
                   <div className="mt-3">
                     <DraftSummary values={values} tokenSymbol={token?.symbol} deadline={deadline} />
                   </div>
@@ -612,7 +606,7 @@ export default function QuestWizard() {
               )}
               {!isReview && (
                 <aside className="surface hidden space-y-4 p-5 lg:block">
-                  <h2 className="text-sm font-semibold">Draft summary</h2>
+                  <h2 className="text-sm font-semibold"><Translate text={"Draft summary"} /></h2>
                   <DraftSummary values={values} tokenSymbol={token?.symbol} deadline={deadline} />
                 </aside>
               )}
@@ -627,18 +621,15 @@ export default function QuestWizard() {
               onClick={back}
               type="button"
               variant="legacy"
-            >
-              Back
-            </Button>
+            ><Translate text={"Back"} /></Button>
 
             {isReview ? (
               <Button className="lg:hidden" disabled={!canSubmit} type="submit" variant="legacy-primary">
                 {submitting ? <Loader2 className="animate-spin" /> : null}
-                {STEP_LABEL[step]}
+                <Translate text={STEP_LABEL[step]} />
               </Button>
             ) : (
-              <Button onClick={next} type="button" variant="legacy-primary">
-                Continue <ArrowRight aria-hidden className="size-4" />
+              <Button onClick={next} type="button" variant="legacy-primary"><Translate text={"Continue"} />{' '}<ArrowRight aria-hidden className="size-4" />
               </Button>
             )}
           </div>
@@ -656,16 +647,16 @@ function DraftSummary({ values, tokenSymbol, deadline }: {
   const deliverables = values.milestones.filter((item) => item.trim()).length;
   const reward = values.rewardAmount.trim();
   if (!title && !deliverables && !deadline && !(reward && tokenSymbol)) {
-    return <p className="text-sm text-muted-foreground">Your quest details will appear here as you fill them in.</p>;
+    return <p className="text-sm text-muted-foreground"><Translate text={"Your quest details will appear here as you fill them in."} /></p>;
   }
 
   return (
     <div className="space-y-3 text-sm">
       {title && <p className="break-words text-base font-semibold">{title}</p>}
       <dl className="space-y-2">
-        {deliverables > 0 && <div><dt className="text-muted-foreground">Deliverables</dt><dd>{deliverables}</dd></div>}
-        {deadline && <div><dt className="text-muted-foreground">Closes</dt><dd>{deadline.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</dd></div>}
-        {reward && tokenSymbol && <div><dt className="text-muted-foreground">Reward</dt><dd>{reward} {tokenSymbol}</dd></div>}
+        {deliverables > 0 && <div><dt className="text-muted-foreground"><Translate text={"Deliverables"} /></dt><dd>{deliverables}</dd></div>}
+        {deadline && <div><dt className="text-muted-foreground"><Translate text={"Closes"} /></dt><dd>{deadline.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</dd></div>}
+        {reward && tokenSymbol && <div><dt className="text-muted-foreground"><Translate text={"Reward"} /></dt><dd>{reward} {tokenSymbol}</dd></div>}
       </dl>
     </div>
   );

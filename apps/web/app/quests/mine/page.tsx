@@ -1,4 +1,6 @@
 'use client';
+import { Translate } from '@/lib/i18n/provider';
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import QuestCard from '@/components/QuestCard';
@@ -30,12 +32,12 @@ export default function MyQuests() {
   const handleFilterChange = (patch: Partial<QuestFilterValues>) =>
     setFilters((prev) => ({ ...prev, ...patch, page: 1 }));
 
-  if (authLoading || !user) return <div className="muted">Loading…</div>;
+  if (authLoading || !user) return <div className="muted"><Translate text={"Loading…"} /></div>;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-4xl font-bold">My quests</h1>
+        <h1 className="font-display text-4xl font-bold"><Translate text={"My quests"} /></h1>
       </div>
 
       <QuestsFilters
@@ -46,7 +48,7 @@ export default function MyQuests() {
       {error ? (
         <EmptyState title="Could not load your quests" hint={error.message} />
       ) : isPending ? (
-        <div className="muted">Loading…</div>
+        <div className="muted"><Translate text={"Loading…"} /></div>
       ) : data.items.length === 0 ? (
         <EmptyState
           title="You don't have any quests yet"

@@ -1,4 +1,6 @@
 'use client';
+import { Translate } from '@/lib/i18n/provider';
+
 import QuestWizard from '@/components/quests/form/quest-wizard';
 import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/components/Providers';
@@ -10,8 +12,8 @@ export default function NewQuest() {
   if (!user) {
     return (
       <EmptyState
-        title="Conecta tu wallet para crear una quest"
-        action={<button className="btn btn-primary" onClick={login}>Conectar wallet</button>}
+        title="Connect your wallet to create a quest"
+        action={<button className="btn btn-primary" onClick={login}><Translate text={"Connect wallet"} /></button>}
       />
     );
   }

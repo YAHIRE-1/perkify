@@ -1,4 +1,6 @@
 'use client';
+import { Translate } from '@/lib/i18n/provider';
+
 import { useState } from 'react';
 import { Check, Loader2, X } from 'lucide-react';
 import { Button } from '@perkify/ui/components/button';
@@ -79,7 +81,7 @@ function Steps({ index, failed }: { index: number; failed: boolean }) {
             <span className={`flex size-7 items-center justify-center rounded-full ${circle}`}>
               {bad ? <X className="size-4" /> : done ? <Check className="size-4" /> : i + 1}
             </span>
-            <span className={current || done ? 'font-medium' : 'text-muted-foreground'}>{label}</span>
+            <span className={current || done ? 'font-medium' : 'text-muted-foreground'}><Translate text={label} /></span>
           </li>
         );
       })}
@@ -124,9 +126,7 @@ function EvidenceForm({ questId }: { questId: string }) {
       }}
     >
       <div>
-        <label className="text-sm font-medium" htmlFor="notes">
-          What did you do?
-        </label>
+        <label className="text-sm font-medium" htmlFor="notes"><Translate text={"What did you do?"} /></label>
         <Textarea
           className="min-h-24"
           id="notes"
@@ -137,9 +137,7 @@ function EvidenceForm({ questId }: { questId: string }) {
       </div>
 
       <div>
-        <label className="text-sm font-medium" htmlFor="links">
-          Links (one per line)
-        </label>
+        <label className="text-sm font-medium" htmlFor="links"><Translate text={"Links (one per line)"} /></label>
         <Textarea
           className="min-h-16"
           id="links"
@@ -150,8 +148,7 @@ function EvidenceForm({ questId }: { questId: string }) {
       </div>
 
       <div>
-        <label className="text-sm font-medium" htmlFor="files">
-          Files ({files.length}/{MAX_FILES})
+        <label className="text-sm font-medium" htmlFor="files"><Translate text={"Files ("} />{files.length}/{MAX_FILES})
         </label>
         <input
           className="block w-full text-sm"
@@ -178,9 +175,7 @@ function EvidenceForm({ questId }: { questId: string }) {
                 onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
                 type="button"
                 variant="legacy-link"
-              >
-                Remove
-              </Button>
+              ><Translate text={"Remove"} /></Button>
             </li>
           ))}
         </ul>
@@ -239,7 +234,7 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
       variant="legacy-primary"
     >
       {join.isPending ? <Loader2 className="animate-spin" /> : null}
-      {label}
+      <Translate text={label} />
     </Button>
   );
 
@@ -248,10 +243,7 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
   if (!p) {
     panel = open ? (
       <>
-        <p className="text-sm text-muted-foreground">
-          After joining, you have up to {formatHours(quest.submitWindowHours)} to submit evidence.
-          Submit before the quest closes.
-        </p>
+        <p className="text-sm text-muted-foreground"><Translate text={"After joining, you have up to"} />{' '}{formatHours(quest.submitWindowHours)}{' '}<Translate text={"to submit evidence. Submit before the quest closes."} /></p>
         {joinButton('Join quest')}
       </>
     ) : (
@@ -262,31 +254,27 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
   } else if (p.status === 'JOINED') {
     panel = expired ? (
       <>
-        <p className="text-sm text-muted-foreground">Your time to submit evidence ran out.</p>
+        <p className="text-sm text-muted-foreground"><Translate text={"Your time to submit evidence ran out."} /></p>
         {open && canRetry ? (
           joinButton('Rejoin')
         ) : (
-          <p className="text-sm text-destructive">No attempts left.</p>
+          <p className="text-sm text-destructive"><Translate text={"No attempts left."} /></p>
         )}
       </>
     ) : (
       <>
         {last?.status === 'REJECTED' && (
-          <p className="text-sm text-destructive" role="alert">
-            Your last submission was rejected: {last.rejectionReason}
+          <p className="text-sm text-destructive" role="alert"><Translate text={"Your last submission was rejected:"} />{' '}{last.rejectionReason}
           </p>
         )}
-        <p className="text-sm text-muted-foreground">
-          Attempt {p.attempts}/{quest.maxAttempts} · {timeLeft(p.expiresAt)} left to submit.
-        </p>
+        <p className="text-sm text-muted-foreground"><Translate text={"Attempt"} />{' '}{p.attempts}/{quest.maxAttempts} · {timeLeft(p.expiresAt)}{' '}<Translate text={"left to submit."} /></p>
         <EvidenceForm questId={quest.id} />
       </>
     );
   } else if (p.status === 'SUBMITTED') {
     const left = last ? timeLeft(last.reviewDeadline) : null;
     panel = (
-      <p className="text-sm text-muted-foreground">
-        Your evidence is with the creator.{' '}
+      <p className="text-sm text-muted-foreground"><Translate text={"Your evidence is with the creator."} />{' '}
         {left
           ? `They have ${left} left to review it.`
           : 'The review window has passed. If the creator stays silent, the platform arbiter can resolve it.'}
@@ -294,16 +282,12 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
     );
   } else if (p.status === 'REJECTED') {
     panel = (
-      <p className="text-sm text-destructive" role="alert">
-        Your submission was rejected{last?.rejectionReason ? `: ${last.rejectionReason}` : '.'} You have no
-        attempts left.
-      </p>
+      <p className="text-sm text-destructive" role="alert"><Translate text={"Your submission was rejected"} />{last?.rejectionReason ? `: ${last.rejectionReason}` : '.'}{' '}<Translate text={"You have no attempts left."} /></p>
     );
   } else if (p.status === 'APPROVED') {
     panel = (
       <>
-        <p className="text-sm">
-          Approved! Reward: {reward.text} {quest.token.symbol}
+        <p className="text-sm"><Translate text={"Approved! Reward:"} />{' '}{reward.text} {quest.token.symbol}
         </p>
         <Button
           disabled={claim.isPending}
@@ -317,14 +301,13 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
           {CLAIM_LABEL[claim.step]}
         </Button>
         {claim.isError && (
-          <p className="text-xs text-muted-foreground">You can retry: nothing is charged twice.</p>
+          <p className="text-xs text-muted-foreground"><Translate text={"You can retry: nothing is charged twice."} /></p>
         )}
       </>
     );
   } else if (p.status === 'PAID') {
     panel = (
-      <p className="text-sm">
-        Reward paid{p.payoutTxHash ? ` · tx ${p.payoutTxHash.slice(0, 10)}…` : ''}.
+      <p className="text-sm"><Translate text={"Reward paid"} />{p.payoutTxHash ? ` · tx ${p.payoutTxHash.slice(0, 10)}…` : ''}.
       </p>
     );
   } else {
@@ -334,7 +317,7 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
   return (
     <section className="surface space-y-4 p-5 sm:p-6">
       <h2 className="font-display text-xl font-semibold">
-        {p ? 'Your participation' : 'How to participate'}
+        {p ? <Translate text={"Your participation"} /> : <Translate text={"How to participate"} />}
       </h2>
       <Steps failed={p?.status === 'REJECTED'} index={currentStep(p?.status)} />
       <div className="space-y-3">{panel}</div>

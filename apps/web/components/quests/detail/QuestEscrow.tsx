@@ -1,3 +1,4 @@
+import { Translate } from '@/lib/i18n/provider';
 import { useConfig } from 'wagmi';
 
 type Props = {
@@ -26,23 +27,23 @@ export default function QuestEscrow({
 
   return (
     <details className="surface space-y-3 p-5">
-      <summary className="cursor-pointer font-display font-semibold">Escrow details</summary>
+      <summary className="cursor-pointer font-display font-semibold"><Translate text={"Escrow details"} /></summary>
 
       <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="muted">Status</span>
+        <span className="muted"><Translate text={"Status"} /></span>
         <span className="font-medium capitalize">{escrowStatus.toLowerCase().replaceAll("_", " ")}</span>
       </div>
 
       {chainId && (
         <div className="flex items-center justify-between gap-3 text-sm">
-          <span className="muted">Network</span>
+          <span className="muted"><Translate text={"Network"} /></span>
           <span className="font-medium">{chain?.name ?? chainId}</span>
         </div>
       )}
 
       {escrowId && (
         <div className="flex items-center justify-between gap-3 text-sm">
-          <span className="muted">Escrow ID</span>
+          <span className="muted"><Translate text={"Escrow ID"} /></span>
           <span className="max-w-[65%] truncate font-mono text-xs">
             {escrowId}
           </span>
@@ -51,7 +52,7 @@ export default function QuestEscrow({
 
       {createTxHash && (
         <div className="flex items-center justify-between gap-3 text-sm">
-          <span className="muted shrink-0">Deposit tx</span>
+          <span className="muted shrink-0"><Translate text={"Deposit tx"} /></span>
 
           {explorer ? (
             <a

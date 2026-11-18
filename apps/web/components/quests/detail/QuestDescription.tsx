@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Translate } from '@/lib/i18n/provider';
 
 type Props = {
   description: string;
@@ -17,7 +18,7 @@ function Section({
   return (
     <section className="min-w-0 space-y-2">
       <h2 className="font-display text-xl font-semibold">
-        {title}
+        <Translate text={title} />
       </h2>
       {children}
     </section>

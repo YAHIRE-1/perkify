@@ -1,4 +1,6 @@
 'use client';
+import { Translate } from '@/lib/i18n/provider';
+
 import { AlertTriangle, Check, Loader2 } from 'lucide-react';
 import { Button } from '@perkify/ui/components/button';
 import { formatHours, parseDeadline, type QuestFormValues } from '@perkify/db/validations/quest';
@@ -40,8 +42,7 @@ export function QuestStepper({
     <nav aria-label="Quest creation progress">
       {/* Móvil: texto + barra de progreso */}
       <div className="space-y-1.5 md:hidden">
-        <p className="text-sm text-muted-foreground">
-          Step {current + 1} of {steps.length}: {steps[current].title}
+        <p className="text-sm text-muted-foreground"><Translate text={"Step {step} of {total}"} values={{ step: current + 1, total: steps.length }} />: <Translate text={steps[current].title} />
         </p>
         <div className="h-1 w-full rounded-full bg-muted">
           <div
@@ -95,7 +96,7 @@ export function QuestStepper({
                         : 'text-muted-foreground'
                   }
                 >
-                  {s.title}
+                  <Translate text={s.title} />
                   <span className="sr-only">, {STATUS_LABEL[status]}</span>
                 </span>
               </button>
@@ -133,11 +134,9 @@ function Section({
   return (
     <section className="grid gap-2 border-t pt-3">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-medium">{title}</h3>
+        <h3 className="text-sm font-medium"><Translate text={title} /></h3>
         {onEdit && (
-          <Button type="button" variant="legacy-link" onClick={() => onEdit(step)}>
-            Edit
-          </Button>
+          <Button type="button" variant="legacy-link" onClick={() => onEdit(step)}><Translate text={"Edit"} /></Button>
         )}
       </div>
       {children}
@@ -164,9 +163,7 @@ export function QuestPreview({ values: v, token, onEdit }: PreviewProps) {
         <p className="text-2xl font-semibold">
           {v.rewardAmount} {token?.symbol}
           {v.isBoosted && (
-            <span className="ml-3 align-middle text-xs font-normal text-muted-foreground">
-              Boosted
-            </span>
+            <span className="ml-3 align-middle text-xs font-normal text-muted-foreground"><Translate text={"Boosted"} /></span>
           )}
         </p>
       </Section>
@@ -195,7 +192,7 @@ export function QuestPreview({ values: v, token, onEdit }: PreviewProps) {
       <Section onEdit={onEdit} step={2} title="Schedule">
         <dl className="grid grid-cols-2 gap-3 text-sm">
           <div className="col-span-2">
-            <dt className="text-muted-foreground">Closes on</dt>
+            <dt className="text-muted-foreground"><Translate text={"Closes on"} /></dt>
             <dd>
               {deadline ? fmt(deadline) : '—'}
               {deadline && (
@@ -206,19 +203,19 @@ export function QuestPreview({ values: v, token, onEdit }: PreviewProps) {
             </dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Time to submit</dt>
+            <dt className="text-muted-foreground"><Translate text={"Time to submit"} /></dt>
             <dd>{formatHours(v.submitWindowHours)}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Time to review</dt>
+            <dt className="text-muted-foreground"><Translate text={"Time to review"} /></dt>
             <dd>{formatHours(v.reviewWindowHours)}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Attempts each</dt>
+            <dt className="text-muted-foreground"><Translate text={"Attempts each"} /></dt>
             <dd>{v.maxAttempts}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">Participants</dt>
+            <dt className="text-muted-foreground"><Translate text={"Participants"} /></dt>
             <dd>{v.maxParticipants === 0 ? 'No limit' : v.maxParticipants}</dd>
           </div>
         </dl>
@@ -254,27 +251,27 @@ export function TransactionSummary({
 
   return (
     <aside className="surface space-y-3 p-5">
-      <h3 className="text-sm font-medium">What you are about to sign</h3>
+      <h3 className="text-sm font-medium"><Translate text={"What you are about to sign"} /></h3>
       <dl className="space-y-3 text-sm">
         <div>
-          <dt className="text-muted-foreground">Locked in escrow</dt>
+          <dt className="text-muted-foreground"><Translate text={"Locked in escrow"} /></dt>
           <dd className="text-lg font-semibold">
             {v.rewardAmount} {token?.symbol}
           </dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">Deposit network</dt>
+          <dt className="text-muted-foreground"><Translate text={"Deposit network"} /></dt>
           <dd>{networkName ?? '—'}</dd>
         </div>
         {deadline && (
           <div>
-            <dt className="text-muted-foreground">Closes on</dt>
+            <dt className="text-muted-foreground"><Translate text={"Closes on"} /></dt>
             <dd>{fmt(deadline)}</dd>
           </div>
         )}
         {POLICY_COPY.refund && (
           <div>
-            <dt className="text-muted-foreground">If nobody completes it</dt>
+            <dt className="text-muted-foreground"><Translate text={"If nobody completes it"} /></dt>
             <dd>{POLICY_COPY.refund}</dd>
           </div>
         )}
@@ -288,10 +285,7 @@ export function TransactionSummary({
             onChange={(e) => onAcknowledge(e.target.checked)}
             type="checkbox"
           />
-          <span>
-            I understand that {v.rewardAmount} {token?.symbol} will be locked in escrow when I
-            confirm.
-          </span>
+          <span><Translate text={"I understand that"} />{' '}{v.rewardAmount} {token?.symbol}{' '}<Translate text={"will be locked in escrow when I confirm."} /></span>
         </label>
       )}
     </aside>
@@ -319,31 +313,22 @@ export function ReviewIssues({ groups, warnings, locked, onFix, onStartOver }: R
       {groups.length > 0 && (
         <div className="space-y-3 rounded-lg border border-destructive p-4" role="alert">
           <p className="flex items-center gap-2 text-sm font-medium text-destructive">
-            <AlertTriangle aria-hidden className="size-4" />
-            Fix this before you can fund the quest
-          </p>
+            <AlertTriangle aria-hidden className="size-4" /><Translate text={"Fix this before you can fund the quest"} /></p>
           <ul className="space-y-2 text-sm">
             {groups.map((g) => (
               <li key={g.step} className="flex flex-wrap items-baseline gap-x-2">
                 <span className="font-medium">{g.title}:</span>
                 <span className="text-muted-foreground">{g.messages.join(' ')}</span>
                 {!locked && (
-                  <Button type="button" variant="legacy-link" onClick={() => onFix(g.step)}>
-                    Fix
-                  </Button>
+                  <Button type="button" variant="legacy-link" onClick={() => onFix(g.step)}><Translate text={"Fix"} /></Button>
                 )}
               </li>
             ))}
           </ul>
           {locked && (
             <div className="space-y-2 text-sm">
-              <p className="text-muted-foreground">
-                This saved draft can no longer be funded as it is. You can start a new draft with
-                your current answers and change what needs fixing.
-              </p>
-              <Button type="button" variant="legacy" onClick={onStartOver}>
-                Start a new draft
-              </Button>
+              <p className="text-muted-foreground"><Translate text={"This saved draft can no longer be funded as it is. You can start a new draft with your current answers and change what needs fixing."} /></p>
+              <Button type="button" variant="legacy" onClick={onStartOver}><Translate text={"Start a new draft"} /></Button>
             </div>
           )}
         </div>
@@ -351,9 +336,7 @@ export function ReviewIssues({ groups, warnings, locked, onFix, onStartOver }: R
 
       {warnings.length > 0 && (
         <div className="space-y-2 rounded-lg border p-4 text-sm">
-          <p className="font-medium text-amber-600 dark:text-amber-400">
-            Worth a second look (you can still continue)
-          </p>
+          <p className="font-medium text-amber-600 dark:text-amber-400"><Translate text={"Worth a second look (you can still continue)"} /></p>
           <ul className="space-y-1 text-muted-foreground">
             {warnings.map((w) => (
               <li key={w}>{w}</li>
@@ -383,7 +366,7 @@ export function FundingProgress({ step }: { step: string }) {
 
   return (
     <aside aria-live="polite" className="surface space-y-3 p-5">
-      <h3 className="text-sm font-medium">When you confirm</h3>
+      <h3 className="text-sm font-medium"><Translate text={"When you confirm"} /></h3>
       <ul className="space-y-2 text-sm">
         {FUNDING_STEPS.map((s, i) => (
           <li
@@ -397,14 +380,11 @@ export function FundingProgress({ step }: { step: string }) {
             ) : (
               <span className="size-4 text-center text-xs text-muted-foreground">{i + 1}</span>
             )}
-            {s.label}
+            <Translate text={s.label} />
           </li>
         ))}
       </ul>
-      <p className="text-xs text-muted-foreground">
-        Your wallet will ask for confirmation. The token approval is skipped if you already allowed
-        enough.
-      </p>
+      <p className="text-xs text-muted-foreground"><Translate text={"Your wallet will ask for confirmation. The token approval is skipped if you already allowed enough."} /></p>
     </aside>
   );
 }

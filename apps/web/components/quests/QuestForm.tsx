@@ -1,4 +1,6 @@
 'use client';
+import { Translate } from '@/lib/i18n/provider';
+
 import { useRef, useState } from 'react';
 import { revalidateLogic, useForm } from '@tanstack/react-form';
 import { useRouter } from 'next/navigation';
@@ -118,9 +120,7 @@ function StringListField({
           variant="legacy"
           disabled={!draft.trim() || atLimit}
           onClick={add}
-        >
-          Add
-        </Button>
+        ><Translate text={"Add"} /></Button>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
         {value.length}/{maxItems}
@@ -139,9 +139,7 @@ function StringListField({
               type="button"
               variant="legacy-link"
               onClick={() => onChange(value.filter((_, j) => j !== i))}
-            >
-              Remove
-            </Button>
+            ><Translate text={"Remove"} /></Button>
           </li>
         ))}
       </ul>
@@ -160,7 +158,7 @@ function BasicInfoSection() {
         name="title"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Title{required}</FormLabel>
+            <FormLabel><Translate text={"Title"} />{required}</FormLabel>
             <FormControl>
               <Input
                 maxLength={LIMITS.title}
@@ -179,7 +177,7 @@ function BasicInfoSection() {
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Description{required}</FormLabel>
+            <FormLabel><Translate text={"Description"} />{required}</FormLabel>
             <FormControl>
               <Textarea
                 className="min-h-28"
@@ -217,7 +215,7 @@ function RewardSection({
         name="tokenId"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Reward token{required}</FormLabel>
+            <FormLabel><Translate text={"Reward token"} />{required}</FormLabel>
             <FormControl>
               <ReactSelect<TokenOption>
                 getOptionLabel={(t) =>
@@ -253,7 +251,7 @@ function RewardSection({
           name="rewardAmount"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Reward amount{required}</FormLabel>
+              <FormLabel><Translate text={"Reward amount"} />{required}</FormLabel>
               <FormControl>
                 <Input
                   inputMode="decimal"
@@ -273,7 +271,7 @@ function RewardSection({
           name="deadline"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Deadline{required}</FormLabel>
+              <FormLabel><Translate text={"Deadline"} />{required}</FormLabel>
               <FormControl>
                 <Input
                   min={nowForDatetimeLocal()}
@@ -300,7 +298,7 @@ function DetailsSection() {
         name="milestones"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Expected milestones{required}</FormLabel>
+            <FormLabel><Translate text={"Expected milestones"} />{required}</FormLabel>
             <FormControl>
               <StringListField
                 maxItems={LIMITS.milestoneItems}
@@ -320,7 +318,7 @@ function DetailsSection() {
         name="category"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Category (optional)</FormLabel>
+            <FormLabel><Translate text={"Category (optional)"} /></FormLabel>
             <FormControl>
               <Input
                 maxLength={LIMITS.category}
@@ -339,7 +337,7 @@ function DetailsSection() {
         name="criteria"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Acceptance criteria (optional)</FormLabel>
+            <FormLabel><Translate text={"Acceptance criteria (optional)"} /></FormLabel>
             <FormControl>
               <Textarea
                 className="min-h-20"
@@ -359,7 +357,7 @@ function DetailsSection() {
         name="validationChecklist"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Validation checklist (optional)</FormLabel>
+            <FormLabel><Translate text={"Validation checklist (optional)"} /></FormLabel>
             <FormControl>
               <StringListField
                 maxItems={LIMITS.checklistItems}
@@ -639,9 +637,7 @@ export default function QuestForm() {
             onClick={goToQuests}
             type="button"
             variant="legacy"
-          >
-            Cancel
-          </Button>
+          ><Translate text={"Cancel"} /></Button>
           <Button
             disabled={submitting || walletMismatch}
             type="submit"

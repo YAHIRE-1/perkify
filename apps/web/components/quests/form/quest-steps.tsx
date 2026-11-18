@@ -1,4 +1,6 @@
 'use client';
+import { Translate, useLanguage } from '@/lib/i18n/provider';
+
 import { useEffect, useState } from 'react';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { formatUnits } from 'viem';
@@ -72,7 +74,7 @@ function Group({
     <fieldset className="surface space-y-5 p-5">
       <legend className="sr-only">{title}</legend>
       <div className="space-y-1" aria-hidden>
-        <h3 className="text-base font-semibold">{title}</h3>
+        <h3 className="text-base font-semibold"><Translate text={title} /></h3>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
       {children}
@@ -176,9 +178,7 @@ function StringListField({
           placeholder={placeholder}
           value={draft}
         />
-        <Button type="button" variant="legacy" disabled={!draft.trim() || atLimit} onClick={commit}>
-          Add
-        </Button>
+        <Button type="button" variant="legacy" disabled={!draft.trim() || atLimit} onClick={commit}><Translate text={"Add"} /></Button>
       </div>
       <div className="mt-1 flex justify-between text-xs text-muted-foreground">
         <span>{draft.trim() ? 'Press Enter or tap Add to save this item.' : ''}</span>
@@ -223,9 +223,7 @@ function StringListField({
                 type="button"
                 variant="legacy-link"
                 onClick={() => onChange(value.filter((_, j) => j !== i))}
-              >
-                Remove
-              </Button>
+              ><Translate text={"Remove"} /></Button>
             </span>
           </li>
         ))}
@@ -239,25 +237,26 @@ function StringListField({
 /* -------------------------------------------------------------------------- */
 
 export function BasicsStep() {
+  const { t } = useLanguage();
   return (
     <div className="space-y-6">
       <FormField
         name="title"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Title{required}</FormLabel>
+            <FormLabel><Translate text={"Title"} />{required}</FormLabel>
             <FormControl>
               <Input
                 maxLength={LIMITS.title}
                 name={field.name}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
-                placeholder="Share our launch on X"
+                placeholder={t("Share our launch on X")}
                 value={field.state.value}
               />
             </FormControl>
             <HintRow counter={<Counter max={LIMITS.title} value={field.state.value} />}>
-              <Hint>Short and specific. This is what people see in the list.</Hint>
+              <Hint><Translate text={"Short and specific. This is what people see in the list."} /></Hint>
             </HintRow>
             <FormMessage />
           </FormItem>
@@ -268,7 +267,7 @@ export function BasicsStep() {
         name="description"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Description{required}</FormLabel>
+            <FormLabel><Translate text={"Description"} />{required}</FormLabel>
             <FormControl>
               <Textarea
                 className="min-h-40"
@@ -280,7 +279,7 @@ export function BasicsStep() {
               />
             </FormControl>
             <HintRow counter={<Counter max={LIMITS.description} value={field.state.value} />}>
-              <Hint>What is this for and why should someone do it? At least 20 characters.</Hint>
+              <Hint><Translate text={"What is this for and why should someone do it? At least 20 characters."} /></Hint>
             </HintRow>
             <FormMessage />
           </FormItem>
@@ -291,14 +290,14 @@ export function BasicsStep() {
         name="category"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Category (optional)</FormLabel>
+            <FormLabel><Translate text={"Category (optional)"} /></FormLabel>
             <FormControl>
               <Input
                 maxLength={LIMITS.category}
                 name={field.name}
                 onBlur={field.handleBlur}
                 onChange={(e) => field.handleChange(e.target.value)}
-                placeholder="Social, Content, Development…"
+                placeholder={t("Social, Content, Development…")}
                 value={field.state.value}
               />
             </FormControl>
@@ -336,15 +335,14 @@ export function RewardStep({
   connectSlot,
   onRetryTokens,
 }: RewardStepProps) {
+  const { t } = useLanguage();
   return (
     <div className="space-y-6">
       {!isConnected && (
         <div className="surface-2 flex flex-col gap-3 p-4 text-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-0.5">
-            <p className="font-medium">Connect your wallet</p>
-            <p className="text-muted-foreground">
-              We need it to show which tokens you can use and how much you have.
-            </p>
+            <p className="font-medium"><Translate text={"Connect your wallet"} /></p>
+            <p className="text-muted-foreground"><Translate text={"We need it to show which tokens you can use and how much you have."} /></p>
           </div>
           {connectSlot}
         </div>
@@ -356,7 +354,7 @@ export function RewardStep({
             name="tokenId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Reward token{required}</FormLabel>
+                <FormLabel><Translate text={"Reward token"} />{required}</FormLabel>
                 <FormControl>
                   <ReactSelect<TokenOption>
                     getOptionLabel={(t) =>
@@ -367,11 +365,11 @@ export function RewardStep({
                     getOptionValue={(t) => t.id}
                     isDisabled={!isConnected}
                     isLoading={isLoading}
-                    noOptionsMessage={() => 'No accepted tokens'}
+                    noOptionsMessage={() => t("No accepted tokens")}
                     onBlur={field.handleBlur}
                     onChange={(option) => field.handleChange(option?.id ?? '')}
                     options={tokens}
-                    placeholder={isConnected ? 'Choose a token' : 'Connect your wallet first'}
+                    placeholder={isConnected ? t("Choose a token") : t("Connect your wallet first")}
                     value={tokens.find((t) => t.id === field.state.value) ?? null}
                   />
                 </FormControl>
@@ -379,9 +377,7 @@ export function RewardStep({
                   <p className="flex items-center gap-2 text-sm text-destructive">
                     {tokensError}
                     {onRetryTokens && (
-                      <Button type="button" variant="legacy-link" onClick={onRetryTokens}>
-                        Try again
-                      </Button>
+                      <Button type="button" variant="legacy-link" onClick={onRetryTokens}><Translate text={"Try again"} /></Button>
                     )}
                   </p>
                 )}
@@ -396,7 +392,7 @@ export function RewardStep({
               const balance = selectedToken?.balance ?? null;
               return (
                 <FormItem>
-                  <FormLabel>Reward amount{required}</FormLabel>
+                  <FormLabel><Translate text={"Reward amount"} />{required}</FormLabel>
                   <FormControl>
                     <Input
                       disabled={!selectedToken}
@@ -404,7 +400,7 @@ export function RewardStep({
                       name={field.name}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value.trim())}
-                      placeholder={selectedToken ? `25.50 ${selectedToken.symbol}` : 'Choose a token first'}
+                      placeholder={selectedToken ? `25.50 ${selectedToken.symbol}` : t("Choose a token first")}
                       value={field.state.value}
                     />
                   </FormControl>
@@ -424,9 +420,7 @@ export function RewardStep({
                           field.handleChange(maxAmountString(selectedToken));
                           field.handleBlur();
                         }}
-                      >
-                        Use max
-                      </Button>
+                      ><Translate text={"Use max"} /></Button>
                     )}
                   </div>
                   <FormMessage />
@@ -437,8 +431,8 @@ export function RewardStep({
 
         </div>
         <div className="space-y-1 text-sm text-muted-foreground">
-          {networkName && <p>Deposit network <strong className="text-foreground">{networkName}</strong></p>}
-          <p>Your reward is locked in escrow when you confirm the deposit.</p>
+          {networkName && <p><Translate text={"Deposit network"} />{' '}<strong className="text-foreground">{networkName}</strong></p>}
+          <p><Translate text={"Your reward is locked in escrow when you confirm the deposit."} /></p>
         </div>
       </div>
 
@@ -456,8 +450,8 @@ export function RewardStep({
                 />
               </FormControl>
               <div className="space-y-1">
-                <FormLabel>Boost this quest</FormLabel>
-                <Hint>Give it more visibility in the quest list.</Hint>
+                <FormLabel><Translate text={"Boost this quest"} /></FormLabel>
+                <Hint><Translate text={"Give it more visibility in the quest list."} /></Hint>
               </div>
             </div>
           </FormItem>
@@ -472,24 +466,22 @@ export function RewardStep({
 /* -------------------------------------------------------------------------- */
 
 export function TasksStep() {
+  const { t } = useLanguage();
   return (
     <div className="space-y-6">
       <FormField
         name="milestones"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>What participants must deliver{required}</FormLabel>
-            <Hint>
-              One concrete result per line, in the order they should be done. Start with a verb:
-              “Post on X with the hashtag…”.
-            </Hint>
+            <FormLabel><Translate text={"What participants must deliver"} />{required}</FormLabel>
+            <Hint><Translate text={"One concrete result per line, in the order they should be done. Start with a verb: “Post on X with the hashtag…”."} /></Hint>
             <FormControl>
               <StringListField
                 maxItems={LIMITS.milestoneItems}
                 maxLength={LIMITS.milestoneLength}
                 numbered
                 onChange={field.handleChange}
-                placeholder="Add a deliverable"
+                placeholder={t("Add a deliverable")}
                 reorderable
                 value={field.state.value}
               />
@@ -503,7 +495,7 @@ export function TasksStep() {
         name="criteria"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Acceptance criteria (optional)</FormLabel>
+            <FormLabel><Translate text={"Acceptance criteria (optional)"} /></FormLabel>
             <FormControl>
               <Textarea
                 className="min-h-24"
@@ -515,7 +507,7 @@ export function TasksStep() {
               />
             </FormControl>
             <HintRow counter={<Counter max={LIMITS.criteria} value={field.state.value} />}>
-              <Hint>Describe what a submission needs to meet for you to approve it.</Hint>
+              <Hint><Translate text={"Describe what a submission needs to meet for you to approve it."} /></Hint>
             </HintRow>
             <FormMessage />
           </FormItem>
@@ -526,14 +518,14 @@ export function TasksStep() {
         name="validationChecklist"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Review checklist (optional)</FormLabel>
-            <Hint>Things you will check on every submission.</Hint>
+            <FormLabel><Translate text={"Review checklist (optional)"} /></FormLabel>
+            <Hint><Translate text={"Things you will check on every submission."} /></Hint>
             <FormControl>
               <StringListField
                 maxItems={LIMITS.checklistItems}
                 maxLength={LIMITS.checklistLength}
                 onChange={field.handleChange}
-                placeholder="Add something to check"
+                placeholder={t("Add something to check")}
                 reorderable
                 value={field.state.value}
               />
@@ -581,7 +573,7 @@ function NumberField({
         return (
           <FormItem>
             <FormLabel>
-              {label}
+              <Translate text={label} />
               {required}
             </FormLabel>
             <FormControl>
@@ -597,7 +589,7 @@ function NumberField({
               />
             </FormControl>
             <Hint>
-              {hint}
+              <Translate text={hint} />
               {hours && Number.isFinite(n) && n >= 48 ? ` That is ${formatHours(n)}.` : ''}
             </Hint>
             <FormMessage />
@@ -638,7 +630,7 @@ export function TimingStep({ values, issues, setValue }: TimingStepProps) {
           name="deadline"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Deadline{required}</FormLabel>
+              <FormLabel><Translate text={"Deadline"} />{required}</FormLabel>
               <FormControl>
                 <Input
                   min={toDatetimeLocal(minimumDeadline(values))}
@@ -649,7 +641,7 @@ export function TimingStep({ values, issues, setValue }: TimingStepProps) {
                   value={field.state.value}
                 />
               </FormControl>
-              <Hint>Your time zone: {userTimeZoneLabel()}</Hint>
+              <Hint><Translate text={"Your time zone:"} />{' '}{userTimeZoneLabel()}</Hint>
 
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 {recommended && (
@@ -657,9 +649,7 @@ export function TimingStep({ values, issues, setValue }: TimingStepProps) {
                     active={field.state.value === recommended}
                     onClick={() => field.handleChange(recommended)}
                     title="The earliest date that still lets someone who joins now submit and be reviewed."
-                  >
-                    Suggested earliest close
-                  </Chip>
+                  ><Translate text={"Suggested earliest close"} /></Chip>
                 )}
                 {presets.map((p) => (
                   <Chip
@@ -686,19 +676,16 @@ export function TimingStep({ values, issues, setValue }: TimingStepProps) {
         open={showSettings}
         onToggle={(event) => setShowSettings(event.currentTarget.open)}
       >
-        <summary className="cursor-pointer text-sm font-semibold">Participation settings</summary>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Up to {formatHours(values.submitWindowHours)} to submit and {formatHours(values.reviewWindowHours)} to review.
-          {' '}{values.maxParticipants === 0 ? 'Unlimited spots' : `${values.maxParticipants} spots`}
-          {' · '}{values.maxAttempts} {values.maxAttempts === 1 ? 'attempt' : 'attempts'} per hunter.
-        </p>
+        <summary className="cursor-pointer text-sm font-semibold"><Translate text={"Participation settings"} /></summary>
+        <p className="mt-2 text-sm text-muted-foreground"><Translate text={"Up to"} />{' '}{formatHours(values.submitWindowHours)}{' '}<Translate text={"to submit and"} />{' '}{formatHours(values.reviewWindowHours)}{' '}<Translate text={"to review."} />{' '}{values.maxParticipants === 0 ? 'Unlimited spots' : `${values.maxParticipants} spots`}
+          {' · '}{values.maxAttempts} {values.maxAttempts === 1 ? 'attempt' : 'attempts'}{' '}<Translate text={"per hunter."} /></p>
         <div className="mt-4 space-y-4">
           <Group
             description="Once someone joins, the clock starts. These three numbers decide how long it takes from start to payout."
             title="Time for each participant"
           >
             <div className="space-y-2">
-              <p className="text-sm font-medium">Quick setup</p>
+              <p className="text-sm font-medium"><Translate text={"Quick setup"} /></p>
               <div className="grid gap-2 sm:grid-cols-3">
                 {PACES.map((p) => {
                   const active =
@@ -717,13 +704,13 @@ export function TimingStep({ values, issues, setValue }: TimingStepProps) {
                       }}
                       type="button"
                     >
-                      <span className="block font-medium">{p.label}</span>
-                      <span className="block text-xs text-muted-foreground">{p.detail}</span>
+                      <span className="block font-medium"><Translate text={p.label} /></span>
+                      <span className="block text-xs text-muted-foreground"><Translate text={p.detail} /></span>
                     </button>
                   );
                 })}
               </div>
-              <Hint>Or set your own numbers below.</Hint>
+              <Hint><Translate text={"Or set your own numbers below."} /></Hint>
             </div>
 
             <div className="grid gap-5 sm:grid-cols-3">
@@ -760,9 +747,7 @@ export function TimingStep({ values, issues, setValue }: TimingStepProps) {
                 const noLimit = field.state.value === 0;
                 return (
                   <FormItem>
-                    <FormLabel>
-                      Max participants
-                      {required}
+                    <FormLabel><Translate text={"Max participants"} />{required}
                     </FormLabel>
                     <div className="flex flex-wrap items-center gap-4">
                       <FormControl>
@@ -787,9 +772,7 @@ export function TimingStep({ values, issues, setValue }: TimingStepProps) {
                             field.handleChange(e.target.checked ? 0 : QUEST_DEFAULTS.maxParticipants)
                           }
                           type="checkbox"
-                        />
-                        No limit
-                      </label>
+                        /><Translate text={"No limit"} /></label>
                     </div>
                     <FormMessage />
                   </FormItem>

@@ -1,4 +1,5 @@
 'use client';
+import { Translate } from '@/lib/i18n/provider';
 
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -26,7 +27,7 @@ const dateFormat = new Intl.DateTimeFormat('en-US', {
 function QuestDetailSkeleton() {
   return (
     <div className="space-y-5" role="status">
-      <p className="sr-only">Loading quest</p>
+      <p className="sr-only"><Translate text={"Loading quest"} /></p>
       <div aria-hidden className="surface h-36 motion-safe:animate-pulse" />
       <div aria-hidden className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="surface h-72 motion-safe:animate-pulse" />
@@ -46,8 +47,7 @@ export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
   const { data: quest, isLoading, error } = useGetQuest(id, !!user);
   const back = (
     <Link href={backHref} className="inline-flex items-center gap-2 text-sm font-medium text-[var(--muted)] hover:text-[var(--accent-text)]">
-      <ArrowLeft aria-hidden className="size-4" /> Back to quests
-    </Link>
+      <ArrowLeft aria-hidden className="size-4" />{' '}<Translate text={"Back to quests"} /></Link>
   );
 
   if (loading || isLoading) {
@@ -68,9 +68,7 @@ export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
                 toast.error(reason instanceof Error ? reason.message : 'Could not connect your wallet.');
               })}
               type="button"
-            >
-              Connect wallet
-            </button>
+            ><Translate text={"Connect wallet"} /></button>
           }
         />
       </div>
@@ -108,9 +106,7 @@ export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
           >
             <QuestAction quest={quest} />
             {quest.isOwner && isDraft && (
-              <Link href={`/quests/${quest.id}/edit`} className="btn btn-primary w-full">
-                Edit quest
-              </Link>
+              <Link href={`/quests/${quest.id}/edit`} className="btn btn-primary w-full"><Translate text={"Edit quest"} /></Link>
             )}
           </QuestReward>
 
@@ -122,14 +118,14 @@ export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
           />
 
           <details className="surface space-y-3 p-5">
-            <summary className="cursor-pointer font-display font-semibold">Quest history</summary>
+            <summary className="cursor-pointer font-display font-semibold"><Translate text={"Quest history"} /></summary>
             <dl className="grid gap-2 text-sm">
               <div>
-                <dt className="text-[var(--muted)]">Created</dt>
+                <dt className="text-[var(--muted)]"><Translate text={"Created"} /></dt>
                 <dd>{dateFormat.format(new Date(quest.createdAt))}</dd>
               </div>
               <div>
-                <dt className="text-[var(--muted)]">Last updated</dt>
+                <dt className="text-[var(--muted)]"><Translate text={"Last updated"} /></dt>
                 <dd>{dateFormat.format(new Date(quest.updatedAt))}</dd>
               </div>
             </dl>

@@ -1,3 +1,4 @@
+import { Translate } from '@/lib/i18n/provider';
 import type { QuestDetail } from '@/hooks/participations/use-participation';
 
 export const ROAD_ID = 'quest-road';
@@ -42,10 +43,10 @@ export default function QuestAction({ quest }: Props) {
     <div className="space-y-2 border-t border-[var(--border)] pt-4">
       {label && (
         <a href={`#${ROAD_ID}`} className="btn btn-primary w-full">
-          {label}
+          <Translate text={label} />
         </a>
       )}
-      {note && <p className="muted text-center text-sm">{note}</p>}
+      {note && <p className="muted text-center text-sm"><Translate text={note} /></p>}
     </div>
   );
 }

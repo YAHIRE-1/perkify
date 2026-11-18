@@ -1,4 +1,6 @@
 'use client';
+import { Translate } from '@/lib/i18n/provider';
+
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { formatHours, type QuestFormValues } from '@perkify/db/validations/quest';
 import {
@@ -35,12 +37,10 @@ export function QuestTimeline({ values, issues }: Props) {
 
   return (
     <div aria-live="polite" className="surface space-y-4 p-5">
-      <h3 className="text-sm font-medium">How it will work</h3>
+      <h3 className="text-sm font-medium"><Translate text={"How it will work"} /></h3>
 
       {!model ? (
-        <p className="text-sm text-muted-foreground">
-          Choose how long people have and pick a deadline to see the schedule.
-        </p>
+        <p className="text-sm text-muted-foreground"><Translate text={"Choose how long people have and pick a deadline to see the schedule."} /></p>
       ) : (
         <>
           {model.status !== 'error' && (
@@ -68,17 +68,13 @@ export function QuestTimeline({ values, issues }: Props) {
               <ul className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                 {model.joinHours > 0 && (
                   <li className="flex items-center gap-1.5">
-                    <span className="size-2 rounded-full bg-muted-foreground opacity-30" />
-                    Time to join with full windows
-                  </li>
+                    <span className="size-2 rounded-full bg-muted-foreground opacity-30" /><Translate text={"Time to join with full windows"} /></li>
                 )}
                 <li className="flex items-center gap-1.5">
-                  <span className="size-2 rounded-full bg-primary" />
-                  Submit ({formatHours(model.submitHours)})
+                  <span className="size-2 rounded-full bg-primary" /><Translate text={"Submit ("} />{formatHours(model.submitHours)})
                 </li>
                 <li className="flex items-center gap-1.5">
-                  <span className="size-2 rounded-full bg-primary opacity-50" />
-                  Your review ({formatHours(model.reviewHours)})
+                  <span className="size-2 rounded-full bg-primary opacity-50" /><Translate text={"Your review ("} />{formatHours(model.reviewHours)})
                 </li>
               </ul>
             </div>
@@ -86,10 +82,8 @@ export function QuestTimeline({ values, issues }: Props) {
 
           <ol className="space-y-3 text-sm">
             <li>
-              <p className="font-medium">When you confirm</p>
-              <p className="text-muted-foreground">
-                You lock the reward in escrow and the quest goes live.
-              </p>
+              <p className="font-medium"><Translate text={"When you confirm"} /></p>
+              <p className="text-muted-foreground"><Translate text={"You lock the reward in escrow and the quest goes live."} /></p>
             </li>
             <li>
               <p className="font-medium">
@@ -97,24 +91,18 @@ export function QuestTimeline({ values, issues }: Props) {
                   ? `Join by ${fmt(model.joinCutoff)} for the full windows`
                   : 'The full submission and review windows don’t fit'}
               </p>
-              <p className="text-muted-foreground">
-                Hunters can still join until the quest closes if a spot is available.
-                Their submission window ends at the closing time or earlier.
-              </p>
+              <p className="text-muted-foreground"><Translate text={"Hunters can still join until the quest closes if a spot is available. Their submission window ends at the closing time or earlier."} /></p>
             </li>
             <li>
-              <p className="font-medium">
-                Each hunter gets up to {formatHours(model.submitHours)} to submit
-              </p>
-              <p className="text-muted-foreground">
-                Then you have {formatHours(model.reviewHours)} to approve or reject.{' '}
+              <p className="font-medium"><Translate text={"Each hunter gets up to"} />{' '}{formatHours(model.submitHours)}{' '}<Translate text={"to submit"} /></p>
+              <p className="text-muted-foreground"><Translate text={"Then you have"} />{' '}{formatHours(model.reviewHours)}{' '}<Translate text={"to approve or reject."} />{' '}
                 {model.attempts === 1
                   ? 'They get one attempt.'
                   : `They can try up to ${model.attempts} times.`}
               </p>
             </li>
             <li>
-              <p className="font-medium">The quest closes on {fmt(model.deadline)}</p>
+              <p className="font-medium"><Translate text={"The quest closes on"} />{' '}{fmt(model.deadline)}</p>
               {POLICY_COPY.refund && <p className="text-muted-foreground">{POLICY_COPY.refund}</p>}
             </li>
           </ol>
@@ -141,9 +129,7 @@ export function QuestTimeline({ values, issues }: Props) {
       ) : (
         model && (
           <p className="flex items-center gap-2 border-t pt-3 text-sm text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 aria-hidden className="size-4 shrink-0" />
-            The schedule fits: people have time to submit and be reviewed.
-          </p>
+            <CheckCircle2 aria-hidden className="size-4 shrink-0" /><Translate text={"The schedule fits: people have time to submit and be reviewed."} /></p>
         )
       )}
     </div>

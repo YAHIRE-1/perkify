@@ -1,3 +1,4 @@
+import { Translate } from '@/lib/i18n/provider';
 import type { QuestMilestone } from './quest-detail.types';
 
 type Props = {
@@ -15,7 +16,7 @@ export default function QuestMilestones({
 
   return (
     <section className="space-y-3">
-      <h2 className="font-display text-xl font-semibold">What to deliver</h2>
+      <h2 className="font-display text-xl font-semibold"><Translate text={"What to deliver"} /></h2>
 
       <ol className="space-y-2">
         {ordered.map((milestone, index) => (
