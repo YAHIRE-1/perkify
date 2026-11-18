@@ -1,109 +1,160 @@
 'use client';
-import { useEffect, useState } from 'react';
-import Field from '@/components/Field';
+
+import { useState } from 'react';
+import { Copy, Wallet } from 'lucide-react';
+import { toast } from 'sonner';
+import { Avatar, AvatarFallback, AvatarImage } from '@perkify/ui/components/avatar';
+import { Input } from '@perkify/ui/components/input';
+import { Textarea } from '@perkify/ui/components/textarea';
 import EmptyState from '@/components/EmptyState';
-import { useMe, useUpdateMe } from '@/hooks/useAuth'; // ajusta la ruta a donde viva tu hook
+import { useAuth } from '@/components/Providers';
+import { useMe, useUpdateMe } from '@/hooks/useAuth';
+import type { SessionUser } from '@/lib/auth-client';
 
-export default function Profile() {
-  const { data: user, isLoading, refetch } = useMe();
-  const updateMe = useUpdateMe();
+type ProfileFields = { name: string; avatarUrl: string; bio: string };
 
-  const [f, setF] = useState({ name: '', avatarUrl: '', bio: '' });
-  const [msg, setMsg] = useState<string | null>(null);
+function ProfileEditor({ user, refetch }: { user: SessionUser; refetch: ReturnType<typeof useMe>['refetch'] }) {
+  const saved = { name: user.name ?? '', avatarUrl: user.avatarUrl ?? '', bio: user.bio ?? '' };
+  const [draft, setDraft] = useState<ProfileFields | null>(null);
+  const fields = draft ?? saved;
+  const update = useUpdateMe();
+  const wallet = user.walletAddress;
+  const name = fields.name.trim();
+  const initials = name
+    ? name.split(/\s+/).slice(0, 2).map((part) => part[0]).join('').toUpperCase()
+    : wallet?.slice(2, 4).toUpperCase() || '?';
+  const changed = fields.name !== saved.name || fields.avatarUrl !== saved.avatarUrl || fields.bio !== saved.bio;
 
-  useEffect(() => {
-    if (user) {
-      setF({
-        name: user.name ?? '',
-        avatarUrl: user.avatarUrl ?? '',
-        bio: user.bio ?? '',
-      });
-    }
-  }, [user]);
-
-  if (isLoading) return null;
-
-  if (!user) {
-    return (
-      <EmptyState
-        title="Connect your wallet to view your profile"
-        action={
-          // TODO: conectar con tu flujo de login (authClient.signIn..., etc.)
-          <button className="btn btn-primary" onClick={() => {}}>
-            Connect wallet
-          </button>
-        }
-      />
-    );
-  }
-
-  const save = () => {
-    setMsg(null);
-    updateMe.mutate(f, {
-      onSuccess: async () => {
-        await refetch();
-        setMsg('Profile saved');
-      },
-      onError: (e) => setMsg(e.message),
-    });
+  const change = (field: keyof ProfileFields, value: string) => {
+    setDraft((current) => ({ ...(current ?? saved), [field]: value }));
+    update.reset();
   };
 
-  const wallet = user.walletAddress;
-  const initials = (f.name || wallet || '??').slice(0, 2).toUpperCase();
+  const copyWallet = async () => {
+    if (!wallet) return;
+    try {
+      await navigator.clipboard.writeText(wallet);
+      toast.success('Wallet address copied');
+    } catch {
+      toast.error('Could not copy the wallet address');
+    }
+  };
 
   return (
-    <div className="mx-auto max-w-xl space-y-4">
-      <h1 className="font-display text-3xl font-bold">Your Profile</h1>
-      <div className="surface space-y-4 p-6">
-        <div className="flex items-center gap-4">
-          <div
-            className="grid h-16 w-16 place-items-center overflow-hidden rounded-full text-xl font-bold"
-            style={{ background: 'var(--lime)', color: 'var(--on-lime)' }}
-          >
-            {f.avatarUrl ? (
-              <img src={f.avatarUrl} alt="" className="h-full w-full object-cover" />
-            ) : (
-              initials
-            )}
-          </div>
-          <div className="min-w-0">
-            <div className="muted-2 text-xs">Wallet</div>
-            <div className="truncate text-sm">{wallet ?? 'No address'}</div>
-            {user.role && <span className="chip chip-cyan mt-1">{user.role}</span>}
+    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,19rem)_minmax(0,1fr)]">
+      <aside aria-label="Profile preview" className="surface space-y-5 p-5 sm:p-6">
+        <div className="flex items-center gap-3">
+          <Avatar className="size-16">
+            <AvatarImage src={fields.avatarUrl.trim() || undefined} alt="" referrerPolicy="no-referrer" />
+            <AvatarFallback className="bg-[var(--lime)] text-lg font-semibold text-[var(--on-lime)]">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 space-y-1">
+            <p className="font-display wrap-anywhere text-xl font-semibold">{name || 'Your profile'}</p>
           </div>
         </div>
-        <Field label="Name">
-          <input
-            className="input"
-            value={f.name}
-            onChange={(e) => setF({ ...f, name: e.target.value })}
-          />
-        </Field>
-        <Field label="Avatar URL">
-          <input
-            className="input"
-            value={f.avatarUrl}
-            onChange={(e) => setF({ ...f, avatarUrl: e.target.value })}
-          />
-        </Field>
-        <Field label="Bio">
-          <textarea
-            className="input min-h-24"
-            value={f.bio}
-            onChange={(e) => setF({ ...f, bio: e.target.value })}
-          />
-        </Field>
-        <div className="flex items-center gap-3">
+
+        {fields.bio.trim() && (
+          <p className="whitespace-pre-wrap wrap-anywhere text-sm leading-relaxed text-[var(--muted)]">
+            {fields.bio.trim()}
+          </p>
+        )}
+
+        <div className="space-y-2 border-t border-[var(--border)] pt-4">
+          <p className="flex items-center gap-2 text-xs font-semibold text-[var(--muted)]">
+            <Wallet aria-hidden className="size-4" /> Wallet address
+          </p>
+          {wallet ? (
+            <div className="flex items-center gap-2">
+              <code className="min-w-0 flex-1 wrap-anywhere text-xs">{wallet}</code>
+              <button aria-label="Copy wallet address" className="btn shrink-0" onClick={copyWallet} type="button">
+                <Copy aria-hidden className="size-4" />
+              </button>
+            </div>
+          ) : (
+            <p className="text-sm text-[var(--muted)]">No wallet linked</p>
+          )}
+        </div>
+      </aside>
+
+      <form
+        className="surface space-y-5 p-5 sm:p-7"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!changed || update.isPending) return;
+          update.mutate(fields, {
+            onSuccess: async () => {
+              await refetch();
+              setDraft(null);
+            },
+          });
+        }}
+      >
+        <h2 className="font-display text-xl font-semibold">Edit profile</h2>
+        <fieldset className="space-y-4" disabled={update.isPending}>
+          <div className="grid gap-2">
+            <label className="text-sm font-semibold text-[var(--accent-text)]" htmlFor="profile-name">Display name</label>
+            <Input id="profile-name" autoComplete="nickname" value={fields.name} onChange={(event) => change('name', event.target.value)} />
+          </div>
+          <div className="grid gap-2">
+            <label className="text-sm font-semibold text-[var(--accent-text)]" htmlFor="profile-avatar">Avatar URL</label>
+            <Input id="profile-avatar" type="url" placeholder="https://…" value={fields.avatarUrl} onChange={(event) => change('avatarUrl', event.target.value)} />
+          </div>
+          <div className="grid gap-2">
+            <label className="text-sm font-semibold text-[var(--accent-text)]" htmlFor="profile-bio">Bio</label>
+            <Textarea id="profile-bio" className="min-h-28" value={fields.bio} onChange={(event) => change('bio', event.target.value)} />
+          </div>
+        </fieldset>
+
+        {update.isError && <p role="alert" className="text-sm text-destructive">{update.error.message}</p>}
+        {update.isSuccess && <p role="status" className="text-sm text-[var(--accent-text)]">Profile saved</p>}
+        <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4">
+          <button type="button" className="btn" disabled={!changed || update.isPending} onClick={() => {
+            setDraft(null);
+            update.reset();
+          }}>
+            Discard changes
+          </button>
+          <button type="submit" className="btn btn-primary" disabled={!changed || update.isPending}>
+            {update.isPending ? 'Saving…' : 'Save changes'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+export default function Profile() {
+  const { login, loading } = useAuth();
+  const { data: user, isLoading, error, refetch } = useMe();
+
+  return (
+    <div className="mx-auto max-w-5xl space-y-5">
+      <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Your profile</h1>
+      {loading || isLoading ? (
+        <div role="status" className="surface h-36 motion-safe:animate-pulse">
+          <span className="sr-only">Loading profile</span>
+        </div>
+      ) : error ? (
+        <EmptyState title="Could not load your profile" action={
+          <button className="btn" onClick={() => void refetch()} type="button">Try again</button>
+        } />
+      ) : user ? (
+        <ProfileEditor key={user.id} user={user} refetch={refetch} />
+      ) : (
+        <EmptyState title="Connect your wallet to view your profile" action={
           <button
             className="btn btn-primary"
-            onClick={save}
-            disabled={updateMe.isPending}
+            onClick={() => login().catch((reason: unknown) => toast.error(
+              reason instanceof Error ? reason.message : 'Could not connect your wallet.',
+            ))}
+            type="button"
           >
-            {updateMe.isPending ? 'Saving…' : 'Save changes'}
+            Connect wallet
           </button>
-          {msg && <span className="muted text-sm">{msg}</span>}
-        </div>
-      </div>
+        } />
+      )}
     </div>
   );
 }
