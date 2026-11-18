@@ -6,7 +6,7 @@ import { QuestsFilters, type QuestFilterValues } from '@/components/quests/quest
 import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/components/Providers';
-import { useListQuests, type ListInput } from '@/hooks/quest/use-quest';
+import { useMyQuests, type ListInput } from '@/hooks/quest/use-quest';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 
 
@@ -18,7 +18,6 @@ export default function MyQuests() {
   const [filters, setFilters] = useState<ListInput>({
     page: 1,
     limit: LIMIT,
-    mine: true,
   });
   const debouncedFilters = useDebouncedValue(filters, 250);
 
@@ -26,14 +25,10 @@ export default function MyQuests() {
     if (!authLoading && !user) router.replace('/dashboard');
   }, [authLoading, user, router]);
 
-  const { data, error, isPending, isPlaceholderData } = useListQuests(
-    debouncedFilters,
-    { enabled: !!user }
-  );
+  const { data, error, isPending, isPlaceholderData } = useMyQuests(debouncedFilters, !!user);
 
-  // `mine` siempre es true en esta vista, y cualquier cambio de filtro regresa a la página 1
   const handleFilterChange = (patch: Partial<QuestFilterValues>) =>
-    setFilters((prev) => ({ ...prev, ...patch, mine: true, page: 1 }));
+    setFilters((prev) => ({ ...prev, ...patch, page: 1 }));
 
   if (authLoading || !user) return <div className="muted">Loading…</div>;
 
@@ -46,7 +41,6 @@ export default function MyQuests() {
       <QuestsFilters
         value={filters}
         onChange={handleFilterChange}
-        showMineFilter={false}
       />
 
       {error ? (

@@ -46,7 +46,6 @@ export default function Marketplace() {
       <QuestsFilters
         value={filters}
         onChange={handleFilterChange}
-        showMineFilter={!!user}
       />
 
       {error ? (

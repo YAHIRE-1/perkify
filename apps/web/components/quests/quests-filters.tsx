@@ -10,7 +10,7 @@ type ListInput = AppRouterInputs["quests"]["list"];
 
 export type QuestFilterValues = Pick<
 	ListInput,
-	"search" | "category" | "tokenId" | "isBoosted" | "mine"
+	"search" | "category" | "tokenId" | "isBoosted"
 >;
 
 export type TokenOption = { id: string; symbol: string };
@@ -20,16 +20,10 @@ const boostedOptions = [
 	{ value: "boosted", label: "Boosted only" },
 ];
 
-const ownerOptions = [
-	{ value: "all", label: "All quests" },
-	{ value: "mine", label: "My quests" },
-];
-
 type QuestsFiltersProps = {
 	value: QuestFilterValues;
 	onChange: (patch: Partial<QuestFilterValues>) => void;
 	tokens?: TokenOption[];
-	showMineFilter?: boolean;
 	showTokenAndBoostFilters?: boolean;
 };
 
@@ -37,7 +31,6 @@ export function QuestsFilters({
 	value,
 	onChange,
 	tokens = [],
-	showMineFilter = true,
 	showTokenAndBoostFilters = true,
 }: QuestsFiltersProps) {
 	const tokenOptions = useMemo(
@@ -54,9 +47,8 @@ export function QuestsFilters({
 	const hasCategory = !!value.category?.trim();
 	const hasToken = showTokenAndBoostFilters && !!value.tokenId;
 	const hasBoosted = showTokenAndBoostFilters && !!value.isBoosted;
-	const hasMine = showMineFilter && !!value.mine;
 	const hasActiveFilters =
-		hasSearch || hasCategory || hasToken || hasBoosted || hasMine;
+		hasSearch || hasCategory || hasToken || hasBoosted;
 
 	const clearAllFilters = () =>
 		onChange({
@@ -64,7 +56,6 @@ export function QuestsFilters({
 			category: undefined,
 			tokenId: undefined,
 			isBoosted: undefined,
-			mine: undefined,
 		});
 
 	return (
@@ -121,19 +112,7 @@ export function QuestsFilters({
 						/>
 					</>
 				)}
-				{showMineFilter && (
-					<ReactSelect
-						className="min-w-40 flex-1"
-						onChange={(option) =>
-							onChange({ mine: option?.value === "mine" ? true : undefined })
-						}
-						options={ownerOptions}
-						placeholder="Owner"
-						value={ownerOptions.find(
-							(opt) => opt.value === (value.mine ? "mine" : "all"),
-						)}
-					/>
-				)}
+
 			</div>
 
 			{/* Row 3: Active filter badges */}
@@ -179,16 +158,6 @@ export function QuestsFilters({
 							variant="outline"
 						>
 							Boosted only
-							<X className="ml-1 size-3" />
-						</Badge>
-					)}
-					{hasMine && (
-						<Badge
-							className="cursor-pointer hover:bg-muted"
-							onClick={() => onChange({ mine: undefined })}
-							variant="outline"
-						>
-							My quests
 							<X className="ml-1 size-3" />
 						</Badge>
 					)}

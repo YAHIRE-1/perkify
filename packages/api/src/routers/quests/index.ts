@@ -6,7 +6,7 @@ import { create } from "./create";
 import { getEvidence } from "./get-evidence";
 import { get } from "./get";
 import { join } from "./join";
-import { list } from "./list";
+import { list, mine } from "./list";
 import { review } from "./review";
 import { submitEvidence } from "./submit-evidence";
 import { update } from "./update";
@@ -18,6 +18,7 @@ export const questsRouter = o
   .tag("Quests")
   .router({
     list,
+    mine,
     get,
     create,
     update,

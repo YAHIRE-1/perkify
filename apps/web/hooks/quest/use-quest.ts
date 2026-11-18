@@ -21,6 +21,14 @@ export function useListQuests(
   });
 }
 
+export function useMyQuests(params: ListInput, enabled: boolean) {
+  return useQuery({
+    ...orpc.quests.mine.queryOptions({ input: params }),
+    placeholderData: keepPreviousData,
+    enabled,
+  });
+}
+
 export function useGetQuest(id: string) {
   return useQuery(orpc.quests.get.queryOptions({ input: { id } }));
 }
