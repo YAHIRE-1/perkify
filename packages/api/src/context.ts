@@ -12,5 +12,6 @@ export interface Context {
   notificationMailer: NotificationMailer | undefined;
   notificationWebOrigin: string;
   notificationCodeSecret: string;
+  questTranslationApiKey: string | undefined;
   getPublicClient: (chainId: SupportedChainId) => PublicClient;
 }

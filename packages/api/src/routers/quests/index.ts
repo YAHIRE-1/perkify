@@ -10,6 +10,7 @@ import { list, mine } from "./list";
 import { review } from "./review";
 import { submitEvidence } from "./submit-evidence";
 import { update } from "./update";
+import { translate } from "./translate";
 import { uploadUrl } from "./upload-url";
 import { confirmPayout } from "./confirm-payout";
 
@@ -22,6 +23,7 @@ export const questsRouter = o
     get,
     create,
     update,
+    translate,
     archive,
     confirm,
     claimReward,

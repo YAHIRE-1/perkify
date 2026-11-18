@@ -23,6 +23,7 @@ export async function createContext({
     notificationMailer,
     notificationWebOrigin: ENV.CORS_ORIGIN,
     notificationCodeSecret: ENV.BETTER_AUTH_SECRET,
+    questTranslationApiKey: ENV.GOOGLE_TRANSLATE_API_KEY,
   };
 }
 
