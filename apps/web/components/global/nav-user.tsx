@@ -46,7 +46,7 @@ function UserIdentity({ name, subtitle, image }: IdentityProps) {
   return (
     <>
       <Avatar>
-        {image ? <AvatarImage alt="" src={image} /> : null}
+        {image ? <AvatarImage alt="" src={image} referrerPolicy="no-referrer" /> : null}
         <AvatarFallback>{initials(name) || '?'}</AvatarFallback>
       </Avatar>
       <div className="grid flex-1 text-left text-sm leading-tight">
@@ -71,7 +71,7 @@ export function NavUser() {
   const identity: IdentityProps = {
     name: user.name || wallet,
     subtitle: user.name ? wallet : undefined,
-    image: user.image,
+    image: user.avatarUrl?.trim(),
   };
 
   return (
