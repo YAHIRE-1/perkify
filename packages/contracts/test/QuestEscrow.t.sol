@@ -57,6 +57,45 @@ contract QuestEscrowTest is Test {
 
     // ---------- helpers ----------
 
+    function test_expiryRefundPaysCreatorOnceAtDeadline() public {
+        assertTrue(escrow.supportsExpiryRefunds());
+        uint256 id = _create();
+        uint256 beforeRefund = token.balanceOf(creator);
+        vm.expectRevert(QuestEscrow.TooEarly.selector);
+        vm.prank(signer);
+        escrow.refundExpired(id);
+
+        vm.warp(deadline);
+        vm.expectRevert(QuestEscrow.NotSigner.selector);
+        vm.prank(creator);
+        escrow.refundExpired(id);
+
+        vm.prank(signer);
+        escrow.refundExpired(id);
+        assertEq(token.balanceOf(creator), beforeRefund + REWARD);
+        assertEq(uint256(_status(id)), uint256(QuestEscrow.Status.Refunded));
+
+        vm.expectRevert(QuestEscrow.WrongStatus.selector);
+        vm.prank(signer);
+        escrow.refundExpired(id);
+    }
+
+    function test_expiryRefundPreservesApprovedAndDisputedEscrows() public {
+        uint256 approved = _create();
+        uint256 disputed = _create();
+        _approve(approved, luis);
+        vm.prank(arbiter);
+        escrow.openDispute(disputed);
+
+        vm.warp(deadline);
+        vm.startPrank(signer);
+        vm.expectRevert(QuestEscrow.WrongStatus.selector);
+        escrow.refundExpired(approved);
+        vm.expectRevert(QuestEscrow.WrongStatus.selector);
+        escrow.refundExpired(disputed);
+        vm.stopPrank();
+    }
+
     function _create() internal returns (uint256 id) {
         vm.startPrank(creator);
         token.approve(address(escrow), REWARD);

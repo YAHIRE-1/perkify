@@ -280,6 +280,19 @@ export const questEscrowAbi = [
   },
   {
     "type": "function",
+    "name": "refundExpired",
+    "inputs": [
+      {
+        "name": "id",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
     "name": "resolveDispute",
     "inputs": [
       {
@@ -318,6 +331,19 @@ export const questEscrowAbi = [
         "name": "",
         "type": "address",
         "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "supportsExpiryRefunds",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
       }
     ],
     "stateMutability": "view"
@@ -482,6 +508,19 @@ export const questEscrowAbi = [
   },
   {
     "type": "event",
+    "name": "QuestExpiredRefunded",
+    "inputs": [
+      {
+        "name": "id",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "QuestRefunded",
     "inputs": [
       {
@@ -598,6 +637,11 @@ export const questEscrowAbi = [
   {
     "type": "error",
     "name": "NotCreator",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "NotSigner",
     "inputs": []
   },
   {

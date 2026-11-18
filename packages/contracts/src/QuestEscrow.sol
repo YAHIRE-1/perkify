@@ -30,6 +30,7 @@ contract QuestEscrow is ReentrancyGuard, EIP712 {
     }
 
     uint64 public constant EMERGENCY_REFUND_DELAY = 30 days;
+    bool public constant supportsExpiryRefunds = true;
 
     bytes32 private constant APPROVAL_TYPEHASH =
         keccak256("Approval(uint256 id,address creator,address winner,uint64 expiry)");
@@ -47,6 +48,7 @@ contract QuestEscrow is ReentrancyGuard, EIP712 {
     event QuestApproved(uint256 indexed id, address indexed winner);
     event RewardPaid(uint256 indexed id, address indexed winner, uint256 amount);
     event QuestRefunded(uint256 indexed id, address indexed creator, uint256 amount);
+    event QuestExpiredRefunded(uint256 indexed id);
     event DisputeOpened(uint256 indexed id);
     event DisputeResolved(uint256 indexed id, address indexed arbiter, address indexed winner);
     event SignerChanged(address indexed signer);
@@ -56,6 +58,7 @@ contract QuestEscrow is ReentrancyGuard, EIP712 {
     error NotCreator();
     error NotArbiter();
     error NotWinner();
+    error NotSigner();
     error WrongStatus();
     error TooEarly();
     error BadParams();
@@ -143,9 +146,17 @@ contract QuestEscrow is ReentrancyGuard, EIP712 {
 
         _verify(keccak256(abi.encode(CANCEL_TYPEHASH, id, msg.sender, expiry)), sig);
 
-        q.status = Status.Refunded;
-        q.token.safeTransfer(q.creator, q.reward);
-        emit QuestRefunded(id, q.creator, q.reward);
+        _refund(id, q);
+    }
+
+    /// The platform signer can settle expired quests after checking off-chain claims.
+    function refundExpired(uint256 id) external nonReentrant {
+        if (msg.sender != signer) revert NotSigner();
+        Quest storage q = quests[id];
+        if (q.creator == address(0) || q.status != Status.Funded) revert WrongStatus();
+        if (block.timestamp < q.deadline) revert TooEarly();
+        _refund(id, q);
+        emit QuestExpiredRefunded(id);
     }
 
     /// Salida de emergencia sin firma: si la plataforma desaparece, el dinero no queda bloqueado.
@@ -155,9 +166,7 @@ contract QuestEscrow is ReentrancyGuard, EIP712 {
         if (q.status != Status.Funded) revert WrongStatus();
         if (block.timestamp < uint256(q.deadline) + EMERGENCY_REFUND_DELAY) revert TooEarly();
 
-        q.status = Status.Refunded;
-        q.token.safeTransfer(q.creator, q.reward);
-        emit QuestRefunded(id, q.creator, q.reward);
+        _refund(id, q);
     }
 
     // ---------------------------------------------------------------
@@ -178,15 +187,19 @@ contract QuestEscrow is ReentrancyGuard, EIP712 {
         emit DisputeResolved(id, msg.sender, winner);
 
         if (winner == address(0)) {
-            q.status = Status.Refunded;
-            q.token.safeTransfer(q.creator, q.reward);
-            emit QuestRefunded(id, q.creator, q.reward);
+            _refund(id, q);
         } else {
             q.winner = winner;
             q.status = Status.Paid;
             q.token.safeTransfer(winner, q.reward);
             emit RewardPaid(id, winner, q.reward);
         }
+    }
+
+    function _refund(uint256 id, Quest storage q) private {
+        q.status = Status.Refunded;
+        q.token.safeTransfer(q.creator, q.reward);
+        emit QuestRefunded(id, q.creator, q.reward);
     }
 
     // ---------------------------------------------------------------
