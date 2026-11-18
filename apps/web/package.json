@@ -29,9 +29,9 @@
     "@x402/evm": "^2.28.0",
     "better-auth": "catalog:",
     "lucide-react": "catalog:",
-    "next": "^16.4.3",
-    "react": "catalog:",
-    "react-dom": "catalog:",
+    "next": "16.4.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
     "viem": "catalog:",
     "wagmi": "^3.7.7",
     "zod": "catalog:"
@@ -39,8 +39,8 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^20.12.12",
-    "@types/react": "catalog:",
-    "@types/react-dom": "catalog:",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "autoprefixer": "^10.5.5",
     "postcss": "^8.5.28",
     "sonner": "catalog:",
