@@ -4,7 +4,7 @@ import { quest, questMilestones } from "@perkify/db/schema/quests";
 import { tokens } from "@perkify/db/schema/tokens";
 import { createQuestSchema } from "@perkify/db/validations/quest";
 import { eq } from "drizzle-orm";
-import { parseUnits } from "viem";
+import { getAddress, parseUnits } from "viem";
 
 import { protectedProcedure } from "../../index";
 
@@ -25,7 +25,7 @@ export const create = protectedProcedure
     const [token] = await context.db.select().from(tokens).where(eq(tokens.id, rest.tokenId));
     if (!token) throw new ORPCError("BAD_REQUEST", { message: "Token no aceptado" });
 
-    const escrowAddress = getQuestEscrowAddress(token.chainId);
+    const escrowAddress = getAddress(getQuestEscrowAddress(token.chainId));
 
     const fraction = rest.rewardAmount.split(".")[1] ?? "";
     if (fraction.length > token.decimals) {
@@ -49,6 +49,7 @@ export const create = protectedProcedure
           ...rest, // incluye maxParticipants, submitWindowHours, reviewWindowHours, maxAttempts
           deadline: deadlineDate,
           chainId: token.chainId,
+          escrowAddress,
           creatorId: userId,
           modifiedBy: userId,
           status: "DRAFT",

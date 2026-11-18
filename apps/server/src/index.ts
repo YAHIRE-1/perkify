@@ -6,6 +6,7 @@ import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { appRouter } from "@perkify/api/routers/index";
 import { deliverNotificationEmails } from "@perkify/api/lib/notification-mail";
+import { processQuestRefunds } from "@perkify/api/lib/quest-refund";
 import { initLogger } from "evlog";
 import { createAuthMiddleware } from "evlog/better-auth";
 import type { BetterAuthInstance } from "evlog/better-auth";
@@ -19,7 +20,7 @@ import "varlock/auto-load";
 import { createContext } from "./context";
 import { ENV } from "./env";
 import { notificationMailer } from "./notification-mailer";
-import { auth, db } from "./services";
+import { auth, db, getPublicClient } from "./services";
 
 initLogger({
   env: { service: "perkify-server" },
@@ -118,6 +119,19 @@ function startNotificationWorker(send: NonNullable<typeof notificationMailer>) {
 }
 
 if (notificationMailer) startNotificationWorker(notificationMailer);
+
+let checkingRefunds = false;
+setInterval(async () => {
+  if (checkingRefunds) return;
+  checkingRefunds = true;
+  try {
+    await processQuestRefunds({ db, getPublicClient });
+  } catch (error) {
+    console.error("Quest refunds could not be checked", error instanceof Error ? error.name : "Unknown error");
+  } finally {
+    checkingRefunds = false;
+  }
+}, 15_000).unref();
 
 serve({ fetch: app.fetch, port, hostname: "0.0.0.0" }, (info) => {
   console.log(`Server listening on port ${info.port}`);

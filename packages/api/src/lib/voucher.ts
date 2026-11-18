@@ -22,6 +22,30 @@ function getAccount() {
   return (account = acc);
 }
 
+export { getAccount as getVoucherSigner };
+
+export async function signCancellation(p: {
+  chainId: number;
+  escrowAddress: Hex;
+  escrowId: string;
+  creator: Hex;
+  expiry: number;
+}) {
+  const sig = await getAccount().signTypedData({
+    domain: { name: "QuestEscrow", version: "1", chainId: p.chainId, verifyingContract: p.escrowAddress },
+    types: {
+      Cancel: [
+        { name: "id", type: "uint256" },
+        { name: "creator", type: "address" },
+        { name: "expiry", type: "uint64" },
+      ],
+    },
+    primaryType: "Cancel",
+    message: { id: BigInt(p.escrowId), creator: p.creator, expiry: BigInt(p.expiry) },
+  });
+  return { ...p, sig };
+}
+
 const VOUCHER_TTL_SECONDS = 15 * 60;
 
 export async function signApproval(p: {

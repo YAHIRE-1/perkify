@@ -1,10 +1,11 @@
 import {
-  pgTable, uuid, text, numeric, timestamp, boolean, integer, index, uniqueIndex,
+  pgTable, uuid, text, numeric, timestamp, boolean, integer, bigint, index, uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { tokens } from "./tokens";
 import { createdAt, updatedAt } from "./helpers";
 import { questStatusEnum, escrowStatusEnum } from "./quest.enums";
+import { sql } from "drizzle-orm";
 
 export const quest = pgTable("quests", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -27,6 +28,14 @@ export const quest = pgTable("quests", {
 
   // Fondeo
   escrowId: text("escrow_id"),
+  escrowAddress: text("escrow_address"),
+  automaticRefund: boolean("automatic_refund").default(false).notNull(),
+  hasJoined: boolean("has_joined").default(false).notNull(),
+  cancelExpiresAt: bigint("cancel_expires_at", { mode: "number" }),
+  approvalExpiresAt: bigint("approval_expires_at", { mode: "number" }),
+  refundStartBlock: bigint("refund_start_block", { mode: "bigint" }),
+  refundNextCheckAt: timestamp("refund_next_check_at", { withTimezone: true }),
+  refundTxHash: text("refund_tx_hash"),
   chainId: integer("chain_id"),
   createTxHash: text("create_tx_hash"),
   escrowStatus: escrowStatusEnum("escrow_status").default("NONE").notNull(),
@@ -42,7 +51,8 @@ export const quest = pgTable("quests", {
   index("idx_quest_creator").on(t.creatorId),
   index("idx_quest_token").on(t.tokenId),
   uniqueIndex("uq_quest_create_tx").on(t.createTxHash),
-  uniqueIndex("uq_quest_chain_escrow").on(t.chainId, t.escrowId),
+  uniqueIndex("uq_quest_chain_escrow_legacy").on(t.chainId, t.escrowId).where(sql`${t.escrowAddress} is null`),
+  uniqueIndex("uq_quest_chain_escrow_address").on(t.chainId, t.escrowAddress, t.escrowId),
 ]);
 
 export const questMilestones = pgTable("quest_milestones", {

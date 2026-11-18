@@ -1,11 +1,11 @@
 import { ORPCError } from "@orpc/server";
-import { getQuestEscrowAddress } from "@perkify/contracts";
 import { questParticipation } from "@perkify/db/schema/participations";
 import { quest } from "@perkify/db/schema/quests";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure } from "../../index";
+import { getStoredEscrowAddress } from "../../lib/chain";
 
 export const claimReward = protectedProcedure
   .route({ method: "POST", path: "/{id}/claim-reward" })
@@ -31,7 +31,7 @@ export const claimReward = protectedProcedure
 
     return {
       chainId: q.chainId,
-      escrowAddress: getQuestEscrowAddress(q.chainId),
+      escrowAddress: getStoredEscrowAddress(q.escrowAddress),
       escrowId: q.escrowId, // el id on-chain que recibe withdrawReward
       recipient: p.walletAddress, // snapshot al unirse
     };

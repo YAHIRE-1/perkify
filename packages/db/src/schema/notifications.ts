@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 import { user } from "./auth";
 import { quest } from "./quests";
 
-export const notificationKinds = ["JOINED", "SUBMITTED", "APPROVED", "REJECTED"] as const;
+export const notificationKinds = ["JOINED", "SUBMITTED", "APPROVED", "REJECTED", "CANCELLED", "EXPIRED_REFUND", "QUEST_EXPIRED", "DISPUTE_REFUND"] as const;
 export type NotificationKind = (typeof notificationKinds)[number];
 
 export const notificationEmail = pgTable("notification_email", {

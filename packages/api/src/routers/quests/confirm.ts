@@ -1,6 +1,5 @@
 import { ORPCError } from "@orpc/server";
 import {
-  getQuestEscrowAddress,
   questEscrowAbi,
   questEscrowAddresses,
   type SupportedChainId,
@@ -10,11 +9,35 @@ import { quest } from "@perkify/db/schema/quests";
 import { tokens } from "@perkify/db/schema/tokens";
 import { confirmQuestSchema, questIdSchema } from "@perkify/db/validations/quest";
 import { and, eq } from "drizzle-orm";
-import { getAddress, parseEventLogs, parseUnits } from "viem";
+import {
+  BaseError,
+  ContractFunctionRevertedError,
+  ContractFunctionZeroDataError,
+  getAddress,
+  parseEventLogs,
+  parseUnits,
+  type Address,
+  type PublicClient,
+} from "viem";
 
 import { protectedProcedure } from "../../index";
+import { getStoredEscrowAddress } from "../../lib/chain";
 
 const isSupportedChain = (id: number): id is SupportedChainId => id in questEscrowAddresses;
+
+async function supportsAutomaticRefund(client: PublicClient, address: Address, blockNumber: bigint) {
+  try {
+    return await client.readContract({
+      address, abi: questEscrowAbi, functionName: "supportsExpiryRefunds", blockNumber,
+    });
+  } catch (error) {
+    if (error instanceof BaseError && error.walk((cause) =>
+      cause instanceof ContractFunctionZeroDataError ||
+      (cause instanceof ContractFunctionRevertedError && (cause.raw === "0x" || !cause.raw && !cause.reason)),
+    )) return false;
+    throw error;
+  }
+}
 
 export const confirm = protectedProcedure
   .route({ method: "POST", path: "/{id}/confirm" })
@@ -34,7 +57,7 @@ export const confirm = protectedProcedure
     if (q.chainId === null || !isSupportedChain(q.chainId)) {
       throw new ORPCError("BAD_REQUEST", { message: "Chain no soportada" });
     }
-    const escrow = getAddress(getQuestEscrowAddress(q.chainId));
+    const escrow = getStoredEscrowAddress(q.escrowAddress);
 
     const [token] = await context.db.select().from(tokens).where(eq(tokens.id, q.tokenId));
     if (!token) throw new ORPCError("NOT_FOUND", { message: "Token no encontrado" });
@@ -118,6 +141,8 @@ export const confirm = protectedProcedure
       throw new ORPCError("NOT_FOUND", { message: "Quest no encontrada en la transacción" });
     }
 
+    const automaticRefund = await supportsAutomaticRefund(client, escrow, receipt.blockNumber);
+
     // 6. Pasar a FUNDED (el where evita doble confirmación)
     const [updated] = await context.db
       .update(quest)
@@ -125,6 +150,8 @@ export const confirm = protectedProcedure
         status: "FUNDED",
         escrowStatus: "LOCKED",
         escrowId: onchainId.toString(),
+        escrowAddress: escrow,
+        automaticRefund,
         createTxHash: input.txHash.toLowerCase(),
         lastChainEventAt: new Date(),
         modifiedBy: userId,

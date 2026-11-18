@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { protectedProcedure } from "../../index";
 import { occupiesSlot } from "../../lib/participations";
+import { anyParticipant, EMERGENCY_REFUND_DELAY_MS, hasUnresolvedClaims } from "../../lib/quest-refund";
 
 export const get = protectedProcedure
   .route({ method: "GET", path: "/{id}" })
@@ -31,7 +32,10 @@ export const get = protectedProcedure
       throw new ORPCError("NOT_FOUND", { message: "Quest no encontrada" });
     }
 
-    const [[slots], myParticipation, milestones] = await Promise.all([
+    const isOwner = found.creatorId === userId;
+    const legacyRefundMatured = isOwner && found.status === "FUNDED" && !found.automaticRefund
+      && Date.now() >= found.deadline.getTime() + EMERGENCY_REFUND_DELAY_MS;
+    const [[slots], myParticipation, milestones, pastParticipants, hasClaims] = await Promise.all([
       context.db
         .select({ taken: count() })
         .from(questParticipation)
@@ -53,6 +57,10 @@ export const get = protectedProcedure
         .from(questMilestones)
         .where(eq(questMilestones.questId, found.id))
         .orderBy(asc(questMilestones.position)),
+      isOwner && found.status === "FUNDED" && !found.hasJoined
+        ? anyParticipant(context.db, found.id)
+        : [],
+      legacyRefundMatured ? hasUnresolvedClaims(context.db, found.id) : false,
     ]);
 
     const { tokenSymbol, ...q } = found;
@@ -60,7 +68,10 @@ export const get = protectedProcedure
     return {
       ...q,
       token: { symbol: tokenSymbol },
-      isOwner: q.creatorId === userId,
+      isOwner,
+      canCancel: isOwner && q.status === "FUNDED" && q.deadline > new Date()
+        && !q.hasJoined && !pastParticipants.length,
+      canClaimLegacyRefund: legacyRefundMatured && !hasClaims,
       taken: slots?.taken ?? 0,
       myParticipation: myParticipation ?? null,
       milestones,

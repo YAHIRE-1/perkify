@@ -16,15 +16,14 @@ export const join = protectedProcedure
     const userId = context.session.user.id;
 
     return context.db.transaction(async (tx) => {
-      const now = new Date();
-
       // FOR UPDATE: dos hunters no pueden ocupar el último cupo a la vez
       const [q] = await tx.select().from(quest).where(eq(quest.id, input.id)).for("update");
+      const now = new Date();
       if (!q) throw new ORPCError("NOT_FOUND", { message: "Quest no encontrada" });
       if (q.creatorId === userId) {
         throw new ORPCError("FORBIDDEN", { message: "No puedes unirte a tu propia quest" });
       }
-      if (q.status !== "FUNDED" || q.deadline <= now) {
+      if (q.status !== "FUNDED" || q.deadline <= now || q.cancelExpiresAt !== null) {
         throw new ORPCError("CONFLICT", { message: "Esta quest ya no acepta participantes" });
       }
 
@@ -65,6 +64,7 @@ export const join = protectedProcedure
           .values({ questId: q.id, hunterId: userId, walletAddress: u.wallet, expiresAt })
           .returning();
         await recordNotification(tx, q.creatorId, q, "JOINED");
+        if (!q.hasJoined) await tx.update(quest).set({ hasJoined: true }).where(eq(quest.id, q.id));
         return p;
       }
 
@@ -79,6 +79,7 @@ export const join = protectedProcedure
         .set({ attempts: mine.attempts + 1, expiresAt, walletAddress: u.wallet })
         .where(eq(questParticipation.id, mine.id))
         .returning();
+      if (!q.hasJoined) await tx.update(quest).set({ hasJoined: true }).where(eq(quest.id, q.id));
       return p;
     });
   });

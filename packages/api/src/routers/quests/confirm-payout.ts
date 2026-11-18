@@ -1,6 +1,5 @@
 import { ORPCError } from "@orpc/server";
 import {
-  getQuestEscrowAddress,
   questEscrowAbi,
   questEscrowAddresses,
   type SupportedChainId,
@@ -13,6 +12,7 @@ import { getAddress, parseEventLogs } from "viem";
 import { z } from "zod";
 
 import { protectedProcedure } from "../../index";
+import { getStoredEscrowAddress } from "../../lib/chain";
 
 const isSupportedChain = (id: number): id is SupportedChainId => id in questEscrowAddresses;
 
@@ -45,7 +45,7 @@ export const confirmPayout = protectedProcedure
     if (q.chainId === null || !isSupportedChain(q.chainId) || !q.escrowId) {
       throw new ORPCError("PRECONDITION_FAILED", { message: "La quest no está fondeada" });
     }
-    const escrow = getAddress(getQuestEscrowAddress(q.chainId));
+    const escrow = getStoredEscrowAddress(q.escrowAddress);
 
     // 2. Leer la tx on-chain
     const client = context.getPublicClient(q.chainId);

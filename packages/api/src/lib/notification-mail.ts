@@ -9,6 +9,10 @@ const subjects: Record<NotificationKind, string> = {
   SUBMITTED: "New evidence is ready to review",
   APPROVED: "Your submission was approved",
   REJECTED: "Your submission was rejected",
+  CANCELLED: "Your quest was cancelled and refunded",
+  EXPIRED_REFUND: "Your expired quest was refunded",
+  QUEST_EXPIRED: "A quest you joined ended",
+  DISPUTE_REFUND: "Your quest was refunded after dispute resolution",
 };
 
 export type NotificationMailer = (message: {

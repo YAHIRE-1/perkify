@@ -14,6 +14,8 @@ export const update = protectedProcedure
         id: true, creatorId: true, modifiedBy: true, createdAt: true, updatedAt: true, archived: true,
         status: true, escrowStatus: true, escrowId: true, chainId: true,
         createTxHash: true, lastChainEventAt: true,
+        escrowAddress: true, automaticRefund: true, hasJoined: true, cancelExpiresAt: true, approvalExpiresAt: true,
+        refundStartBlock: true, refundNextCheckAt: true, refundTxHash: true,
       })
       .extend({ id: z.string().uuid() }),
   )

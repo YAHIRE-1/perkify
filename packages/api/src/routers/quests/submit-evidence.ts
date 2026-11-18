@@ -56,10 +56,9 @@ export const submitEvidence = protectedProcedure
     }
 
     return context.db.transaction(async (tx) => {
+      const [q] = await tx.select().from(quest).where(eq(quest.id, input.id)).for("update");
       const now = new Date();
-
-      const [q] = await tx.select().from(quest).where(eq(quest.id, input.id));
-      if (!q || q.status !== "FUNDED" || q.deadline <= now) {
+      if (!q || q.status !== "FUNDED" || q.deadline <= now || q.cancelExpiresAt !== null) {
         throw new ORPCError("CONFLICT", { message: "Esta quest ya no acepta evidencia" });
       }
 

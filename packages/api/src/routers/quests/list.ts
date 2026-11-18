@@ -41,6 +41,7 @@ async function listQuests(
   const where = and(
     isNull(quest.archived),
     !creator || open ? eq(quest.status, "FUNDED") : undefined,
+    !creator || open ? isNull(quest.cancelExpiresAt) : undefined,
     open ? gt(quest.deadline, now) : undefined,
     search ? ilike(quest.title, `%${escapeLike(search)}%`) : undefined,
     category ? ilike(quest.category, `%${escapeLike(category)}%`) : undefined,
@@ -57,6 +58,7 @@ async function listQuests(
         description: quest.description,
         category: quest.category,
         status: quest.status,
+        cancelExpiresAt: quest.cancelExpiresAt,
         isBoosted: quest.isBoosted,
         deadline: quest.deadline,
         rewardAmount: quest.rewardAmount,

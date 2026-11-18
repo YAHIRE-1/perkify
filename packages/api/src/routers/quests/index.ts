@@ -11,6 +11,7 @@ import { review } from "./review";
 import { submitEvidence } from "./submit-evidence";
 import { update } from "./update";
 import { translate } from "./translate";
+import { cancel, confirmRefund, emergencyRefund } from "./refund";
 import { uploadUrl } from "./upload-url";
 import { confirmPayout } from "./confirm-payout";
 
@@ -24,6 +25,9 @@ export const questsRouter = o
     create,
     update,
     translate,
+    cancel,
+    confirmRefund,
+    emergencyRefund,
     archive,
     confirm,
     claimReward,

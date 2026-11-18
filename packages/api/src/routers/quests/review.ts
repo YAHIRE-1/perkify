@@ -1,6 +1,5 @@
 import { ORPCError } from "@orpc/server";
 import {
-  getQuestEscrowAddress,
   questEscrowAbi,
   questEscrowAddresses,
   type SupportedChainId,
@@ -10,10 +9,10 @@ import { questSubmission } from "@perkify/db/schema/evidence";
 import { questParticipation } from "@perkify/db/schema/participations";
 import { quest } from "@perkify/db/schema/quests";
 import { and, eq } from "drizzle-orm";
-import { getAddress } from "viem";
 import { z } from "zod";
 
 import { protectedProcedure } from "../../index";
+import { getStoredEscrowAddress } from "../../lib/chain";
 import { approve } from "../../lib/approve";
 import { recordNotification } from "../../lib/notification-mail";
 import { submitDeadline } from "../../lib/participations";
@@ -44,7 +43,8 @@ export const review = protectedProcedure
         .from(questSubmission)
         .innerJoin(questParticipation, eq(questParticipation.id, questSubmission.participationId))
         .innerJoin(quest, eq(quest.id, questParticipation.questId))
-        .where(and(eq(questSubmission.id, input.submissionId), eq(questSubmission.status, "PENDING")));
+        .where(and(eq(questSubmission.id, input.submissionId), eq(questSubmission.status, "PENDING")))
+        .for("update", { of: quest });
 
       if (!row) throw new ORPCError("NOT_FOUND", { message: "Evidencia no disponible" });
       const { s, p, q } = row;
@@ -53,6 +53,9 @@ export const review = protectedProcedure
       }
 
       if (input.decision === "APPROVE") {
+        const [pending] = await tx.select({ id: questSubmission.id }).from(questSubmission)
+          .where(and(eq(questSubmission.id, s.id), eq(questSubmission.status, "PENDING")));
+        if (!pending) throw new ORPCError("CONFLICT", { message: "Esa evidencia ya fue revisada" });
         if (q.status !== "FUNDED") {
           throw new ORPCError("CONFLICT", { message: "La quest ya tiene ganador" });
         }
@@ -66,7 +69,7 @@ export const review = protectedProcedure
           throw new ORPCError("BAD_REQUEST", { message: "Chain no soportada" });
         }
 
-        const escrowAddress = getAddress(getQuestEscrowAddress(chainId));
+        const escrowAddress = getStoredEscrowAddress(q.escrowAddress);
         const winner = p.walletAddress as `0x${string}`;
 
         const client = context.getPublicClient(chainId);
@@ -95,15 +98,15 @@ export const review = protectedProcedure
         }
 
         // Firma para que el creador envíe approve() desde su wallet
-        return {
-          sign: await signApproval({
+        const sign = await signApproval({
             chainId,
             escrowAddress,
             escrowId,
             creator: onchainCreator,
             winner,
-          }),
-        };
+        });
+        await tx.update(quest).set({ approvalExpiresAt: sign.expiry }).where(eq(quest.id, q.id));
+        return { sign };
       }
 
       const [rejected] = await tx

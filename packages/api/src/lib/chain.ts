@@ -1,6 +1,6 @@
 import { ORPCError } from "@orpc/server";
 import { getQuestEscrowAddress } from "@perkify/contracts";
-import { createPublicClient, http, type PublicClient } from "viem";
+import { createPublicClient, getAddress, http, type PublicClient } from "viem";
 import { arbitrum, arbitrumSepolia } from "viem/chains";
 
 const SUPPORTED = {
@@ -9,6 +9,13 @@ const SUPPORTED = {
 } as const;
 
 const clients = new Map<number, PublicClient>();
+
+export function getStoredEscrowAddress(address: string | null) {
+  if (!address) throw new ORPCError("PRECONDITION_FAILED", {
+    message: "The original escrow address must be recorded before this quest can be settled.",
+  });
+  return getAddress(address);
+}
 
 export const sameAddress = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
 
