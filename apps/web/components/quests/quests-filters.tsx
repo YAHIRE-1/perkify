@@ -16,7 +16,7 @@ export type QuestFilterValues = Pick<
 export type TokenOption = { id: string; symbol: string };
 
 const boostedOptions = [
-	{ value: "all", label: "All" },
+	{ value: "all", label: "All quests" },
 	{ value: "boosted", label: "Boosted only" },
 ];
 
@@ -45,7 +45,7 @@ export function QuestsFilters({
 
 	const hasSearch = !!value.search?.trim();
 	const hasCategory = !!value.category?.trim();
-	const hasToken = showTokenAndBoostFilters && !!value.tokenId;
+	const hasToken = showTokenAndBoostFilters && tokens.length > 0 && !!value.tokenId;
 	const hasBoosted = showTokenAndBoostFilters && !!value.isBoosted;
 	const hasActiveFilters =
 		hasSearch || hasCategory || hasToken || hasBoosted;
@@ -60,11 +60,10 @@ export function QuestsFilters({
 
 	return (
 		<div className="space-y-4">
-			{/* Row 1: Search inputs */}
-			<div className="flex flex-col gap-3 sm:flex-row">
+			<div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
 				<Input
 					aria-label="Search"
-					className="h-9 flex-1"
+					className="h-9 min-w-40 flex-1"
 					onChange={(e) => onChange({ search: e.target.value || undefined })}
 					placeholder="Search quests..."
 					type="text"
@@ -72,47 +71,45 @@ export function QuestsFilters({
 				/>
 				<Input
 					aria-label="Category"
-					className="h-9 flex-1"
+					className="h-9 min-w-40 flex-1"
 					onChange={(e) => onChange({ category: e.target.value || undefined })}
 					placeholder="Category"
 					type="text"
 					value={value.category ?? ""}
 				/>
-			</div>
 
-			{/* Row 2: Dropdowns */}
-			<div className="flex flex-wrap gap-3">
 				{showTokenAndBoostFilters && (
 					<>
+						{tokens.length > 0 && (
+							<ReactSelect
+								className="min-w-37.5"
+								onChange={(option) =>
+									onChange({
+										tokenId: option?.value === "all" ? undefined : option?.value,
+									})
+								}
+								options={tokenOptions}
+								aria-label="Reward token"
+								value={tokenOptions.find(
+									(opt) => opt.value === (value.tokenId ?? "all"),
+								)}
+							/>
+						)}
 						<ReactSelect
-							className="min-w-37.5 flex-1"
-							onChange={(option) =>
-								onChange({
-									tokenId: option?.value === "all" ? undefined : option?.value,
-								})
-							}
-							options={tokenOptions}
-							placeholder="Token"
-							value={tokenOptions.find(
-								(opt) => opt.value === (value.tokenId ?? "all"),
-							)}
-						/>
-						<ReactSelect
-							className="min-w-37.5 flex-1"
+							className="min-w-37.5"
 							onChange={(option) =>
 								onChange({
 									isBoosted: option?.value === "boosted" ? true : undefined,
 								})
 							}
 							options={boostedOptions}
-							placeholder="Boost"
+							aria-label="Quest boost"
 							value={boostedOptions.find(
 								(opt) => opt.value === (value.isBoosted ? "boosted" : "all"),
 							)}
 						/>
 					</>
 				)}
-
 			</div>
 
 			{/* Row 3: Active filter badges */}
