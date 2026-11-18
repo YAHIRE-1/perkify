@@ -1,5 +1,5 @@
 'use client';
-import QuestForm from '@/components/quests/QuestForm';
+import QuestWizard from '@/components/quests/form/quest-wizard';
 import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/components/Providers';
 
@@ -17,9 +17,8 @@ export default function NewQuest() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-4">
-      <h1 className="font-display text-3xl font-bold">Crear quest</h1>
-       <QuestForm />
+    <div className="min-h-[calc(100dvh-4rem)]">
+      <QuestWizard />
     </div>
   );
 }
