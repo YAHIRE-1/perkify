@@ -1,4 +1,6 @@
 "use client";
+import { Translate } from '@/lib/i18n/provider';
+
 import { useEffect, useState } from "react";
 
 const DEFAULT_LAUNCH = "2026-11-06T15:00:00Z";
@@ -61,7 +63,7 @@ export default function ComingSoonPlatformSection({
           <p className="mt-3 max-w-md px-2 text-sm text-[#B4A6D6] sm:mt-4 sm:text-base lg:text-lg">
             {tagline}
           </p>
-          <p className="mt-2 text-xs text-[#7A6C9C] sm:text-sm">Coming soon</p>
+          <p className="mt-2 text-xs text-[#7A6C9C] sm:text-sm"><Translate text={"Coming soon"} /></p>
         </div>
 
         <div className="mt-8 grid w-full grid-cols-4 gap-1 px-1 sm:mt-12 sm:flex sm:items-start sm:justify-center sm:gap-6 sm:p-6 lg:gap-10">
@@ -85,9 +87,7 @@ export default function ComingSoonPlatformSection({
         </div>
 
         {time.done && (
-          <p className="mt-4 font-mono text-xs text-[#C084FC] sm:mt-6 sm:text-sm">
-            We're live now.
-          </p>
+          <p className="mt-4 font-mono text-xs text-[#C084FC] sm:mt-6 sm:text-sm"><Translate text={"We're live now."} /></p>
         )}
       </div>
     </section>

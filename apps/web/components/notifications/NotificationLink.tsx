@@ -3,9 +3,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { Bell } from 'lucide-react';
 import Link from 'next/link';
+import { useLanguage } from '@/lib/i18n/provider';
 import { orpc } from '@/utils/orpc';
 
 export default function NotificationLink({ userId }: { userId: string }) {
+  const { t } = useLanguage();
   const options = orpc.notifications.unread.queryOptions();
   const { data: unread = 0 } = useQuery({
     ...options,
@@ -17,7 +19,7 @@ export default function NotificationLink({ userId }: { userId: string }) {
   return (
     <Link
       href="/notifications"
-      aria-label={unread ? `Notifications, ${unread} unread` : 'Notifications'}
+      aria-label={unread ? t("Notifications, {count} unread", { count: unread }) : t("Notifications")}
       className="relative ml-auto inline-flex size-9 items-center justify-center rounded-lg hover:bg-[var(--surface-2)]"
     >
       <Bell aria-hidden className="size-5" />

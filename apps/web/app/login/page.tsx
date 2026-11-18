@@ -1,4 +1,6 @@
 'use client';
+import { Translate } from '@/lib/i18n/provider';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/components/Providers';
@@ -15,8 +17,8 @@ export default function Login() {
   };
   return (
     <div className="surface mx-auto mt-10 max-w-md space-y-4 p-8 text-center">
-      <h1 className="font-display text-3xl font-bold">Entra con tu wallet</h1>
-      <p className="muted text-sm">Firma un mensaje para iniciar sesión. No hay contraseñas y la firma no cuesta gas.</p>
+      <h1 className="font-display text-3xl font-bold"><Translate text={"Sign in with your wallet"} /></h1>
+      <p className="muted text-sm"><Translate text={"Sign a message to log in. Signing costs no gas."} /></p>
       <button className="btn btn-primary w-full" disabled={busy} onClick={go}>{busy ? 'Esperando firma…' : 'Conectar y firmar'}</button>
       {err && <p className="text-sm" style={{ color: 'var(--danger)' }}>{err}</p>}
     </div>

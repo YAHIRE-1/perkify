@@ -1,4 +1,5 @@
 'use client';
+import { Translate, useLanguage } from '@/lib/i18n/provider';
 
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -8,6 +9,7 @@ import { Switch } from '@perkify/ui/components/switch';
 import { orpc } from '@/utils/orpc';
 
 export default function EmailPreferences({ userId }: { userId: string }) {
+  const { t } = useLanguage();
   const [address, setAddress] = useState<string | null>(null);
   const [code, setCode] = useState('');
   const [pasteMessage, setPasteMessage] = useState<string | null>(null);
@@ -70,18 +72,15 @@ export default function EmailPreferences({ userId }: { userId: string }) {
     <section id="email-notifications" className="surface scroll-mt-16 space-y-5 p-5 sm:p-7">
       <div className="space-y-1">
         <h2 className="font-display flex items-center gap-2 text-xl font-semibold">
-          <Mail aria-hidden className="size-5 text-[var(--accent-text)]" /> Email notifications
-        </h2>
-        <p className="text-sm text-[var(--muted)]">
-          Verify an email address to receive quest updates there as well as in Perkify.
-        </p>
+          <Mail aria-hidden className="size-5 text-[var(--accent-text)]" />{' '}<Translate text={"Email notifications"} /></h2>
+        <p className="text-sm text-[var(--muted)]"><Translate text={"Verify an email address to receive quest updates there as well as in Perkify."} /></p>
       </div>
 
-      {settings.isPending && <p role="status" className="text-sm">Loading email preferences…</p>}
+      {settings.isPending && <p role="status" className="text-sm"><Translate text={"Loading email preferences…"} /></p>}
       {settings.isError && (
         <div className="flex flex-wrap items-center gap-3">
-          <p className="text-sm text-destructive">Could not load email preferences.</p>
-          <button className="btn" onClick={() => void settings.refetch()} type="button">Try again</button>
+          <p className="text-sm text-destructive"><Translate text={"Could not load email preferences."} /></p>
+          <button className="btn" onClick={() => void settings.refetch()} type="button"><Translate text={"Try again"} /></button>
         </div>
       )}
 
@@ -90,16 +89,14 @@ export default function EmailPreferences({ userId }: { userId: string }) {
           {data.address && (
             <div className="surface-2 space-y-4 p-4 sm:p-5">
               <div className="min-w-0 space-y-1 text-sm">
-                <p className="text-[var(--muted)]">Verified address</p>
+                <p className="text-[var(--muted)]"><Translate text={"Verified address"} /></p>
                 <p className="wrap-anywhere font-medium">{data.address}</p>
               </div>
               <label className="flex items-center justify-between gap-4 border-t border-[var(--border)] pt-4">
-                <span id="quest-email-updates-label" className="text-sm font-semibold">
-                  Receive quest updates by email
-                </span>
+                <span id="quest-email-updates-label" className="text-sm font-semibold"><Translate text={"Receive quest updates by email"} /></span>
                 <span className="flex shrink-0 items-center gap-2.5">
                   <span aria-hidden className={`text-xs font-medium ${data.enabled ? 'text-[var(--accent-text)]' : 'text-[var(--muted)]'}`}>
-                    {preference.isPending ? 'Saving…' : data.enabled ? 'On' : 'Off'}
+                    {t(preference.isPending ? "Saving…" : data.enabled ? "On" : "Off")}
                   </span>
                   <Switch
                     aria-labelledby="quest-email-updates-label"
@@ -112,9 +109,9 @@ export default function EmailPreferences({ userId }: { userId: string }) {
               </label>
             </div>
           )}
-          {preference.isError && <p role="alert" className="text-sm text-destructive">{preference.error.message}</p>}
+          {preference.isError && <p role="alert" className="text-sm text-destructive">{t(preference.error.message)}</p>}
           {!data.available && (
-            <p className="text-sm text-[var(--muted)]">Email delivery is currently unavailable. Updates still appear in your inbox.</p>
+            <p className="text-sm text-[var(--muted)]"><Translate text={"Email delivery is currently unavailable. Updates still appear in your inbox."} /></p>
           )}
           {data.available && !data.address && (
             <form className="space-y-2" onSubmit={(event) => {
@@ -123,9 +120,7 @@ export default function EmailPreferences({ userId }: { userId: string }) {
               verify.reset();
               request.mutate({ address: (address ?? data.pendingAddress ?? '').trim() });
             }}>
-              <label htmlFor="notification-email" className="text-sm font-semibold text-[var(--accent-text)]">
-                Email address
-              </label>
+              <label htmlFor="notification-email" className="text-sm font-semibold text-[var(--accent-text)]"><Translate text={"Email address"} /></label>
               <div className="flex flex-wrap gap-2">
                 <Input
                   autoComplete="email"
@@ -139,10 +134,10 @@ export default function EmailPreferences({ userId }: { userId: string }) {
                   value={address ?? data.pendingAddress ?? ''}
                 />
                 <button className="btn" disabled={busy || resendIn > 0} type="submit">
-                  {request.isPending ? 'Sending…' : resendIn > 0 ? `Resend in ${resendIn}s` : 'Send code'}
+                  {request.isPending ? t("Sending…") : resendIn > 0 ? t("Resend in {seconds}s", { seconds: resendIn }) : t("Send code")}
                 </button>
               </div>
-              {request.isError && <p role="alert" className="text-sm text-destructive">{request.error.message}</p>}
+              {request.isError && <p role="alert" className="text-sm text-destructive">{t(request.error.message)}</p>}
             </form>
           )}
 
@@ -153,10 +148,8 @@ export default function EmailPreferences({ userId }: { userId: string }) {
               verify.mutate({ code });
             }}>
               <div className="space-y-1">
-                <label htmlFor="notification-code" className="font-display text-lg font-semibold">Enter your verification code</label>
-                <p id="notification-code-hint" className="mx-auto max-w-sm wrap-anywhere text-sm text-[var(--muted)]">
-                  Enter the four digits sent to <strong className="text-[var(--fg)]">{data.pendingAddress}</strong>. The code expires after 10 minutes.
-                </p>
+                <label htmlFor="notification-code" className="font-display text-lg font-semibold"><Translate text={"Enter your verification code"} /></label>
+                <p id="notification-code-hint" className="mx-auto max-w-sm wrap-anywhere text-sm text-[var(--muted)]"><Translate text={"Enter the four digits sent to"} />{' '}<strong className="text-[var(--fg)]">{data.pendingAddress}</strong><Translate text={". The code expires after 10 minutes."} /></p>
               </div>
               <div className="group relative mx-auto w-full max-w-60 rounded-lg focus-within:outline-2 focus-within:outline-offset-4 focus-within:outline-[var(--accent-text)]">
                 <input
@@ -202,14 +195,13 @@ export default function EmailPreferences({ userId }: { userId: string }) {
                     codeInput.current?.focus();
                   }
                 }}>
-                  <ClipboardPaste aria-hidden className="size-4" /> Paste code
-                </button>
+                  <ClipboardPaste aria-hidden className="size-4" />{' '}<Translate text={"Paste code"} /></button>
                 <button className="btn btn-primary" disabled={busy || code.length !== 4} type="submit">
-                  {verify.isPending ? 'Verifying…' : 'Verify email'}
+                  {t(verify.isPending ? "Verifying…" : "Verify email")}
                 </button>
               </div>
-              {pasteMessage && <p role="status" className="text-sm text-[var(--muted)]">{pasteMessage}</p>}
-              {verify.isError && <p role="alert" className="text-sm text-destructive">{verify.error.message}</p>}
+              {pasteMessage && <p role="status" className="text-sm text-[var(--muted)]">{t(pasteMessage)}</p>}
+              {verify.isError && <p role="alert" className="text-sm text-destructive">{t(verify.error.message)}</p>}
             </form>
           )}
         </>

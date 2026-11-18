@@ -1,3 +1,4 @@
+import { Translate } from '@/lib/i18n/provider';
 import Link from "next/link";
 import { Logo } from "@/components/global/Logo";
 
@@ -30,8 +31,8 @@ export default function Footer() {
             </div> */}
           </div>
           <div className="footer-bottom">
-            <span>© 2026 Perkify. All rewards settle on-chain.</span>
-            <span>Terms · Privacy</span>
+            <span><Translate text={"© 2026 Perkify. All rewards settle on-chain."} /></span>
+            <span><Translate text={"Terms · Privacy"} /></span>
           </div>
         </div>
       </footer>

@@ -1,4 +1,5 @@
 'use client';
+import { Translate, useLanguage } from '@/lib/i18n/provider';
 
 import { useState } from 'react';
 import { Copy, Wallet } from 'lucide-react';
@@ -15,6 +16,7 @@ import type { SessionUser } from '@/lib/auth-client';
 type ProfileFields = { name: string; avatarUrl: string; bio: string };
 
 function ProfileEditor({ user, refetch }: { user: SessionUser; refetch: ReturnType<typeof useMe>['refetch'] }) {
+  const { t } = useLanguage();
   const saved = { name: user.name ?? '', avatarUrl: user.avatarUrl ?? '', bio: user.bio ?? '' };
   const [draft, setDraft] = useState<ProfileFields | null>(null);
   const fields = draft ?? saved;
@@ -35,9 +37,9 @@ function ProfileEditor({ user, refetch }: { user: SessionUser; refetch: ReturnTy
     if (!wallet) return;
     try {
       await navigator.clipboard.writeText(wallet);
-      toast.success('Wallet address copied');
+      toast.success(t("Wallet address copied"));
     } catch {
-      toast.error('Could not copy the wallet address');
+      toast.error(t("Could not copy the wallet address"));
     }
   };
 
@@ -64,17 +66,16 @@ function ProfileEditor({ user, refetch }: { user: SessionUser; refetch: ReturnTy
 
         <div className="space-y-2 border-t border-[var(--border)] pt-4">
           <p className="flex items-center gap-2 text-xs font-semibold text-[var(--muted)]">
-            <Wallet aria-hidden className="size-4" /> Wallet address
-          </p>
+            <Wallet aria-hidden className="size-4" />{' '}<Translate text={"Wallet address"} /></p>
           {wallet ? (
             <div className="flex items-center gap-2">
               <code className="min-w-0 flex-1 wrap-anywhere text-xs">{wallet}</code>
-              <button aria-label="Copy wallet address" className="btn shrink-0" onClick={copyWallet} type="button">
+              <button aria-label={t("Copy wallet address")} className="btn shrink-0" onClick={copyWallet} type="button">
                 <Copy aria-hidden className="size-4" />
               </button>
             </div>
           ) : (
-            <p className="text-sm text-[var(--muted)]">No wallet linked</p>
+            <p className="text-sm text-[var(--muted)]"><Translate text={"No wallet linked"} /></p>
           )}
         </div>
       </aside>
@@ -92,33 +93,31 @@ function ProfileEditor({ user, refetch }: { user: SessionUser; refetch: ReturnTy
           });
         }}
       >
-        <h2 className="font-display text-xl font-semibold">Edit profile</h2>
+        <h2 className="font-display text-xl font-semibold"><Translate text={"Edit profile"} /></h2>
         <fieldset className="space-y-4" disabled={update.isPending}>
           <div className="grid gap-2">
-            <label className="text-sm font-semibold text-[var(--accent-text)]" htmlFor="profile-name">Display name</label>
+            <label className="text-sm font-semibold text-[var(--accent-text)]" htmlFor="profile-name"><Translate text={"Display name"} /></label>
             <Input id="profile-name" autoComplete="nickname" value={fields.name} onChange={(event) => change('name', event.target.value)} />
           </div>
           <div className="grid gap-2">
-            <label className="text-sm font-semibold text-[var(--accent-text)]" htmlFor="profile-avatar">Avatar URL</label>
+            <label className="text-sm font-semibold text-[var(--accent-text)]" htmlFor="profile-avatar"><Translate text={"Avatar URL"} /></label>
             <Input id="profile-avatar" type="url" placeholder="https://…" value={fields.avatarUrl} onChange={(event) => change('avatarUrl', event.target.value)} />
           </div>
           <div className="grid gap-2">
-            <label className="text-sm font-semibold text-[var(--accent-text)]" htmlFor="profile-bio">Bio</label>
+            <label className="text-sm font-semibold text-[var(--accent-text)]" htmlFor="profile-bio"><Translate text={"Bio"} /></label>
             <Textarea id="profile-bio" className="min-h-28" value={fields.bio} onChange={(event) => change('bio', event.target.value)} />
           </div>
         </fieldset>
 
-        {update.isError && <p role="alert" className="text-sm text-destructive">{update.error.message}</p>}
-        {update.isSuccess && <p role="status" className="text-sm text-[var(--accent-text)]">Profile saved</p>}
+        {update.isError && <p role="alert" className="text-sm text-destructive">{t(update.error.message)}</p>}
+        {update.isSuccess && <p role="status" className="text-sm text-[var(--accent-text)]"><Translate text={"Profile saved"} /></p>}
         <div className="flex flex-wrap justify-end gap-2 border-t border-[var(--border)] pt-4">
           <button type="button" className="btn" disabled={!changed || update.isPending} onClick={() => {
             setDraft(null);
             update.reset();
-          }}>
-            Discard changes
-          </button>
+          }}><Translate text={"Discard changes"} /></button>
           <button type="submit" className="btn btn-primary" disabled={!changed || update.isPending}>
-            {update.isPending ? 'Saving…' : 'Save changes'}
+            {update.isPending ? t("Saving…") : t("Save changes")}
           </button>
         </div>
       </form>
@@ -132,14 +131,14 @@ export default function Profile() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-5">
-      <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Your profile</h1>
+      <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl"><Translate text={"Your profile"} /></h1>
       {loading || isLoading ? (
         <div role="status" className="surface h-36 motion-safe:animate-pulse">
-          <span className="sr-only">Loading profile</span>
+          <span className="sr-only"><Translate text={"Loading profile"} /></span>
         </div>
       ) : error ? (
         <EmptyState title="Could not load your profile" action={
-          <button className="btn" onClick={() => void refetch()} type="button">Try again</button>
+          <button className="btn" onClick={() => void refetch()} type="button"><Translate text={"Try again"} /></button>
         } />
       ) : user ? (
         <div key={user.id} className="space-y-5">
@@ -154,9 +153,7 @@ export default function Profile() {
               reason instanceof Error ? reason.message : 'Could not connect your wallet.',
             ))}
             type="button"
-          >
-            Connect wallet
-          </button>
+          ><Translate text={"Connect wallet"} /></button>
         } />
       )}
     </div>

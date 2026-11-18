@@ -1,4 +1,6 @@
 'use client';
+import { Translate } from '@/lib/i18n/provider';
+
 import Link from 'next/link';
 import { ChevronsUpDown, LogOut, User } from 'lucide-react';
 import {
@@ -97,19 +99,15 @@ export function NavUser() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem render={<Link href="/profile" />}>
-              <User />
-              Profile
-            </DropdownMenuItem>
+              <User /><Translate text={"Profile"} /></DropdownMenuItem>
             <DropdownMenuSeparator />
             <div className="flex items-center justify-between px-2 py-1.5 text-sm">
-              <span className="text-muted-foreground">Theme</span>
+              <span className="text-muted-foreground"><Translate text={"Theme"} /></span>
               <ThemeToggle />
             </div>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
-              <LogOut />
-              Log out
-            </DropdownMenuItem>
+              <LogOut /><Translate text={"Log out"} /></DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

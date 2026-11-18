@@ -1,3 +1,4 @@
+import { Translate } from '@/lib/i18n/provider';
 import React from "react";
 
 type Social = {
@@ -60,12 +61,8 @@ const SocialSection: React.FC = () => {
   return (
     <section className="w-full px-5 py-14 flex gap-6 items-center justify-center sm:px-8 sm:py-20">
       <div className="mx-auto flex max-w-xl gap-6 flex-col items-center text-center">
-        <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">
-          Follow us wherever we are
-        </h2>
-        <p className="mt-2 text-sm text-[#8FA396]">
-          Choose your favorite channel and join the community
-        </p>
+        <h2 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl"><Translate text={"Follow us wherever we are"} /></h2>
+        <p className="mt-2 text-sm text-[#8FA396]"><Translate text={"Choose your favorite channel and join the community"} /></p>
 
         <ul className="mt-9 grid w-full grid-cols-1 gap-10 sm:mt-12 sm:grid-cols-2">
           {socials.map((s) => (

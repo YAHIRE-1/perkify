@@ -1,4 +1,5 @@
 "use client";
+import { Translate } from '@/lib/i18n/provider';
 
 import { useEffect, useState } from "react";
 
@@ -78,20 +79,14 @@ export default function ContractSection({
         <h2
           className={`mt-6 text-[2.75rem] font-medium leading-[1.05] tracking-tight text-[#F7F3FF] transition-all delay-100 duration-700 ease-out sm:text-6xl motion-reduce:transition-none ${animation}`}
         >
-          {tokenName} is here
-        </h2>
+          {tokenName}{' '}<Translate text={"is here"} /></h2>
 
         {/* Description */}
         <p
           className={`mt-5 max-w-sm text-balance text-[15px] leading-relaxed text-[#9686B8] transition-all delay-150 duration-700 ease-out sm:text-base motion-reduce:transition-none ${animation}`}
-        >
-          The contract is live on {network}. Verify the address below before
-          you interact with it.
-        </p>
+        ><Translate text={"The contract is live on"} />{' '}{network}<Translate text={". Verify the address below before you interact with it."} /></p>
 
-        <p className="mb-2 text-left text-white font-bold">
-            Contract address :
-        </p>
+        <p className="mb-2 text-left text-white font-bold"><Translate text={"Contract address :"} /></p>
 
         {/* Contract */}
 
@@ -121,9 +116,7 @@ export default function ContractSection({
             target="_blank"
             rel="noopener noreferrer"
             className=" inline-block pt-4 text-xs text-[#9686B8] underline decoration-[#3A2E52] underline-offset-4 transition-colors hover:text-[#C084FC] hover:decoration-[#7C3AED]"
-          >
-            View on block explorer
-          </a>
+          ><Translate text={"View on block explorer"} /></a>
       </div>
       
     </section>
