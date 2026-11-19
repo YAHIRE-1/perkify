@@ -191,7 +191,7 @@ export function createAuth(
       additionalFields: {
         avatarUrl: { required: false, type: "string" },
         bio: { required: false, type: "string" },
-        role: { defaultValue: "hunter", type: "string" },
+        role: { defaultValue: "hunter", input: false, type: "string" },
         walletAddress: {
           input: false, // el cliente no puede escribirla
           required: false, // nullable en la BD
