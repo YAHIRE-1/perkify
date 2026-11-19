@@ -1,5 +1,6 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authClient, type SessionUser } from "@/lib/auth-client";
+import { orpc } from "@/utils/orpc";
 
 export function useMe() {
   const { data: session, isPending, error, refetch } = authClient.useSession();
@@ -15,7 +16,9 @@ export function useMe() {
 type UpdateMeInput = Partial<Pick<SessionUser, "name" | "bio" | "avatarUrl">>;
 
 export function useUpdateMe() {
+  const queryClient = useQueryClient();
   return useMutation<void, Error, UpdateMeInput>({
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: orpc.reputation.key() }),
     mutationFn: async (d) => {
       const { error } = await authClient.updateUser({
         ...(d.name !== undefined && { name: d.name }),

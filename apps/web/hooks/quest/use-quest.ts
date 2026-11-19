@@ -47,6 +47,7 @@ export function useInvalidateQuestQueries() {
 
   return () => Promise.all([
     queryClient.invalidateQueries({ queryKey: orpc.quests.key() }),
+    queryClient.invalidateQueries({ queryKey: orpc.reputation.key() }),
     queryClient.invalidateQueries({ queryKey: orpc.disputes.key() }),
     queryClient.invalidateQueries({ queryKey: orpc.notifications.key() }),
   ]);
