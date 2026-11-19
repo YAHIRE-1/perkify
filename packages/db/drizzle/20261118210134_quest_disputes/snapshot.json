@@ -1,0 +1,1445 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "ad7dd0e6-b796-43f6-ac53-33e6bd5e5ed6",
+  "prevIds": [
+    "f057e231-df91-4e1f-ae8a-dcff0e8e335b"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "dispute_moderators"
+      ],
+      "writes": [
+        "s|tbl|public.dispute_moderators",
+        "n|tbl|public.dispute_moderators",
+        "e|tbl|public.dispute_moderators",
+        "n|rel|public.dispute_moderators",
+        "n|type|public.dispute_moderators",
+        "n|rel|public.dispute_moderators_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "notification"
+      ],
+      "writes": [
+        "s|tbl|public.notification",
+        "n|tbl|public.notification",
+        "e|tbl|public.notification",
+        "n|rel|public.notification",
+        "n|type|public.notification",
+        "n|rel|public.notification_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "notification_email"
+      ],
+      "writes": [
+        "s|tbl|public.notification_email",
+        "n|tbl|public.notification_email",
+        "e|tbl|public.notification_email",
+        "n|rel|public.notification_email",
+        "n|type|public.notification_email",
+        "n|rel|public.notification_email_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quests",
+        "uq_quest_chain_escrow"
+      ],
+      "writes": [
+        "s|idx|public.uq_quest_chain_escrow",
+        "n|idx|public.uq_quest_chain_escrow",
+        "e|idx|public.uq_quest_chain_escrow",
+        "n|rel|public.uq_quest_chain_escrow"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public",
+        "e|col|public.quests.chain_id",
+        "e|col|public.quests.escrow_id"
+      ],
+      "sharedWrites": [
+        "e|uniqueness|public.quests.chain_id.escrow_id"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "disputes",
+        "ruling_reason"
+      ],
+      "writes": [
+        "s|col|public.disputes.ruling_reason",
+        "n|col|public.disputes.ruling_reason",
+        "e|col|public.disputes.ruling_reason"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "disputes",
+        "resolved_by"
+      ],
+      "writes": [
+        "s|col|public.disputes.resolved_by",
+        "n|col|public.disputes.resolved_by",
+        "e|col|public.disputes.resolved_by"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "disputes",
+        "chain_scan_block"
+      ],
+      "writes": [
+        "s|col|public.disputes.chain_scan_block",
+        "n|col|public.disputes.chain_scan_block",
+        "e|col|public.disputes.chain_scan_block"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "disputes",
+        "next_chain_check_at"
+      ],
+      "writes": [
+        "s|col|public.disputes.next_chain_check_at",
+        "n|col|public.disputes.next_chain_check_at",
+        "e|col|public.disputes.next_chain_check_at"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "disputes",
+        "frozen_at"
+      ],
+      "writes": [
+        "s|col|public.disputes.frozen_at",
+        "n|col|public.disputes.frozen_at",
+        "e|col|public.disputes.frozen_at"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "escrow_address"
+      ],
+      "writes": [
+        "s|col|public.quests.escrow_address",
+        "n|col|public.quests.escrow_address",
+        "e|col|public.quests.escrow_address"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "automatic_refund"
+      ],
+      "writes": [
+        "s|col|public.quests.automatic_refund",
+        "n|col|public.quests.automatic_refund",
+        "e|col|public.quests.automatic_refund"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "has_joined"
+      ],
+      "writes": [
+        "s|col|public.quests.has_joined",
+        "n|col|public.quests.has_joined",
+        "e|col|public.quests.has_joined"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "cancel_expires_at"
+      ],
+      "writes": [
+        "s|col|public.quests.cancel_expires_at",
+        "n|col|public.quests.cancel_expires_at",
+        "e|col|public.quests.cancel_expires_at"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "approval_expires_at"
+      ],
+      "writes": [
+        "s|col|public.quests.approval_expires_at",
+        "n|col|public.quests.approval_expires_at",
+        "e|col|public.quests.approval_expires_at"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "refund_start_block"
+      ],
+      "writes": [
+        "s|col|public.quests.refund_start_block",
+        "n|col|public.quests.refund_start_block",
+        "e|col|public.quests.refund_start_block"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "refund_next_check_at"
+      ],
+      "writes": [
+        "s|col|public.quests.refund_next_check_at",
+        "n|col|public.quests.refund_next_check_at",
+        "e|col|public.quests.refund_next_check_at"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "refund_tx_hash"
+      ],
+      "writes": [
+        "s|col|public.quests.refund_tx_hash",
+        "n|col|public.quests.refund_tx_hash",
+        "e|col|public.quests.refund_tx_hash"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "disputes",
+        "unq_open_dispute_per_quest"
+      ],
+      "writes": [
+        "s|idx|public.unq_open_dispute_per_quest",
+        "n|idx|public.unq_open_dispute_per_quest",
+        "e|idx|public.unq_open_dispute_per_quest",
+        "n|rel|public.unq_open_dispute_per_quest"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public",
+        "n|col|public.disputes.quest_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "notification",
+        "notification_inbox_idx"
+      ],
+      "writes": [
+        "s|idx|public.notification_inbox_idx",
+        "n|idx|public.notification_inbox_idx",
+        "e|idx|public.notification_inbox_idx",
+        "n|rel|public.notification_inbox_idx"
+      ],
+      "reads": [
+        "n|tbl|public.notification",
+        "n|sch|public",
+        "n|col|public.notification.recipient_id",
+        "n|col|public.notification.created_at",
+        "n|col|public.notification.id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "notification",
+        "notification_unread_idx"
+      ],
+      "writes": [
+        "s|idx|public.notification_unread_idx",
+        "n|idx|public.notification_unread_idx",
+        "e|idx|public.notification_unread_idx",
+        "n|rel|public.notification_unread_idx"
+      ],
+      "reads": [
+        "n|tbl|public.notification",
+        "n|sch|public",
+        "n|col|public.notification.recipient_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "notification",
+        "notification_email_due_idx"
+      ],
+      "writes": [
+        "s|idx|public.notification_email_due_idx",
+        "n|idx|public.notification_email_due_idx",
+        "e|idx|public.notification_email_due_idx",
+        "n|rel|public.notification_email_due_idx"
+      ],
+      "reads": [
+        "n|tbl|public.notification",
+        "n|sch|public",
+        "n|col|public.notification.email_due_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quests",
+        "uq_quest_chain_escrow_legacy"
+      ],
+      "writes": [
+        "s|idx|public.uq_quest_chain_escrow_legacy",
+        "n|idx|public.uq_quest_chain_escrow_legacy",
+        "e|idx|public.uq_quest_chain_escrow_legacy",
+        "n|rel|public.uq_quest_chain_escrow_legacy"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public",
+        "n|col|public.quests.chain_id",
+        "n|col|public.quests.escrow_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "quests",
+        "uq_quest_chain_escrow_address"
+      ],
+      "writes": [
+        "s|idx|public.uq_quest_chain_escrow_address",
+        "n|idx|public.uq_quest_chain_escrow_address",
+        "e|idx|public.uq_quest_chain_escrow_address",
+        "n|rel|public.uq_quest_chain_escrow_address"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public",
+        "n|col|public.quests.chain_id",
+        "n|col|public.quests.escrow_address",
+        "n|col|public.quests.escrow_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "dispute_moderators"
+      ],
+      "writes": [
+        "s|fk|public.dispute_moderators.dispute_moderators_user_id_user_id_fkey",
+        "n|fk|public.dispute_moderators.dispute_moderators_user_id_user_id_fkey",
+        "e|fk|public.dispute_moderators.dispute_moderators_user_id_user_id_fkey",
+        "n|con|public.dispute_moderators.dispute_moderators_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.dispute_moderators",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.dispute_moderators.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "disputes"
+      ],
+      "writes": [
+        "s|fk|public.disputes.disputes_resolved_by_user_id_fkey",
+        "n|fk|public.disputes.disputes_resolved_by_user_id_fkey",
+        "e|fk|public.disputes.disputes_resolved_by_user_id_fkey",
+        "n|con|public.disputes.disputes_resolved_by_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.disputes",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.disputes.resolved_by",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "notification"
+      ],
+      "writes": [
+        "s|fk|public.notification.notification_recipient_id_user_id_fkey",
+        "n|fk|public.notification.notification_recipient_id_user_id_fkey",
+        "e|fk|public.notification.notification_recipient_id_user_id_fkey",
+        "n|con|public.notification.notification_recipient_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.notification",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.notification.recipient_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "notification"
+      ],
+      "writes": [
+        "s|fk|public.notification.notification_quest_id_quests_id_fkey",
+        "n|fk|public.notification.notification_quest_id_quests_id_fkey",
+        "e|fk|public.notification.notification_quest_id_quests_id_fkey",
+        "n|con|public.notification.notification_quest_id_quests_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.notification",
+        "n|sch|public",
+        "n|tbl|public.quests",
+        "n|sch|public",
+        "n|col|public.notification.quest_id",
+        "n|col|public.quests.id",
+        "e|uniqueness|public.quests.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "notification_email"
+      ],
+      "writes": [
+        "s|fk|public.notification_email.notification_email_user_id_user_id_fkey",
+        "n|fk|public.notification_email.notification_email_user_id_user_id_fkey",
+        "e|fk|public.notification_email.notification_email_user_id_user_id_fkey",
+        "n|con|public.notification_email.notification_email_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.notification_email",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.notification_email.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "dispute_moderators",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "notification",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "notification_email",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dispute_moderators",
+        "name": "user_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "ruling_reason",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "resolved_by",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "chain_scan_block",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "next_chain_check_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "frozen_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "recipient_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "quest_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "quest_title",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "kind",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "read_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "email_address",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "email_due_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "email_attempts",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification_email",
+        "name": "user_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification_email",
+        "name": "address",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification_email",
+        "name": "enabled",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification_email",
+        "name": "enabled_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification_email",
+        "name": "pending_address",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification_email",
+        "name": "code_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification_email",
+        "name": "requested_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification_email",
+        "name": "expires_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification_email",
+        "name": "verification_attempts",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "escrow_address",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "automatic_refund",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "has_joined",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "cancel_expires_at",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "approval_expires_at",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "refund_start_block",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "refund_next_check_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "refund_tx_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "unq_open_dispute_per_quest",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "quest_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"status\" = 'open'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "notification_inbox_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "recipient_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "notification_unread_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "recipient_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": "\"read_at\" is null",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "notification_email_due_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "email_due_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": "\"email_due_at\" is not null",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "uq_quest_chain_escrow_legacy",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "chain_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "escrow_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"escrow_address\" is null",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "uq_quest_chain_escrow_address",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "chain_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "escrow_address",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "escrow_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dispute_moderators",
+        "name": "dispute_moderators_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "disputes",
+        "name": "disputes_resolved_by_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "resolved_by"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "RESTRICT",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "notification_recipient_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "recipient_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "notification_quest_id_quests_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "quest_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "quests",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification_email",
+        "name": "notification_email_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "dispute_moderators",
+        "name": "dispute_moderators_pkey",
+        "columns": [
+          "user_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification",
+        "name": "notification_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notification_email",
+        "name": "notification_email_pkey",
+        "columns": [
+          "user_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"uq_quest_chain_escrow\"]"
+    }
+  ]
+}

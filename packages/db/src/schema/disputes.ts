@@ -1,11 +1,15 @@
 import { sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { bigint, index, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
 import { disputeStatusEnum } from "./enums";
 import { questSubmission } from "./evidence";
 import { questParticipation } from "./participations";
 import { quest } from "./quests";
+
+export const disputeModerators = pgTable("dispute_moderators", {
+  userId: text("user_id").primaryKey().references(() => user.id, { onDelete: "cascade" }),
+});
 
 export const disputes = pgTable(
   "disputes",
@@ -26,7 +30,12 @@ export const disputes = pgTable(
     reason: text("reason").notNull(),
     status: disputeStatusEnum("status").default("open").notNull(),
     ruling: text("ruling"),
+    rulingReason: text("ruling_reason"),
+    resolvedBy: text("resolved_by").references(() => user.id, { onDelete: "restrict" }),
+    chainScanBlock: bigint("chain_scan_block", { mode: "bigint" }),
+    nextChainCheckAt: timestamp("next_chain_check_at", { withTimezone: true }),
     klerosDisputeId: text("kleros_dispute_id"),
+    frozenAt: timestamp("frozen_at", { withTimezone: true }),
     freezeTxHash: text("freeze_tx_hash"),
     resolveTxHash: text("resolve_tx_hash"),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -36,6 +45,7 @@ export const disputes = pgTable(
     uniqueIndex("unq_open_dispute_per_participation")
       .on(t.participationId)
       .where(sql`${t.status} = 'open'`),
+    uniqueIndex("unq_open_dispute_per_quest").on(t.questId).where(sql`${t.status} = 'open'`),
     uniqueIndex("unq_dispute_freeze_tx").on(t.freezeTxHash),
     uniqueIndex("unq_dispute_resolve_tx").on(t.resolveTxHash),
     index("idx_dispute_quest").on(t.questId),
