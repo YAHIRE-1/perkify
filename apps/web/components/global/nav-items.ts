@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { PlusCircle, Scale, ScrollText, Store } from 'lucide-react';
+import { PlusCircle, Scale, ScrollText, Store, Trophy } from 'lucide-react';
 
 export interface NavLink {
   href: string;
@@ -17,6 +17,7 @@ export const NAV_GROUPS: NavGroup[] = [
     label: 'Explore',
     items: [
       { href: '/dashboard', label: 'Marketplace', icon: Store },
+      { href: '/reputation', label: 'Reputation', icon: Trophy },
       { href: '/disputes', label: 'Disputes', icon: Scale },
     ],
   },
