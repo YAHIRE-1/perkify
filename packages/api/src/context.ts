@@ -13,5 +13,6 @@ export interface Context {
   notificationWebOrigin: string;
   notificationCodeSecret: string;
   questTranslationApiKey: string | undefined;
+  disputeArbiterKey: string | undefined;
   getPublicClient: (chainId: SupportedChainId) => PublicClient;
 }

@@ -21,6 +21,7 @@ export async function createContext({
     session,
     getPublicClient,
     notificationMailer,
+    disputeArbiterKey: ENV.ARBITER_KEY,
     notificationWebOrigin: ENV.CORS_ORIGIN,
     notificationCodeSecret: ENV.BETTER_AUTH_SECRET,
     questTranslationApiKey: ENV.GOOGLE_TRANSLATE_API_KEY,

@@ -5,6 +5,7 @@ import type {
 } from "@orpc/server";
 
 import { protectedProcedure, publicProcedure } from "../index";
+import { disputesRouter } from "./disputes";
 import { questsRouter } from "./quests";
 import { notificationsRouter } from "./notifications";
 import { tokensRouter } from "./tokens";
@@ -16,6 +17,7 @@ export const appRouter = {
     user: context.session?.user,
   })),
   quests: questsRouter,
+  disputes: disputesRouter,
   notifications: notificationsRouter,
   tokens: tokensRouter,
 };

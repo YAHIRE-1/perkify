@@ -6,6 +6,7 @@ import { RPCHandler } from "@orpc/server/fetch";
 import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 import { appRouter } from "@perkify/api/routers/index";
 import { deliverNotificationEmails } from "@perkify/api/lib/notification-mail";
+import { processQuestDisputes } from "@perkify/api/lib/quest-dispute";
 import { processQuestRefunds } from "@perkify/api/lib/quest-refund";
 import { initLogger } from "evlog";
 import { createAuthMiddleware } from "evlog/better-auth";
@@ -120,16 +121,22 @@ function startNotificationWorker(send: NonNullable<typeof notificationMailer>) {
 
 if (notificationMailer) startNotificationWorker(notificationMailer);
 
-let checkingRefunds = false;
+let checkingEscrows = false;
 setInterval(async () => {
-  if (checkingRefunds) return;
-  checkingRefunds = true;
+  if (checkingEscrows) return;
+  checkingEscrows = true;
   try {
-    await processQuestRefunds({ db, getPublicClient });
-  } catch (error) {
-    console.error("Quest refunds could not be checked", error instanceof Error ? error.name : "Unknown error");
+    const checks = await Promise.allSettled([
+      processQuestRefunds({ db, getPublicClient }),
+      processQuestDisputes({ db, getPublicClient, disputeArbiterKey: ENV.ARBITER_KEY }),
+    ]);
+    for (const result of checks) {
+      if (result.status === "rejected") {
+        console.error("Quest escrow check failed", result.reason instanceof Error ? result.reason.name : "Unknown error");
+      }
+    }
   } finally {
-    checkingRefunds = false;
+    checkingEscrows = false;
   }
 }, 15_000).unref();
 

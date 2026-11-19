@@ -23,6 +23,7 @@ export const confirmRefund = protectedProcedure
     const [q] = await tx.select().from(quest)
       .where(and(eq(quest.id, input.id), eq(quest.creatorId, context.session.user.id))).for("update");
     if (!q) throw new ORPCError("NOT_FOUND");
+    if (q.status === "DISPUTED") return { confirmed: false };
     try {
       return { confirmed: await finalizeQuestRefund(tx, q, context, input.txHash as Hash) };
     } catch (error) {

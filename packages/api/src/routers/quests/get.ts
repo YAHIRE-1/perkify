@@ -6,6 +6,7 @@ import { and, asc, count, eq, getTableColumns } from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure } from "../../index";
+import { appealableParticipations } from "../../lib/dispute-eligibility";
 import { occupiesSlot } from "../../lib/participations";
 import { anyParticipant, EMERGENCY_REFUND_DELAY_MS, hasUnresolvedClaims } from "../../lib/quest-refund";
 
@@ -35,7 +36,7 @@ export const get = protectedProcedure
     const isOwner = found.creatorId === userId;
     const legacyRefundMatured = isOwner && found.status === "FUNDED" && !found.automaticRefund
       && Date.now() >= found.deadline.getTime() + EMERGENCY_REFUND_DELAY_MS;
-    const [[slots], myParticipation, milestones, pastParticipants, hasClaims] = await Promise.all([
+    const [[slots], myParticipation, milestones, pastParticipants, hasClaims, appeals] = await Promise.all([
       context.db
         .select({ taken: count() })
         .from(questParticipation)
@@ -61,6 +62,7 @@ export const get = protectedProcedure
         ? anyParticipant(context.db, found.id)
         : [],
       legacyRefundMatured ? hasUnresolvedClaims(context.db, found.id) : false,
+      !isOwner && found.status === "FUNDED" ? appealableParticipations(context.db, found.id, userId) : [],
     ]);
 
     const { tokenSymbol, ...q } = found;
@@ -69,6 +71,7 @@ export const get = protectedProcedure
       ...q,
       token: { symbol: tokenSymbol },
       isOwner,
+      canOpenDispute: appeals.length > 0,
       canCancel: isOwner && q.status === "FUNDED" && q.deadline > new Date()
         && !q.hasJoined && !pastParticipants.length,
       canClaimLegacyRefund: legacyRefundMatured && !hasClaims,

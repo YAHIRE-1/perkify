@@ -5,6 +5,10 @@ import type { Tx } from "./participations";
 import { renderNotificationEmail } from "./notification-template";
 
 const subjects: Record<NotificationKind, string> = {
+  DISPUTE_OPENED: "A participant opened a dispute",
+  DISPUTE_PAID: "A dispute was resolved and the reward was paid",
+  DISPUTE_REJECTED: "Your dispute was rejected",
+  DISPUTE_CLOSED: "Your dispute was closed because the escrow was refunded",
   JOINED: "Someone joined your quest",
   SUBMITTED: "New evidence is ready to review",
   APPROVED: "Your submission was approved",

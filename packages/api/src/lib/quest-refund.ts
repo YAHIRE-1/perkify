@@ -6,8 +6,9 @@ import { questParticipation } from "@perkify/db/schema/participations";
 import { quest, type QuestRow } from "@perkify/db/schema/quests";
 import { transactions } from "@perkify/db/schema/transactions";
 import { and, eq, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
-import { createWalletClient, custom, getAbiItem, getAddress, parseEventLogs, TransactionNotFoundError, TransactionReceiptNotFoundError, type Hash } from "viem";
+import { createWalletClient, custom, getAbiItem, getAddress, parseEventLogs, TransactionNotFoundError, TransactionReceiptNotFoundError, type Address, type Hash } from "viem";
 import type { Context } from "../context";
+import { appealableParticipations } from "./dispute-eligibility";
 import { getStoredEscrowAddress } from "./chain";
 import { recordNotification } from "./notification-mail";
 import type { Tx } from "./participations";
@@ -15,12 +16,19 @@ import { getVoucherSigner, signCancellation } from "./voucher";
 
 type ChainContext = Pick<Context, "db" | "getPublicClient">;
 
+type QuestEscrowChain = {
+  chainId: SupportedChainId;
+  client: ReturnType<Context["getPublicClient"]>;
+  address: Address;
+  id: bigint;
+};
+
 export function anyParticipant(tx: Pick<Tx, "select">, id: string) {
   return tx.select({ id: questParticipation.id }).from(questParticipation)
     .where(eq(questParticipation.questId, id)).limit(1);
 }
 
-function refundChain(q: QuestRow, context: ChainContext) {
+export function getQuestEscrowChain(q: QuestRow, context: ChainContext): QuestEscrowChain {
   if (q.chainId === null || !(q.chainId in questEscrowAddresses) || !q.escrowId) {
     throw new ORPCError("PRECONDITION_FAILED", { message: "This quest has no confirmed escrow." });
   }
@@ -34,12 +42,12 @@ function refundChain(q: QuestRow, context: ChainContext) {
   };
 }
 
-async function readEscrow(q: QuestRow, chain: ReturnType<typeof refundChain>, blockNumber: bigint) {
-  const [creator, , reward, deadline, status, , uri] = await chain.client.readContract({
+export async function readEscrow(q: QuestRow, chain: QuestEscrowChain, blockNumber: bigint) {
+  const [creator, , reward, deadline, status, winner, uri] = await chain.client.readContract({
     address: chain.address, abi: questEscrowAbi, functionName: "quests", args: [chain.id], blockNumber,
   });
   if (uri !== q.id) throw new ORPCError("CONFLICT", { message: "The escrow does not match this quest." });
-  return { creator, reward, deadline, status };
+  return { creator, reward, deadline, status, winner };
 }
 
 export async function reserveQuestCancellation(context: ChainContext, id: string, userId: string) {
@@ -51,7 +59,7 @@ export async function reserveQuestCancellation(context: ChainContext, id: string
       throw new ORPCError("CONFLICT", { message: "Only a funded quest that nobody has joined can be cancelled." });
     }
 
-    const chain = refundChain(q, context);
+    const chain = getQuestEscrowChain(q, context);
     const block = await chain.client.getBlock();
     const escrow = await readEscrow(q, chain, block.number);
     if (escrow.status === QuestStatus.Refunded) return recoverSubmittedRefund(tx, q, context);
@@ -85,7 +93,7 @@ export async function hasUnresolvedClaims(tx: Pick<Tx, "select">, id: string) {
   if (dispute) return true;
   const [participation] = await tx.select({ id: questParticipation.id }).from(questParticipation)
     .where(and(eq(questParticipation.questId, id), inArray(questParticipation.status, ["SUBMITTED", "APPROVED", "PAID"]))).limit(1);
-  return !!participation;
+  return !!participation || (await appealableParticipations(tx, id)).length > 0;
 }
 
 export const EMERGENCY_REFUND_DELAY_MS = 30 * 24 * 60 * 60 * 1000;
@@ -99,7 +107,7 @@ export async function prepareLegacyRefund(context: ChainContext, id: string, use
       throw new ORPCError("CONFLICT", { message: "This quest is not eligible for an emergency refund." });
     }
 
-    const chain = refundChain(q, context);
+    const chain = getQuestEscrowChain(q, context);
     const block = await chain.client.getBlock();
     const escrow = await readEscrow(q, chain, block.number);
     if (escrow.status === QuestStatus.Refunded) return recoverSubmittedRefund(tx, q, context);
@@ -119,7 +127,7 @@ export async function prepareLegacyRefund(context: ChainContext, id: string, use
   });
 }
 
-async function hasPendingRefundTransaction(chain: ReturnType<typeof refundChain>, hash: Hash) {
+async function hasPendingRefundTransaction(chain: QuestEscrowChain, hash: Hash) {
   try {
     const receipt = await chain.client.getTransactionReceipt({ hash });
     return receipt.status === "success";
@@ -146,7 +154,7 @@ export async function finalizeQuestRefund(
   tx: Tx, q: QuestRow, context: ChainContext, hash: Hash,
 ) {
   if (q.escrowStatus === "REFUNDED") return true;
-  const chain = refundChain(q, context);
+  const chain = getQuestEscrowChain(q, context);
   const receipt = await chain.client.getTransactionReceipt({ hash });
   if (receipt.status !== "success") throw new ORPCError("BAD_REQUEST", { message: "The refund transaction failed." });
 
@@ -201,7 +209,7 @@ export async function finalizeQuestRefund(
 }
 
 async function processRefund(tx: Tx, q: QuestRow, context: ChainContext) {
-  const chain = refundChain(q, context);
+  const chain = getQuestEscrowChain(q, context);
   const safe = await chain.client.getBlock({ blockTag: chain.chainId === 31337 ? "latest" : "safe" });
   const escrow = await readEscrow(q, chain, safe.number);
   const postpone = (delay = 30_000) =>

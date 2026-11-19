@@ -52,14 +52,14 @@ export const review = protectedProcedure
         throw new ORPCError("FORBIDDEN", { message: "Solo el creador puede revisar" });
       }
 
+      if (q.status !== "FUNDED") {
+        throw new ORPCError("CONFLICT", { message: "This quest is no longer accepting reviews." });
+      }
+
       if (input.decision === "APPROVE") {
         const [pending] = await tx.select({ id: questSubmission.id }).from(questSubmission)
           .where(and(eq(questSubmission.id, s.id), eq(questSubmission.status, "PENDING")));
         if (!pending) throw new ORPCError("CONFLICT", { message: "Esa evidencia ya fue revisada" });
-        if (q.status !== "FUNDED") {
-          throw new ORPCError("CONFLICT", { message: "La quest ya tiene ganador" });
-        }
-
         // Chain y escrow guardados por create/confirm, igual que en confirm
         const { chainId, escrowId } = q;
         if (chainId == null || !escrowId) {
