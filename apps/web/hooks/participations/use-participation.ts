@@ -1,6 +1,6 @@
 import type { AppRouterOutputs } from "@perkify/api/routers/index";
 import { questEscrowAbi } from "@perkify/contracts";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { BaseError, ContractFunctionRevertedError } from "viem";
@@ -13,6 +13,7 @@ import {
 } from "wagmi/actions";
 import { ORPCError } from "@orpc/client";
 
+import { useInvalidateQuestQueries } from "@/hooks/quest/use-quest";
 import { client, orpc } from "@/utils/orpc";
 
 export type QuestDetail = AppRouterOutputs["quests"]["get"];
@@ -57,23 +58,23 @@ function explainContractError(err: unknown, fallback: string): Error {
 
 /* ------------------------------ lectura ------------------------------ */
 
-/** Para el hunter devuelve solo su participación (con sus envíos y motivos de rechazo). */
-export function useMyEvidence(questId: string, enabled: boolean) {
+export function useQuestEvidence(questId: string, enabled: boolean, pollForSubmissions: boolean) {
   return useQuery({
     ...orpc.quests.getEvidence.queryOptions({ input: { id: questId } }),
     enabled,
+    refetchInterval: pollForSubmissions ? 15_000 : false,
   });
 }
 
 /* ------------------------------ unirse ------------------------------ */
 
 export function useJoinQuest() {
-  const qc = useQueryClient();
+  const invalidateQuestQueries = useInvalidateQuestQueries();
   return useMutation(
     orpc.quests.join.mutationOptions({
       onSuccess: async () => {
         toast.success("Te uniste a la quest");
-        await qc.invalidateQueries({ queryKey: orpc.quests.key() });
+        await invalidateQuestQueries();
       },
       onError: (e: Error) => toast.error(e.message),
     }),
@@ -106,7 +107,7 @@ async function uploadFile(questId: string, file: File) {
 }
 
 export function useSubmitEvidence() {
-  const qc = useQueryClient();
+  const invalidateQuestQueries = useInvalidateQuestQueries();
   return useMutation({
     mutationFn: async ({ questId, notes, links, files }: SubmitEvidenceInput) => {
       const uploaded = [];
@@ -115,7 +116,7 @@ export function useSubmitEvidence() {
     },
     onSuccess: async () => {
       toast.success("Evidencia enviada");
-      await qc.invalidateQueries({ queryKey: orpc.quests.key() });
+      await invalidateQuestQueries();
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -153,7 +154,7 @@ async function confirmPayoutWithRetry(questId: string, txHash: string) {
 export function useClaimReward() {
   const config = useConfig();
   const { address, chainId: walletChainId, isConnected, status } = useAccount();
-  const qc = useQueryClient();
+  const invalidateQuestQueries = useInvalidateQuestQueries();
   const [step, setStep] = useState<ClaimStep>("idle");
   const sentTx = useRef<Record<string, `0x${string}`>>({});
 
@@ -254,7 +255,7 @@ export function useClaimReward() {
     onSuccess: async (hash) => {
       console.log("[claim] onSuccess", hash);
       toast.success("Recompensa cobrada");
-      await qc.invalidateQueries({ queryKey: orpc.quests.key() });
+      await invalidateQuestQueries();
     },
     onError: (e) => {
       console.error("[claim] onError", e);
@@ -267,14 +268,6 @@ export function useClaimReward() {
   });
 
   return { ...mutation, step };
-}
-
-/** Para el creador devuelve TODAS las participaciones con sus envíos. */
-export function useQuestSubmissions(questId: string, enabled: boolean) {
-  return useQuery({
-    ...orpc.quests.getEvidence.queryOptions({ input: { id: questId } }),
-    enabled,
-  });
 }
 
 /* ------------------------------ revisar ------------------------------ */
@@ -302,7 +295,7 @@ type ReviewInput =
 export function useReviewSubmission() {
   const config = useConfig();
   const { address, chainId: walletChainId } = useAccount();
-  const qc = useQueryClient();
+  const invalidateQuestQueries = useInvalidateQuestQueries();
   const [step, setStep] = useState<ReviewStep>("idle");
   const sentTx = useRef<Record<string, `0x${string}`>>({});
 
@@ -377,7 +370,7 @@ export function useReviewSubmission() {
     },
     onSuccess: async (_d, vars) => {
       toast.success(vars.decision === "APPROVE" ? "Evidencia aprobada" : "Evidencia rechazada");
-      await qc.invalidateQueries({ queryKey: orpc.quests.key() });
+      await invalidateQuestQueries();
     },
     onError: (e) => toast.error(friendly(e)),
     onSettled: () => setStep("idle"),

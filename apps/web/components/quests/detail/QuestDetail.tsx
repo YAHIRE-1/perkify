@@ -211,8 +211,19 @@ export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
 
           {!isDraft && (
             <div id={ROAD_ID} className="scroll-mt-20" tabIndex={-1}>
-              {quest.isOwner ? (
-                <QuestReviewPanel questId={quest.id} maxAttempts={quest.maxAttempts} />
+              {quest.isOwner && quest.status === 'DISPUTED' ? (
+                <div className="surface space-y-3 p-5">
+                  <p className="text-sm text-muted-foreground">
+                    <Translate text="This quest is on hold while a dispute is reviewed." />
+                  </p>
+                  <Link href="/disputes" className="btn"><Translate text="View my disputes" /></Link>
+                </div>
+              ) : quest.isOwner ? (
+                <QuestReviewPanel
+                  questId={quest.id}
+                  maxAttempts={quest.maxAttempts}
+                  pollForSubmissions={quest.status === 'FUNDED'}
+                />
               ) : (
                 <QuestRoad quest={quest} />
               )}

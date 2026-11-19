@@ -6,7 +6,7 @@ import { Loader2 } from 'lucide-react';
 import { Button } from '@perkify/ui/components/button';
 import { Textarea } from '@perkify/ui/components/textarea';
 import {
-  useQuestSubmissions,
+  useQuestEvidence,
   useReviewSubmission,
   type QuestEvidence,
 } from '@/hooks/participations/use-participation';
@@ -116,11 +116,13 @@ function ReviewItem({
 export default function QuestReviewPanel({
   questId,
   maxAttempts,
+  pollForSubmissions,
 }: {
   questId: string;
   maxAttempts: number;
+  pollForSubmissions: boolean;
 }) {
-  const { data, isLoading } = useQuestSubmissions(questId, true);
+  const { data, isLoading } = useQuestEvidence(questId, true, pollForSubmissions);
 
   // submission PENDING = esperando revisión del creador
   const pending = (data ?? []).flatMap((p) =>

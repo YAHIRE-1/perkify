@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { questEscrowAbi } from '@perkify/contracts';
 import { useAccount, useConfig } from 'wagmi';
 import { switchChain, waitForTransactionReceipt, writeContract } from 'wagmi/actions';
 import { useLanguage } from '@/lib/i18n/provider';
-import { client, orpc } from '@/utils/orpc';
+import { useInvalidateQuestQueries } from '@/hooks/quest/use-quest';
+import { client } from '@/utils/orpc';
 import { parseWalletError } from '../form/quest-logic';
 
 type RefundResult =
@@ -22,7 +23,7 @@ export default function QuestRefundAction({ id, emergency, reserved }: {
   const [confirm, setConfirm] = useState(false);
   const { address, chainId: connectedChainId } = useAccount();
   const config = useConfig();
-  const queryClient = useQueryClient();
+  const invalidateQuestQueries = useInvalidateQuestQueries();
   const refund = useMutation({
     mutationFn: async (): Promise<RefundResult> => {
       const authorization = emergency
@@ -77,7 +78,7 @@ export default function QuestRefundAction({ id, emergency, reserved }: {
         throw new Error(parsed.message);
       }
     },
-    onSettled: () => queryClient.invalidateQueries({ queryKey: orpc.quests.key() }),
+    onSettled: invalidateQuestQueries,
   });
 
   if (refund.data?.kind === 'submitted') {

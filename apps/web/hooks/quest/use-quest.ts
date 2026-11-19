@@ -35,29 +35,40 @@ export function useGetQuest(id: string, enabled = true) {
   return useQuery({
     ...orpc.quests.get.queryOptions({ input: { id } }),
     enabled,
-    refetchInterval: (query) => query.state.data?.cancelExpiresAt != null ? 15_000 : false,
+    refetchInterval: (query) => {
+      const quest = query.state.data;
+      return quest?.status === "FUNDED" || quest?.status === "DISPUTED" || quest?.cancelExpiresAt != null ? 15_000 : false;
+    },
   });
 }
 
-export function useCreateQuest() {
+export function useInvalidateQuestQueries() {
   const queryClient = useQueryClient();
+
+  return () => Promise.all([
+    queryClient.invalidateQueries({ queryKey: orpc.quests.key() }),
+    queryClient.invalidateQueries({ queryKey: orpc.disputes.key() }),
+    queryClient.invalidateQueries({ queryKey: orpc.notifications.key() }),
+  ]);
+}
+
+export function useCreateQuest() {
+  const invalidateQuestQueries = useInvalidateQuestQueries();
   return useMutation(
     orpc.quests.create.mutationOptions({
-      onSuccess: async () => {
-        await queryClient.invalidateQueries({ queryKey: orpc.quests.key() });
-      },
+      onSuccess: invalidateQuestQueries,
       onError: (error: Error) => toast.error(error.message),
     })
   );
 }
 
 export function useConfirmQuest() {
-  const queryClient = useQueryClient();
+  const invalidateQuestQueries = useInvalidateQuestQueries();
   return useMutation(
     orpc.quests.confirm.mutationOptions({
       onSuccess: async () => {
         toast.success("Quest fondeada");
-        await queryClient.invalidateQueries({ queryKey: orpc.quests.key() });
+        await invalidateQuestQueries();
       },
       onError: (error: Error) => toast.error(error.message),
     })
@@ -65,13 +76,13 @@ export function useConfirmQuest() {
 }
 
 export function useUpdateQuest() {
-  const queryClient = useQueryClient();
+  const invalidateQuestQueries = useInvalidateQuestQueries();
 
   return useMutation(
     orpc.quests.update.mutationOptions({
       onSuccess: async () => {
         toast.success("Cliente actualizado");
-        await queryClient.invalidateQueries({ queryKey: orpc.quests.key() });
+        await invalidateQuestQueries();
       },
       onError: (error: Error) => toast.error(error.message),
     })
@@ -79,13 +90,13 @@ export function useUpdateQuest() {
 }
 
 export function useArchiveQuest() {
-  const queryClient = useQueryClient();
+  const invalidateQuestQueries = useInvalidateQuestQueries();
 
   return useMutation({
     mutationFn: (q: Pick<QuestRow, "id" | "title">) =>
       client.quests.archive({ id: q.id }),
     onSuccess: async (_data, q) => {
-      await queryClient.invalidateQueries({ queryKey: orpc.quests.key() });
+      await invalidateQuestQueries();
       toast.success("Quest archivada", {
         description: `Se archivó "${q.title}" con éxito.`,
       });

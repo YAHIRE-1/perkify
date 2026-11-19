@@ -1,4 +1,6 @@
 'use client';
+import Link from 'next/link';
+import { QuestDisputeAction } from './QuestDisputeAction';
 import { Translate } from '@/lib/i18n/provider';
 
 import { useState } from 'react';
@@ -12,7 +14,7 @@ import {
   CLAIM_LABEL,
   useClaimReward,
   useJoinQuest,
-  useMyEvidence,
+  useQuestEvidence,
   useSubmitEvidence,
   type QuestDetail,
 } from '@/hooks/participations/use-participation';
@@ -201,7 +203,7 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
   const claim = useClaimReward();
 
   const p = quest.myParticipation;
-  const evidence = useMyEvidence(quest.id, !!p);
+  const evidence = useQuestEvidence(quest.id, !!p, quest.status === "FUNDED");
 
   // justo después de calcular `p`, `evidence`, etc.
   console.log('[claim] QuestRoad render', {
@@ -240,7 +242,14 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
 
   let panel: React.ReactNode;
 
-  if (!p) {
+  if (quest.status === 'DISPUTED') {
+    panel = (
+      <div className="space-y-2">
+        <p className="text-sm text-muted-foreground"><Translate text="This quest is on hold while a dispute is reviewed." /></p>
+        {p && <Link href="/disputes" className="btn"><Translate text="View my disputes" /></Link>}
+      </div>
+    );
+  } else if (!p) {
     panel = open ? (
       <>
         <p className="text-sm text-muted-foreground"><Translate text={"After joining, you have up to"} />{' '}{formatHours(quest.submitWindowHours)}{' '}<Translate text={"to submit evidence. Submit before the quest closes."} /></p>
@@ -320,7 +329,10 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
         {p ? <Translate text={"Your participation"} /> : <Translate text={"How to participate"} />}
       </h2>
       <Steps failed={p?.status === 'REJECTED'} index={currentStep(p?.status)} />
-      <div className="space-y-3">{panel}</div>
+      <div className="space-y-3">
+        {panel}
+        {quest.canOpenDispute && <QuestDisputeAction questId={quest.id} />}
+      </div>
     </section>
   );
 }
