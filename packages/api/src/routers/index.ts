@@ -6,6 +6,7 @@ import type {
 
 import { protectedProcedure, publicProcedure } from "../index";
 import { disputesRouter } from "./disputes";
+import { reputationRouter } from "./reputation";
 import { questsRouter } from "./quests";
 import { notificationsRouter } from "./notifications";
 import { tokensRouter } from "./tokens";
@@ -17,6 +18,7 @@ export const appRouter = {
     user: context.session?.user,
   })),
   quests: questsRouter,
+  reputation: reputationRouter,
   disputes: disputesRouter,
   notifications: notificationsRouter,
   tokens: tokensRouter,
