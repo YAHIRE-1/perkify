@@ -32,7 +32,10 @@ export default function Footer() {
           </div>
           <div className="footer-bottom">
             <span><Translate text={"© 2026 Perkify. All rewards settle on-chain."} /></span>
-            <span><Translate text={"Terms · Privacy"} /></span>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/terms" className="underline underline-offset-4"><Translate text={"Terms of Service"} /></Link>
+              <Link href="/privacy" className="underline underline-offset-4"><Translate text={"Privacy Notice"} /></Link>
+            </div>
           </div>
         </div>
       </footer>
