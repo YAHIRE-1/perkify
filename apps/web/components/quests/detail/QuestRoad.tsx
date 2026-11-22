@@ -3,10 +3,8 @@ import Link from 'next/link';
 import { QuestDisputeAction } from './QuestDisputeAction';
 import { Translate } from '@/lib/i18n/provider';
 
-import { useState } from 'react';
 import { Check, Loader2, X } from 'lucide-react';
 import { Button } from '@perkify/ui/components/button';
-import { Textarea } from '@perkify/ui/components/textarea';
 import { formatHours } from '@perkify/db/validations/quest';
 import { authClient } from '@/lib/auth-client';
 import { formatReward } from '@/lib/format-reward';
@@ -15,12 +13,8 @@ import {
   useClaimReward,
   useJoinQuest,
   useQuestEvidence,
-  useSubmitEvidence,
   type QuestDetail,
 } from '@/hooks/participations/use-participation';
-
-const MAX_FILES = 5; // ajusta a MAX_FILES de api/lib/evidence.ts
-const MAX_LINKS = 10;
 
 const STEPS = ['Join', 'Submit evidence', 'Creator review', 'Claim reward'];
 
@@ -48,17 +42,6 @@ function timeLeft(date: Date | string) {
   const h = Math.floor((m % 1440) / 60);
   return d > 0 ? `${d}d ${h}h` : h > 0 ? `${h}h ${m % 60}m` : `${m}m`;
 }
-
-const isUrl = (s: string) => {
-  try {
-    return ['http:', 'https:'].includes(new URL(s).protocol);
-  } catch {
-    return false;
-  }
-};
-
-const formatSize = (b: number) =>
-  b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.ceil(b / 1024)} KB`;
 
 /* -------------------------------------------------------------------------- */
 /*  Camino                                                                    */
@@ -95,104 +78,6 @@ function Steps({ index, failed }: { index: number; failed: boolean }) {
 /*  Formulario de evidencia                                                   */
 /* -------------------------------------------------------------------------- */
 
-function EvidenceForm({ questId }: { questId: string }) {
-  const submit = useSubmitEvidence();
-  const [notes, setNotes] = useState('');
-  const [linksText, setLinksText] = useState('');
-  const [files, setFiles] = useState<File[]>([]);
-
-  const links = linksText
-    .split('\n')
-    .map((l) => l.trim())
-    .filter(Boolean);
-  const badLink = links.find((l) => !isUrl(l));
-
-  const problem =
-    notes.trim().length < 10
-      ? 'Describe what you did (at least 10 characters).'
-      : !links.length && !files.length
-        ? 'Add at least one link or file.'
-        : badLink
-          ? `Not a valid URL: ${badLink}`
-          : links.length > MAX_LINKS
-            ? `At most ${MAX_LINKS} links.`
-            : null;
-
-  return (
-    <form
-      className="space-y-3"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (problem) return;
-        submit.mutate({ questId, notes: notes.trim(), links, files });
-      }}
-    >
-      <div>
-        <label className="text-sm font-medium" htmlFor="notes"><Translate text={"What did you do?"} /></label>
-        <Textarea
-          className="min-h-24"
-          id="notes"
-          maxLength={2000}
-          onChange={(e) => setNotes(e.target.value)}
-          value={notes}
-        />
-      </div>
-
-      <div>
-        <label className="text-sm font-medium" htmlFor="links"><Translate text={"Links (one per line)"} /></label>
-        <Textarea
-          className="min-h-16"
-          id="links"
-          onChange={(e) => setLinksText(e.target.value)}
-          placeholder="https://x.com/…"
-          value={linksText}
-        />
-      </div>
-
-      <div>
-        <label className="text-sm font-medium" htmlFor="files"><Translate text={"Files ("} />{files.length}/{MAX_FILES})
-        </label>
-        <input
-          className="block w-full text-sm"
-          disabled={files.length >= MAX_FILES}
-          id="files"
-          multiple
-          onChange={(e) => {
-            const picked = Array.from(e.target.files ?? []);
-            setFiles((prev) => [...prev, ...picked].slice(0, MAX_FILES));
-            e.target.value = '';
-          }}
-          type="file"
-        />
-        <ul className="mt-2 space-y-1">
-          {files.map((f, i) => (
-            <li
-              key={`${i}-${f.name}`}
-              className="surface-2 flex items-center justify-between gap-2 px-3 py-2 text-sm"
-            >
-              <span className="truncate">
-                {f.name} · {formatSize(f.size)}
-              </span>
-              <Button
-                onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
-                type="button"
-                variant="legacy-link"
-              ><Translate text={"Remove"} /></Button>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {problem && <p className="text-xs text-muted-foreground">{problem}</p>}
-
-      <Button disabled={!!problem || submit.isPending} type="submit" variant="legacy-primary">
-        {submit.isPending ? <Loader2 className="animate-spin" /> : null}
-        {submit.isPending ? 'Uploading…' : 'Submit evidence'}
-      </Button>
-    </form>
-  );
-}
-
 /* -------------------------------------------------------------------------- */
 /*  Quest road                                                                */
 /* -------------------------------------------------------------------------- */
@@ -222,6 +107,8 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
   const hasSpot = quest.maxParticipants === 0 || quest.taken < quest.maxParticipants;
   const open = quest.status === 'FUNDED' && quest.cancelExpiresAt === null && new Date(quest.deadline) > now && hasSpot;
   const expired = p?.status === 'JOINED' && new Date(p.expiresAt) <= now;
+  const canSubmit = p?.status === 'JOINED' && !expired && quest.status === 'FUNDED'
+    && quest.cancelExpiresAt === null && new Date(quest.deadline) > now;
   const canRetry = !!p && p.attempts < quest.maxAttempts;
 
   const subs = evidence.data?.[0]?.submissions ?? [];
@@ -277,7 +164,11 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
           </p>
         )}
         <p className="text-sm text-muted-foreground"><Translate text={"Attempt"} />{' '}{p.attempts}/{quest.maxAttempts} · {timeLeft(p.expiresAt)}{' '}<Translate text={"left to submit."} /></p>
-        <EvidenceForm questId={quest.id} />
+        {canSubmit && (
+          <Link className="btn btn-primary" href={`/quests/${quest.id}/evidence`}>
+            <Translate text="Submit evidence" />
+          </Link>
+        )}
       </>
     );
   } else if (p.status === 'SUBMITTED') {
@@ -331,6 +222,9 @@ export default function QuestRoad({ quest }: { quest: QuestDetail }) {
       <Steps failed={p?.status === 'REJECTED'} index={currentStep(p?.status)} />
       <div className="space-y-3">
         {panel}
+        {p && !canSubmit && (
+          <Link className="btn" href={`/quests/${quest.id}/evidence`}><Translate text="View evidence" /></Link>
+        )}
         {quest.canOpenDispute && <QuestDisputeAction questId={quest.id} />}
       </div>
     </section>

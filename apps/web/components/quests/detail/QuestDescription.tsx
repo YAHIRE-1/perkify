@@ -6,6 +6,7 @@ type Props = {
   deliverables: ReactNode;
   criteria?: string | null;
   validationChecklist?: string[];
+  proofRequired?: boolean[];
 };
 
 function Section({
@@ -30,6 +31,7 @@ export default function QuestDescription({
   deliverables,
   criteria,
   validationChecklist = [],
+  proofRequired = [],
 }: Props) {
   return (
     <div className="space-y-6">
@@ -67,6 +69,9 @@ export default function QuestDescription({
                 <span className="min-w-0 wrap-break-word">
                   {item}
                 </span>
+                {proofRequired[index] && (
+                  <span className="ml-auto shrink-0 text-xs text-muted-foreground"><Translate text="Proof required" /></span>
+                )}
               </li>
             ))}
           </ul>

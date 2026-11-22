@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 
 import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/components/Providers';
-import QuestReviewPanel from '../QuestReviewPanel';
 import QuestAction, { ROAD_ID } from './QuestAction';
 import QuestDescription from './QuestDescription';
 import QuestEscrow from './QuestEscrow';
@@ -199,6 +198,7 @@ export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
               }))} />}
               criteria={translated?.criteria ?? quest.criteria}
               validationChecklist={translated?.checklist ?? quest.validationChecklist}
+              proofRequired={quest.validationChecklist.map((item) => quest.checklistProofRequired?.includes(item) ?? false)}
             />
           </article>
 
@@ -216,14 +216,18 @@ export default function QuestDetail({ id, backHref = '/dashboard' }: Props) {
                   <p className="text-sm text-muted-foreground">
                     <Translate text="This quest is on hold while a dispute is reviewed." />
                   </p>
-                  <Link href="/disputes" className="btn"><Translate text="View my disputes" /></Link>
+                  <div className="flex flex-wrap gap-2">
+                    <Link href="/disputes" className="btn"><Translate text="View my disputes" /></Link>
+                    <Link href={`/quests/${quest.id}/evidence`} className="btn"><Translate text="View evidence" /></Link>
+                  </div>
                 </div>
               ) : quest.isOwner ? (
-                <QuestReviewPanel
-                  questId={quest.id}
-                  maxAttempts={quest.maxAttempts}
-                  pollForSubmissions={quest.status === 'FUNDED'}
-                />
+                <section className="surface space-y-3 p-5">
+                  <h2 className="font-display text-xl font-semibold"><Translate text="Quest evidence" /></h2>
+                  <Link className="btn btn-primary" href={`/quests/${quest.id}/evidence`}>
+                    <Translate text={quest.status === 'FUNDED' ? 'Review submissions' : 'View evidence'} />
+                  </Link>
+                </section>
               ) : (
                 <QuestRoad quest={quest} />
               )}

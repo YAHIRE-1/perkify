@@ -1,5 +1,6 @@
 'use client';
-import { Translate } from '@/lib/i18n/provider';
+import EvidenceAttachments from './EvidenceAttachments';
+import { Translate, useLanguage } from '@/lib/i18n/provider';
 
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
@@ -22,68 +23,84 @@ function timeLeft(date: Date | string) {
   return d > 0 ? `${d}d ${h}h` : h > 0 ? `${h}h ${m % 60}m` : `${m}m`;
 }
 
-const formatSize = (b: number) =>
-  b >= 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.ceil(b / 1024)} KB`;
-
 function ReviewItem({
   hunterName,
-  attempt,
-  maxAttempts,
   submission: s,
+  canReview,
 }: {
   hunterName: string;
-  attempt: number;
-  maxAttempts: number;
   submission: Submission;
+  canReview: boolean;
 }) {
   const review = useReviewSubmission();
+  const { locale, t } = useLanguage();
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState('');
   const left = timeLeft(s.reviewDeadline);
+  const actionable = canReview && s.status === "PENDING";
+  const status = s.status === "PENDING" ? "Pending review" : s.status === "APPROVED" ? "Approved" : "Rejected";
   const reasonOk = reason.trim().length >= 5; // mismo mínimo que el zod del servidor
 
   return (
     <li className="surface-2 space-y-3 p-4">
-      <div className="flex items-center justify-between gap-2 text-sm">
-        <span className="font-medium">{hunterName}</span>
-        <span className="muted text-xs"><Translate text={"Attempt"} />{' '}{attempt}/{maxAttempts} · {left ? `${left} left to review` : 'review window passed'}
-        </span>
+      <div className="flex flex-wrap items-start justify-between gap-2 border-b pb-3 text-sm">
+        <div>
+          <p className="font-semibold">{hunterName}</p>
+          <time className="text-xs text-muted-foreground" dateTime={new Date(s.createdAt).toISOString()}>
+            {new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(s.createdAt))}
+          </time>
+        </div>
+        <span className="rounded-full border px-2.5 py-1 text-xs font-medium"><Translate text={status} /></span>
       </div>
 
-      <p className="whitespace-pre-wrap text-sm">{s.notes}</p>
-
-      {s.links.length > 0 && (
-        <ul className="space-y-1 text-sm">
-          {s.links.map((l) => (
-            <li key={l} className="truncate">
-              <a className="underline" href={l} rel="noopener noreferrer nofollow" target="_blank">
-                {l}
-              </a>
-            </li>
-          ))}
-        </ul>
+      {actionable && (
+        <p className="text-xs text-muted-foreground">
+          {left ? t('{time} left to review', { time: left }) : t('Review window passed')}
+        </p>
+      )}
+      {s.notes && (
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold"><Translate text="Submission notes" /></h3>
+          <p className="whitespace-pre-wrap break-words text-sm">{s.notes}</p>
+        </div>
+      )}
+      {s.checklistResponses?.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold"><Translate text="Delivered checklist items" /></h3>
+          <ul className="space-y-2">
+            {s.checklistResponses.map(({ item, proof }) => {
+              const file = proof?.kind === 'file' ? s.files.find((entry) => entry.id === proof.fileId) : undefined;
+              const url = proof?.kind === 'link' ? proof.url : file?.url;
+              return (
+                <li key={item} className="rounded-md border p-3 text-sm">
+                  <p className="break-words">{item}</p>
+                  {url && (
+                    <a className="mt-1 inline-block break-all underline" href={url} target="_blank" rel="noopener noreferrer">
+                      {file?.name ?? t('Open proof link')}
+                    </a>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+      <EvidenceAttachments links={s.links} files={s.files} />
+      {s.rejectionReason && (
+        <div className="rounded-md border p-3 text-sm">
+          <h3 className="font-semibold"><Translate text="Rejection reason" /></h3>
+          <p className="mt-1 whitespace-pre-wrap break-words">{s.rejectionReason}</p>
+        </div>
       )}
 
-      {s.files.length > 0 && (
-        <ul className="space-y-1 text-sm">
-          {s.files.map((f) => (
-            <li key={f.id} className="truncate">
-              <a className="underline" href={f.url} rel="noopener noreferrer" target="_blank">
-                {f.name}
-              </a>{' '}
-              <span className="muted text-xs">· {formatSize(f.size)}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {rejecting ? (
+      {actionable && (rejecting ? (
         <div className="space-y-2">
           <Textarea
             className="min-h-16"
             maxLength={500}
             onChange={(e) => setReason(e.target.value)}
-            placeholder="Tell the hunter what to fix (min. 5 characters)"
+            aria-label={t("Rejection reason")}
+            placeholder={t("Tell the participant what to fix.")}
             value={reason}
           />
           <div className="flex gap-2">
@@ -108,53 +125,42 @@ function ReviewItem({
             {review.isPending ? <Loader2 className="animate-spin" /> : null}<Translate text={"Approve"} /></Button>
           <Button disabled={review.isPending} onClick={() => setRejecting(true)} variant="legacy-link"><Translate text={"Reject"} /></Button>
         </div>
-      )}
+      ))}
     </li>
   );
 }
 
 export default function QuestReviewPanel({
-  questId,
-  maxAttempts,
-  pollForSubmissions,
+  questId, canReview, pollForSubmissions,
 }: {
   questId: string;
-  maxAttempts: number;
+  canReview: boolean;
   pollForSubmissions: boolean;
 }) {
-  const { data, isLoading } = useQuestEvidence(questId, true, pollForSubmissions);
-
-  // submission PENDING = esperando revisión del creador
-  const pending = (data ?? []).flatMap((p) =>
-    p.submissions
-      .filter((s) => s.status === 'PENDING')
-      .map((s) => ({ p, s })),
+  const evidence = useQuestEvidence(questId, true, pollForSubmissions);
+  const submissions = (evidence.data ?? []).flatMap((p) =>
+    p.submissions.map((s) => ({ hunterName: p.hunter.name, s })),
+  ).sort((a, b) =>
+    Number(b.s.status === 'PENDING') - Number(a.s.status === 'PENDING')
+    || +new Date(b.s.createdAt) - +new Date(a.s.createdAt),
   );
 
   return (
-    <section className="surface space-y-4 p-4 sm:p-6">
-      <div className="flex items-center justify-between">
-        <h2 className="font-display font-semibold"><Translate text={"Review submissions"} /></h2>
-        {pending.length > 0 && (
-          <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-600">
-            {pending.length}{' '}<Translate text={"pending"} /></span>
-        )}
-      </div>
-
-      {isLoading ? (
-        <div className="h-24 animate-pulse rounded bg-muted" />
-      ) : pending.length === 0 ? (
-        <p className="muted text-sm"><Translate text={"Nothing to review yet."} /></p>
+    <section className="surface space-y-4 p-5 sm:p-6">
+      <h2 className="font-display text-xl font-semibold"><Translate text="Submission history" /></h2>
+      {evidence.isPending ? (
+        <p role="status"><Translate text="Loading evidence…" /></p>
+      ) : evidence.isError ? (
+        <div className="space-y-2">
+          <p role="alert"><Translate text="Could not load the evidence." /></p>
+          <button className="btn" type="button" onClick={() => void evidence.refetch()}><Translate text="Try again" /></button>
+        </div>
+      ) : submissions.length === 0 ? (
+        <p className="text-sm text-muted-foreground"><Translate text="No evidence submitted yet." /></p>
       ) : (
-        <ul className="space-y-3">
-          {pending.map(({ p, s }) => (
-            <ReviewItem
-              key={s.id}
-              attempt={p.attempts}
-              hunterName={p.hunter.name}
-              maxAttempts={maxAttempts}
-              submission={s}
-            />
+        <ul className="space-y-4">
+          {submissions.map(({ hunterName, s }) => (
+            <ReviewItem key={s.id} hunterName={hunterName} submission={s} canReview={canReview} />
           ))}
         </ul>
       )}

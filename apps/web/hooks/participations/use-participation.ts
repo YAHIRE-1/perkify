@@ -1,4 +1,4 @@
-import type { AppRouterOutputs } from "@perkify/api/routers/index";
+import type { AppRouterInputs, AppRouterOutputs } from "@perkify/api/routers/index";
 import { questEscrowAbi } from "@perkify/contracts";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
@@ -13,6 +13,7 @@ import {
 } from "wagmi/actions";
 import { ORPCError } from "@orpc/client";
 
+import { useAuth } from "@/components/Providers";
 import { useInvalidateQuestQueries } from "@/hooks/quest/use-quest";
 import { client, orpc } from "@/utils/orpc";
 
@@ -59,9 +60,12 @@ function explainContractError(err: unknown, fallback: string): Error {
 /* ------------------------------ lectura ------------------------------ */
 
 export function useQuestEvidence(questId: string, enabled: boolean, pollForSubmissions: boolean) {
+  const { user } = useAuth();
+  const options = orpc.quests.getEvidence.queryOptions({ input: { id: questId } });
   return useQuery({
-    ...orpc.quests.getEvidence.queryOptions({ input: { id: questId } }),
-    enabled,
+    ...options,
+    queryKey: [...options.queryKey, user?.id ?? null],
+    enabled: enabled && !!user,
     refetchInterval: pollForSubmissions ? 15_000 : false,
   });
 }
@@ -88,6 +92,7 @@ export type SubmitEvidenceInput = {
   notes: string;
   links: string[];
   files: File[];
+  checklist: AppRouterInputs["quests"]["submitEvidence"]["checklist"];
 };
 
 async function uploadFile(questId: string, file: File) {
@@ -109,16 +114,15 @@ async function uploadFile(questId: string, file: File) {
 export function useSubmitEvidence() {
   const invalidateQuestQueries = useInvalidateQuestQueries();
   return useMutation({
-    mutationFn: async ({ questId, notes, links, files }: SubmitEvidenceInput) => {
+    mutationFn: async ({ questId, notes, links, files, checklist }: SubmitEvidenceInput) => {
       const uploaded = [];
       for (const f of files) uploaded.push(await uploadFile(questId, f)); // en serie: simple y predecible
-      return client.quests.submitEvidence({ id: questId, notes, links, files: uploaded });
+      return client.quests.submitEvidence({ id: questId, notes, links, files: uploaded, checklist });
     },
     onSuccess: async () => {
       toast.success("Evidencia enviada");
       await invalidateQuestQueries();
     },
-    onError: (e: Error) => toast.error(e.message),
   });
 }
 

@@ -182,7 +182,10 @@ export function QuestPreview({ values: v, token, onEdit }: PreviewProps) {
             {v.validationChecklist.map((c, i) => (
               <li key={`${i}-${c}`} className="flex gap-2">
                 <Check className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                {c}
+                <span className="min-w-0 break-words">{c}</span>
+                {v.checklistProofRequired.includes(c) && (
+                  <span className="ml-auto shrink-0 text-xs text-muted-foreground"><Translate text="Proof required" /></span>
+                )}
               </li>
             ))}
           </ul>

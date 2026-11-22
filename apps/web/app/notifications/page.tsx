@@ -80,7 +80,7 @@ function Inbox({ userId }: { userId: string }) {
             {items.map((item) => (
               <li key={item.id}>
                 <Link
-                  href={`/quests/${item.questId}`}
+                  href={`/quests/${item.questId}${item.kind === "SUBMITTED" ? "/evidence" : ""}`}
                   onClick={() => { if (!item.readAt) markRead.mutate({ id: item.id }); }}
                   className="flex items-start gap-3 px-4 py-4 hover:bg-[var(--surface-2)] sm:px-5"
                 >

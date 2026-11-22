@@ -60,7 +60,7 @@ const STEPS = [
     id: 'tasks',
     title: 'Deliverables',
     description: 'Describe what hunters should submit and how you’ll review their work.',
-    fields: ['milestones', 'criteria', 'validationChecklist'],
+    fields: ['milestones', 'criteria', 'validationChecklist', 'checklistProofRequired'],
   },
   {
     id: 'schedule',

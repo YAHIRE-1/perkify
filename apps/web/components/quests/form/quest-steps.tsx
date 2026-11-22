@@ -1,6 +1,8 @@
 'use client';
 import { Translate, useLanguage } from '@/lib/i18n/provider';
 
+import ChecklistProofSwitch from './ChecklistProofSettings';
+
 import { useEffect, useState } from 'react';
 import { ArrowDown, ArrowUp } from 'lucide-react';
 import { formatUnits } from 'viem';
@@ -128,6 +130,7 @@ interface StringListFieldProps {
   reorderable?: boolean;
   maxItems: number;
   maxLength: number;
+  renderItemControl?: (item: string) => React.ReactNode;
 }
 
 function StringListField({
@@ -138,6 +141,7 @@ function StringListField({
   reorderable = false,
   maxItems,
   maxLength,
+  renderItemControl,
   ...inputProps
 }: StringListFieldProps) {
   const [draft, setDraft] = useState('');
@@ -190,41 +194,44 @@ function StringListField({
         {value.map((text, i) => (
           <li
             key={`${i}-${text}`}
-            className="surface-2 flex items-center justify-between gap-2 px-3 py-2 text-sm"
+            className="surface-2 space-y-2 px-3 py-2 text-sm"
           >
-            <span className="min-w-0 break-words">
-              {numbered ? `${i + 1}. ` : ''}
-              {text}
-            </span>
-            <span className="flex shrink-0 items-center gap-1">
-              {reorderable && value.length > 1 && (
-                <>
-                  <button
-                    aria-label={`Move item ${i + 1} up`}
-                    className="rounded p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
-                    disabled={i === 0}
-                    onClick={() => move(i, -1)}
-                    type="button"
-                  >
-                    <ArrowUp className="size-4" />
-                  </button>
-                  <button
-                    aria-label={`Move item ${i + 1} down`}
-                    className="rounded p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
-                    disabled={i === value.length - 1}
-                    onClick={() => move(i, 1)}
-                    type="button"
-                  >
-                    <ArrowDown className="size-4" />
-                  </button>
-                </>
-              )}
-              <Button
-                type="button"
-                variant="legacy-link"
-                onClick={() => onChange(value.filter((_, j) => j !== i))}
-              ><Translate text={"Remove"} /></Button>
-            </span>
+            <div className="flex min-w-0 items-center justify-between gap-2">
+              <span className="min-w-0 break-words">
+                {numbered ? `${i + 1}. ` : ''}
+                {text}
+              </span>
+              <span className="flex shrink-0 items-center gap-1">
+                {reorderable && value.length > 1 && (
+                  <>
+                    <button
+                      aria-label={`Move item ${i + 1} up`}
+                      className="rounded p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                      disabled={i === 0}
+                      onClick={() => move(i, -1)}
+                      type="button"
+                    >
+                      <ArrowUp className="size-4" />
+                    </button>
+                    <button
+                      aria-label={`Move item ${i + 1} down`}
+                      className="rounded p-1 text-muted-foreground hover:text-foreground disabled:opacity-30"
+                      disabled={i === value.length - 1}
+                      onClick={() => move(i, 1)}
+                      type="button"
+                    >
+                      <ArrowDown className="size-4" />
+                    </button>
+                  </>
+                )}
+                <Button
+                  type="button"
+                  variant="legacy-link"
+                  onClick={() => onChange(value.filter((_, j) => j !== i))}
+                ><Translate text={"Remove"} /></Button>
+              </span>
+            </div>
+            {renderItemControl?.(text)}
           </li>
         ))}
       </ul>
@@ -519,17 +526,37 @@ export function TasksStep() {
         render={({ field }) => (
           <FormItem>
             <FormLabel><Translate text={"Review checklist (optional)"} /></FormLabel>
-            <Hint><Translate text={"Things you will check on every submission."} /></Hint>
-            <FormControl>
-              <StringListField
-                maxItems={LIMITS.checklistItems}
-                maxLength={LIMITS.checklistLength}
-                onChange={field.handleChange}
-                placeholder={t("Add something to check")}
-                reorderable
-                value={field.state.value}
-              />
-            </FormControl>
+            <p className="text-xs text-muted-foreground">
+              <Translate text="Use the checklist to define what you’ll verify. Turn on proof only where you need a link or file." />
+            </p>
+            <FormField
+              name="checklistProofRequired"
+              render={({ field: settings }) => (
+                <FormControl>
+                  <StringListField
+                    maxItems={LIMITS.checklistItems}
+                    maxLength={LIMITS.checklistLength}
+                    onChange={(items) => {
+                      field.handleChange(items);
+                      const required = settings.state.value.filter((item: string) => items.includes(item));
+                      settings.handleChange(required);
+                    }}
+                    placeholder={t("Add something to check")}
+                    reorderable
+                    value={field.state.value}
+                    renderItemControl={(item) => (
+                      <ChecklistProofSwitch
+                        item={item}
+                        checked={settings.state.value.includes(item)}
+                        onChange={(checked) => settings.handleChange(checked
+                          ? [...settings.state.value, item]
+                          : settings.state.value.filter((entry: string) => entry !== item))}
+                      />
+                    )}
+                  />
+                </FormControl>
+              )}
+            />
             <FormMessage />
           </FormItem>
         )}

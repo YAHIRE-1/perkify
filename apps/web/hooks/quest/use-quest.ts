@@ -5,6 +5,7 @@ import type {
 import { useMutation, keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useAuth } from "@/components/Providers";
 import { client, orpc } from "@/utils/orpc";
 
 export type ListInput = AppRouterInputs["quests"]["list"];
@@ -32,8 +33,11 @@ export function useMyQuests(params: ListInput, enabled: boolean) {
 }
 
 export function useGetQuest(id: string, enabled = true) {
+  const { user } = useAuth();
+  const options = orpc.quests.get.queryOptions({ input: { id } });
   return useQuery({
-    ...orpc.quests.get.queryOptions({ input: { id } }),
+    ...options,
+    queryKey: [...options.queryKey, user?.id ?? null],
     enabled,
     refetchInterval: (query) => {
       const quest = query.state.data;

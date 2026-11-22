@@ -51,6 +51,7 @@ export const questFormSchema = (decimals: number) =>
           .max(200, 'Max 200 characters per item.'),
       )
       .max(20, 'You can add up to 20 checklist items.'),
+    checklistProofRequired: z.array(z.string().trim().min(1).max(200)).max(20),
   });
 
 export type QuestFormValues = z.infer<ReturnType<typeof questFormSchema>>;
@@ -64,5 +65,6 @@ export const EMPTY_QUEST_FORM: QuestFormValues = {
   deadline: '',
   tokenId: '',
   validationChecklist: [],
+  checklistProofRequired: [],
   milestones: [],
 };
