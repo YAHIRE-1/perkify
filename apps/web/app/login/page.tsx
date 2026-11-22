@@ -13,7 +13,7 @@ export default function Login() {
   const go = async () => {
     setBusy(true); setErr(null);
     try {
-      if (await login()) router.push('/');
+      if (await login()) router.push('/dashboard');
     } catch (error: unknown) {
       setErr(error instanceof Error ? error.message : 'Could not connect your wallet.');
     } finally {

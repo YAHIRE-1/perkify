@@ -533,7 +533,17 @@
     "Perkify uses your public wallet address and a signed message to sign you in. This sign-in does not cost gas or move funds. Transactions you approve separately may be public and irreversible. Never share your seed phrase or private key.": "Perkify usa la dirección pública de tu billetera y un mensaje firmado para iniciar sesión. Este inicio de sesión no cobra comisiones de red ni mueve fondos. Las transacciones que apruebes por separado pueden ser públicas e irreversibles. Nunca compartas tu frase de recuperación ni tu clave privada.",
     "Terms of Service (opens in a new tab)": "Términos y condiciones (abre en otra pestaña)",
     "Privacy Notice (opens in a new tab)": "Aviso de privacidad (abre en otra pestaña)",
-    "Continue to wallet": "Continuar a la billetera"
+    "Continue to wallet": "Continuar a la billetera",
+    "Your navigation menu": "Tu menú de navegación",
+    "Use the menu button in the top bar to open the sidebar. There you can find the marketplace, reputation rankings, and disputes.": "Usa el botón de menú de la barra superior para abrir el panel lateral. Ahí encontrarás el mercado de misiones, la clasificación de reputación y las disputas.",
+    "Manage your quests": "Administra tus misiones",
+    "Open My quests to track your activity, or choose Create quest to publish a new one.": "Abre Mis misiones para consultar tu actividad o selecciona Crear misión para publicar una nueva.",
+    "The bell in the top bar opens your notifications. Check it for quest updates, reviews, and rewards.": "La campana de la barra superior abre tus notificaciones. Consúltalas para ver novedades sobre misiones, revisiones y recompensas.",
+    "Open your account menu at the bottom of the sidebar to view your profile or sign out.": "Abre el menú de tu cuenta en la parte inferior del panel lateral para ver tu perfil o cerrar sesión.",
+    "Take the tour": "Ver el recorrido",
+    "Step {current} of {total}": "Paso {current} de {total}",
+    "Skip tour": "Omitir recorrido",
+    "Done": "Listo"
   },
   "zh-CN": {
     "Could not send the evidence. Check your connection and try again.": "无法发送证据。请检查网络连接后重试。",
@@ -1069,6 +1079,16 @@
     "Perkify uses your public wallet address and a signed message to sign you in. This sign-in does not cost gas or move funds. Transactions you approve separately may be public and irreversible. Never share your seed phrase or private key.": "Perkify 使用你的公开钱包地址和签名消息来验证登录。此登录无需支付 Gas 费，也不会转移资金。你单独批准的交易可能公开且不可撤销。切勿分享助记词或私钥。",
     "Terms of Service (opens in a new tab)": "服务条款（在新标签页打开）",
     "Privacy Notice (opens in a new tab)": "隐私声明（在新标签页打开）",
-    "Continue to wallet": "继续连接钱包"
+    "Continue to wallet": "继续连接钱包",
+    "Your navigation menu": "导航菜单",
+    "Use the menu button in the top bar to open the sidebar. There you can find the marketplace, reputation rankings, and disputes.": "点击顶部栏的菜单按钮打开侧边栏。你可以在这里找到任务市场、声誉排行榜和争议。",
+    "Manage your quests": "管理任务",
+    "Open My quests to track your activity, or choose Create quest to publish a new one.": "打开「我的任务」查看活动，或选择「创建任务」发布新任务。",
+    "The bell in the top bar opens your notifications. Check it for quest updates, reviews, and rewards.": "点击顶部栏的铃铛打开通知，查看任务进展、审核和奖励。",
+    "Open your account menu at the bottom of the sidebar to view your profile or sign out.": "打开侧边栏底部的账户菜单，查看个人资料或退出登录。",
+    "Take the tour": "查看入门导览",
+    "Step {current} of {total}": "第 {current} 步，共 {total} 步",
+    "Skip tour": "跳过导览",
+    "Done": "完成"
   }
 }
