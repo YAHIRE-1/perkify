@@ -3,11 +3,12 @@ import { Translate, useLanguage } from '@/lib/i18n/provider';
 
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ArrowUpRight, Bell, Settings2 } from 'lucide-react';
+import { Settings2 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import EmptyState from '@/components/EmptyState';
 import { useAuth } from '@/components/Providers';
+import NotificationRows from '@/components/notifications/NotificationRows';
 import { orpc } from '@/utils/orpc';
 
 const labels = {
@@ -47,7 +48,7 @@ export default function NotificationsPage() {
 }
 
 function Inbox({ userId }: { userId: string }) {
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
   const [page, setPage] = useState(1);
   const queryClient = useQueryClient();
   const options = orpc.notifications.list.queryOptions({ input: { page } });
@@ -76,29 +77,7 @@ function Inbox({ userId }: { userId: string }) {
           <button type="button" className="btn" disabled={!items.length || markRead.isPending} onClick={() => markRead.mutate({})}><Translate text={"Mark all as read"} /></button>
         </div>
         {items.length ? (
-          <ul className="divide-y divide-[var(--border)]">
-            {items.map((item) => (
-              <li key={item.id}>
-                <Link
-                  href={`/quests/${item.questId}${item.kind === "SUBMITTED" ? "/evidence" : ""}`}
-                  onClick={() => { if (!item.readAt) markRead.mutate({ id: item.id }); }}
-                  className="flex items-start gap-3 px-4 py-4 hover:bg-[var(--surface-2)] sm:px-5"
-                >
-                  <Bell aria-hidden className={`mt-0.5 size-4 shrink-0 ${item.readAt ? 'text-[var(--muted)]' : 'text-[var(--accent-text)]'}`} />
-                  <div className="min-w-0 flex-1 space-y-1">
-                    <p className="text-sm font-semibold">
-                      {!item.readAt && <span className="sr-only"><Translate text={"Unread."} />{' '}</span>}{t(labels[item.kind])}
-                    </p>
-                    <p className="wrap-anywhere text-sm text-[var(--muted)]">{item.questTitle}</p>
-                    <time dateTime={item.createdAt.toISOString()} className="text-xs text-[var(--muted)]">
-                      {item.createdAt.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })}
-                    </time>
-                  </div>
-                  <ArrowUpRight aria-hidden className="size-4 shrink-0 text-[var(--muted)]" />
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <NotificationRows items={items} onRead={(id) => markRead.mutate({ id })} />
         ) : (
           <div className="px-5 py-10 text-center text-sm text-[var(--muted)]">
             {page === 1 ? t("Updates about your quests and submissions will appear here.") : t("No notifications on this page.")}
