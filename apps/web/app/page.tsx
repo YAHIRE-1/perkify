@@ -1,20 +1,18 @@
-"use client";
-import { Translate } from '@/lib/i18n/provider';
-
 import Link from "next/link";
+import { Translate } from "@/lib/i18n/provider";
 import Header from "@/components/header";
 import ContractSection from "@/components/global/Contract";
 import SocialSection from "@/components/global/SocialMedia";
 import Footer from "@/components/global/Footer";
 import { flowSteps } from "@/const/landing";
-import ComingSoonPlatformSection from "@/components/global/IsComing";
+import TryPerkifySection from "@/components/global/TryPerkifySection";
 
 export default function Home() {
   return (
     <>
       <Header />
 
-      <main>
+      <div>
         {/* HERO */}
         <section className="hero">
           <div className="wrap hero-grid">
@@ -24,15 +22,15 @@ export default function Home() {
                 <span className="l2"><Translate text={"Prove."} /></span>
                 <span className="l3"><Translate text={"Earn."} /></span>
               </h1>
-              <p className="sub"><Translate text={"Perkify is the Web3 quest marketplace: anyone posts objectives, hunters track them down, submit proof, and collect the reward in crypto."} /></p>
+              <p className="sub"><Translate text={"Perkify is a Web3 quest marketplace. Post a quest with a reward, or complete one and submit proof to claim it."} /></p>
               <div className="hero-ctas">
-                <Link href="#contract" className="btn-primary"><Translate text={"🎯 Explore Contract"} /></Link>
+                <Link href="#try-perkify" className="btn-primary"><Translate text={"Try Perkify"} /></Link>
                 <Link href="#how-it-works" className="btn-secondary"><Translate text={"How it works"} /></Link>
               </div>
             </div>
           </div>
         </section>
-        <SocialSection/>
+        <SocialSection />
         <ContractSection />
 
         {/* HOW IT WORKS */}
@@ -62,22 +60,22 @@ export default function Home() {
             <div className="dual">
               <div className="dual-card hunter">
                 <div className="dual-tag"><Translate text={"FOR BOUNTY HUNTERS"} /></div>
-                <h3><Translate text={"Turn your time into real rewards"} /></h3>
-                <p><Translate text={"Create your hunter profile, climb the leaderboard, and get paid in crypto every time you complete a quest."} /></p>
-                <Link href="#coming-soon" className="dual-btn"><Translate text={"Start hunting"} /></Link>
+                <h3><Translate text={"Complete quests and earn rewards"} /></h3>
+                <p><Translate text={"Pick a quest, submit proof, and earn the reward when the creator approves your work."} /></p>
+                <Link href="/how-to-test-perkify" className="dual-btn"><Translate text={"Start hunting"} /></Link>
               </div>
               <div className="dual-card brand">
                 <div className="dual-tag"><Translate text={"FOR EVERYONE"} /></div>
                 <h3><Translate text={"Post a quest and mobilize a community"} /></h3>
-                <p><Translate text={"Anyone can define the objective, the required proof, and the reward. We handle verification and payment."} /></p>
-                <Link href="#coming-soon" className="dual-btn"><Translate text={"Post a quest"} /></Link>
+                <p><Translate text={"Set the objective, proof requirements, and reward. Review submissions and release the reward when you approve the work."} /></p>
+                <Link href="/how-to-test-perkify" className="dual-btn"><Translate text={"Post a quest"} /></Link>
               </div>
             </div>
           </div>
         </section>
 
-        <ComingSoonPlatformSection/>
-      </main>
+        <TryPerkifySection />
+      </div>
 
       <Footer />
     </>

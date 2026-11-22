@@ -513,7 +513,13 @@
     "Connect your wallet in the dashboard. Choose a quest, complete its objective, and submit evidence for review. To test as a creator, post and fund a quest, review the submission, and release the reward after you approve it.": "Conecta tu billetera en el dashboard. Elige una misión, completa el objetivo y envía la evidencia para revisión. Si prefieres probar como creador, publica y financia una misión, revisa la evidencia y libera la recompensa cuando apruebes la entrega.",
     "Tell us how it went": "Cuéntanos cómo te fue",
     "If you find a bug, share which step you were on and what you expected to happen. Suggestions are welcome too.": "Si encuentras un error, comparte el paso en que ocurrió y qué esperabas que sucediera. También puedes sugerir mejoras para la experiencia.",
-    "Try Perkify": "Probar Perkify"
+    "Try Perkify": "Probar Perkify",
+    "Perkify is a Web3 quest marketplace. Post a quest with a reward, or complete one and submit proof to claim it.": "Perkify es un mercado de misiones Web3. Publica una misión con recompensa o completa una y envía la evidencia para cobrarla.",
+    "Complete quests and earn rewards": "Completa misiones y gana recompensas",
+    "Pick a quest, submit proof, and earn the reward when the creator approves your work.": "Elige una misión, envía la evidencia y recibe la recompensa cuando el creador apruebe tu entrega.",
+    "Set the objective, proof requirements, and reward. Review submissions and release the reward when you approve the work.": "Define el objetivo, la evidencia requerida y la recompensa. Revisa las entregas y libera la recompensa al aprobarlas.",
+    "Post or complete a quest on Ethereum Sepolia. The testing guide shows you how to set up your wallet, get test tokens, and get started.": "Publica o completa una misión en Ethereum Sepolia. La guía te explica cómo preparar tu billetera, conseguir tokens de prueba y empezar.",
+    "Read the testing guide": "Lee la guía de pruebas"
   },
   "zh-CN": {
     "Could not send the evidence. Check your connection and try again.": "无法发送证据。请检查网络连接后重试。",
@@ -1029,6 +1035,12 @@
     "Connect your wallet in the dashboard. Choose a quest, complete its objective, and submit evidence for review. To test as a creator, post and fund a quest, review the submission, and release the reward after you approve it.": "在控制面板连接钱包。选择任务，完成目标并提交证明以供审核。如果你想以创建者身份测试，请发布任务并提供资金，审核提交内容，在批准后发放奖励。",
     "Tell us how it went": "告诉我们你的体验",
     "If you find a bug, share which step you were on and what you expected to happen. Suggestions are welcome too.": "如果发现问题，请告诉我们问题出现在哪一步，以及你预期的结果。也欢迎提出改进建议。",
-    "Try Perkify": "试用 Perkify"
+    "Try Perkify": "试用 Perkify",
+    "Perkify is a Web3 quest marketplace. Post a quest with a reward, or complete one and submit proof to claim it.": "Perkify 是一个 Web3 任务市场。你可以发布带奖励的任务，也可以完成任务并提交证明来领取奖励。",
+    "Complete quests and earn rewards": "完成任务并获得奖励",
+    "Pick a quest, submit proof, and earn the reward when the creator approves your work.": "选择任务并提交证明。任务创建者批准后，你即可获得奖励。",
+    "Set the objective, proof requirements, and reward. Review submissions and release the reward when you approve the work.": "设定任务目标、证明要求和奖励。审核提交内容，并在批准后发放奖励。",
+    "Post or complete a quest on Ethereum Sepolia. The testing guide shows you how to set up your wallet, get test tokens, and get started.": "在以太坊 Sepolia 上发布或完成任务。测试指南将介绍如何设置钱包、获取测试代币并开始体验。",
+    "Read the testing guide": "阅读测试指南"
   }
 }

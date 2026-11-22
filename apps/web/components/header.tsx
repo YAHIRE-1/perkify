@@ -18,8 +18,8 @@ export default function Header() {
           ))}
         </nav>
 
-        <Link href="#coming-soon" className="nav-cta"><Translate text={"Explore quests"} /></Link>
-        <Link href="#coming-soon" className="nav-cta-mobile"><Translate text={"Explore"} /></Link>
+        <Link href="#try-perkify" className="nav-cta"><Translate text={"Try Perkify"} /></Link>
+        <Link href="#try-perkify" className="nav-cta-mobile"><Translate text={"Try Perkify"} /></Link>
       </div>
     </header>
   );
