@@ -1,0 +1,81 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "a647eeca-a4ac-4f57-a87b-5ef17e7aacf8",
+  "prevIds": [
+    "ad7dd0e6-b796-43f6-ac53-33e6bd5e5ed6"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quests",
+        "checklist_proof_required"
+      ],
+      "writes": [
+        "s|col|public.quests.checklist_proof_required",
+        "n|col|public.quests.checklist_proof_required",
+        "e|col|public.quests.checklist_proof_required"
+      ],
+      "reads": [
+        "n|tbl|public.quests",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "quest_submissions",
+        "checklist_responses"
+      ],
+      "writes": [
+        "s|col|public.quest_submissions.checklist_responses",
+        "n|col|public.quest_submissions.checklist_responses",
+        "e|col|public.quest_submissions.checklist_responses"
+      ],
+      "reads": [
+        "n|tbl|public.quest_submissions",
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quests",
+        "name": "checklist_proof_required",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "quest_submissions",
+        "name": "checklist_responses",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'[]'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

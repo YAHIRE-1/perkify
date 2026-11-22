@@ -233,6 +233,7 @@ export const createQuestBase = z.object({
     .array(z.string().trim().min(1).max(L.checklistLength))
     .max(L.checklistItems)
     .optional(),
+  checklistProofRequired: z.array(z.string().trim().min(1).max(L.checklistLength)).max(L.checklistItems).optional(),
   // Acepta el valor de <input type="datetime-local"> o un ISO; la salida
   // siempre es ISO con offset (lo que guarda el servidor). Nunca mandes al
   // servidor el valor crudo de datetime-local: se interpretaría en SU zona horaria.
@@ -312,6 +313,7 @@ export interface QuestFormValues {
   milestones: string[];
   criteria: string;
   validationChecklist: string[];
+  checklistProofRequired: string[];
   maxParticipants: number;
   submitWindowHours: number;
   reviewWindowHours: number;
@@ -329,6 +331,7 @@ export const EMPTY_QUEST_FORM: QuestFormValues = {
   milestones: [],
   criteria: "",
   validationChecklist: [],
+  checklistProofRequired: [],
   // Mismos defaults que la tabla `quests`.
   ...QUEST_DEFAULTS,
 };

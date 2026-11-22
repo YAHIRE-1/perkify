@@ -6,11 +6,17 @@ import { questParticipation } from "./participations";
 import { createdAt } from "./helpers";
 import { submissionStatusEnum } from "./quest.enums";
 
+export type ChecklistResponse = {
+  item: string;
+  proof: { kind: "link"; url: string } | { kind: "file"; fileId: string } | null;
+};
+
 export const questSubmission = pgTable("quest_submissions", {
   id: uuid("id").primaryKey().defaultRandom(),
   participationId: uuid("participation_id").notNull()
     .references(() => questParticipation.id, { onDelete: "cascade" }),
   notes: text("notes").notNull(),
+  checklistResponses: jsonb("checklist_responses").$type<ChecklistResponse[]>().notNull().default([]),
   links: jsonb("links").$type<string[]>().notNull().default([]),
   status: submissionStatusEnum("status").notNull().default("PENDING"),
   rejectionReason: text("rejection_reason"),

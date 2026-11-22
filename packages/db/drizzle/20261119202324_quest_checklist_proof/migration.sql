@@ -1,0 +1,2 @@
+ALTER TABLE "quests" ADD COLUMN "checklist_proof_required" text[] DEFAULT '{}'::text[] NOT NULL;--> statement-breakpoint
+ALTER TABLE "quest_submissions" ADD COLUMN "checklist_responses" jsonb DEFAULT '[]' NOT NULL;

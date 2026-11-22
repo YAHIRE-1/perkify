@@ -42,6 +42,7 @@ export const quest = pgTable("quests", {
   lastChainEventAt: timestamp("last_chain_event_at", { withTimezone: true }),
 
   validationChecklist: text("validation_checklist").array().notNull().default([]),
+  checklistProofRequired: text("checklist_proof_required").array().notNull().default([]),
   modifiedBy: text("modified_by").notNull().references(() => user.id),
   createdAt: createdAt(),
   updatedAt: updatedAt(),
