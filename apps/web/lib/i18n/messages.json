@@ -534,16 +534,17 @@
     "Terms of Service (opens in a new tab)": "Términos y condiciones (abre en otra pestaña)",
     "Privacy Notice (opens in a new tab)": "Aviso de privacidad (abre en otra pestaña)",
     "Continue to wallet": "Continuar a la billetera",
+    "Take the tour": "Ver el recorrido",
     "Your navigation menu": "Tu menú de navegación",
     "Use the menu button in the top bar to open the sidebar. There you can find the marketplace, reputation rankings, and disputes.": "Usa el botón de menú de la barra superior para abrir el panel lateral. Ahí encontrarás el mercado de misiones, la clasificación de reputación y las disputas.",
     "Manage your quests": "Administra tus misiones",
     "Open My quests to track your activity, or choose Create quest to publish a new one.": "Abre Mis misiones para consultar tu actividad o selecciona Crear misión para publicar una nueva.",
     "The bell in the top bar opens your notifications. Check it for quest updates, reviews, and rewards.": "La campana de la barra superior abre tus notificaciones. Consúltalas para ver novedades sobre misiones, revisiones y recompensas.",
     "Open your account menu at the bottom of the sidebar to view your profile or sign out.": "Abre el menú de tu cuenta en la parte inferior del panel lateral para ver tu perfil o cerrar sesión.",
-    "Take the tour": "Ver el recorrido",
     "Step {current} of {total}": "Paso {current} de {total}",
     "Skip tour": "Omitir recorrido",
-    "Done": "Listo"
+    "Done": "Listo",
+    "Want quest updates in your inbox? Add and verify your email address under Email notifications in your profile. You can turn email updates on or off there.": "¿Quieres recibir novedades sobre tus misiones por correo? Registra y verifica tu dirección en Notificaciones por correo, dentro de tu perfil. Ahí puedes activar o desactivar los avisos."
   },
   "zh-CN": {
     "Could not send the evidence. Check your connection and try again.": "无法发送证据。请检查网络连接后重试。",
@@ -1080,15 +1081,16 @@
     "Terms of Service (opens in a new tab)": "服务条款（在新标签页打开）",
     "Privacy Notice (opens in a new tab)": "隐私声明（在新标签页打开）",
     "Continue to wallet": "继续连接钱包",
+    "Take the tour": "查看入门导览",
     "Your navigation menu": "导航菜单",
     "Use the menu button in the top bar to open the sidebar. There you can find the marketplace, reputation rankings, and disputes.": "点击顶部栏的菜单按钮打开侧边栏。你可以在这里找到任务市场、声誉排行榜和争议。",
     "Manage your quests": "管理任务",
     "Open My quests to track your activity, or choose Create quest to publish a new one.": "打开「我的任务」查看活动，或选择「创建任务」发布新任务。",
     "The bell in the top bar opens your notifications. Check it for quest updates, reviews, and rewards.": "点击顶部栏的铃铛打开通知，查看任务进展、审核和奖励。",
     "Open your account menu at the bottom of the sidebar to view your profile or sign out.": "打开侧边栏底部的账户菜单，查看个人资料或退出登录。",
-    "Take the tour": "查看入门导览",
     "Step {current} of {total}": "第 {current} 步，共 {total} 步",
     "Skip tour": "跳过导览",
-    "Done": "完成"
+    "Done": "完成",
+    "Want quest updates in your inbox? Add and verify your email address under Email notifications in your profile. You can turn email updates on or off there.": "想通过邮件接收任务动态吗？请在个人资料的「电子邮件通知」中添加并验证邮箱。你可以在那里开启或关闭邮件通知。"
   }
 }

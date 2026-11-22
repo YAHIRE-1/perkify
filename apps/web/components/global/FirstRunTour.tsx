@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import {
   Bell,
   CircleHelp,
+  Mail,
   PanelLeft,
   PlusCircle,
   Scale,
@@ -52,6 +54,13 @@ export default function FirstRunTour({ userId }: { userId: string }) {
       description: t("Open your account menu at the bottom of the sidebar to view your profile or sign out."),
       icon: User,
       items: [],
+    },
+    {
+      title: t("Email notifications"),
+      description: t("Want quest updates in your inbox? Add and verify your email address under Email notifications in your profile. You can turn email updates on or off there."),
+      icon: Mail,
+      items: [],
+      href: '/profile#email-notifications',
     },
   ];
   const step = steps[stepIndex];
@@ -131,6 +140,16 @@ export default function FirstRunTour({ userId }: { userId: string }) {
               </li>
             ))}
           </ul>
+        )}
+
+        {step.href && (
+          <Link
+            href={step.href}
+            onNavigate={() => dialog.current?.close()}
+            className="mt-4 inline-block text-sm font-medium text-[var(--accent-text)] underline underline-offset-4"
+          >
+            {t("Email preferences")}
+          </Link>
         )}
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
