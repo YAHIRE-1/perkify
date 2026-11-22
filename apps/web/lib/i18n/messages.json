@@ -444,7 +444,22 @@
     "This quest is not eligible for an emergency refund.": "Esta misión no cumple las condiciones para un reembolso de emergencia.",
     "The transaction does not confirm this quest refund.": "La transacción no confirma el reembolso de esta misión.",
     "Cancellation pending": "Cancelación pendiente",
-    "You cancelled the request in your wallet. No refund was sent.": "Cancelaste la solicitud en tu wallet. No se envió el reembolso."
+    "You cancelled the request in your wallet. No refund was sent.": "Cancelaste la solicitud en tu wallet. No se envió el reembolso.",
+    "How to test": "Cómo probar",
+    "On Perkify, you can publish or complete quests, submit evidence, and earn rewards. This guide walks you through the process on the Ethereum Sepolia testnet.": "En Perkify puedes publicar misiones o completarlas, enviar evidencia y recibir recompensas. Esta guía te ayuda a recorrer ese flujo en la red de pruebas Ethereum Sepolia.",
+    "Before you begin": "Antes de empezar",
+    "Set up your wallet": "Prepara tu billetera",
+    "Open MetaMask and select Ethereum Sepolia in the network picker. If it does not appear, turn on the option to show test networks.": "Abre MetaMask y selecciona Ethereum Sepolia en el selector de redes. Si no aparece, activa la opción para mostrar las redes de prueba.",
+    "Get test tokens": "Consigue tokens de prueba",
+    "Use your public wallet address to request Sepolia ETH for network fees. If you plan to fund a quest with USDC, also request test USDC on Ethereum Sepolia.": "Usa tu dirección pública para solicitar ETH de Sepolia y pagar las comisiones de red. Si vas a financiar una misión con USDC, solicita también USDC de prueba en Ethereum Sepolia.",
+    "Test ETH from Google Cloud": "ETH de prueba en Google Cloud",
+    "Test USDC from Circle": "USDC de prueba en Circle",
+    "Test tokens have no monetary value.": "Los tokens de prueba carecen de valor monetario.",
+    "Try a quest": "Prueba una misión",
+    "Connect your wallet in the dashboard. Choose a quest, complete its objective, and submit evidence for review. To test as a creator, post and fund a quest, review the submission, and release the reward after you approve it.": "Conecta tu billetera en el dashboard. Elige una misión, completa el objetivo y envía la evidencia para revisión. Si prefieres probar como creador, publica y financia una misión, revisa la evidencia y libera la recompensa cuando apruebes la entrega.",
+    "Tell us how it went": "Cuéntanos cómo te fue",
+    "If you find a bug, share which step you were on and what you expected to happen. Suggestions are welcome too.": "Si encuentras un error, comparte el paso en que ocurrió y qué esperabas que sucediera. También puedes sugerir mejoras para la experiencia.",
+    "Try Perkify": "Probar Perkify"
   },
   "zh-CN": {
     "Reputation": "声望",
@@ -891,6 +906,21 @@
     "This quest is not eligible for an emergency refund.": "此任务不符合紧急退款条件。",
     "The transaction does not confirm this quest refund.": "此交易未确认该任务的退款。",
     "Cancellation pending": "取消待确认",
-    "You cancelled the request in your wallet. No refund was sent.": "你已在钱包中取消请求，退款未发送。"
+    "You cancelled the request in your wallet. No refund was sent.": "你已在钱包中取消请求，退款未发送。",
+    "How to test": "如何测试",
+    "On Perkify, you can publish or complete quests, submit evidence, and earn rewards. This guide walks you through the process on the Ethereum Sepolia testnet.": "在 Perkify，你可以发布或完成任务、提交证明并获得奖励。本指南将带你在以太坊 Sepolia 测试网上体验这个流程。",
+    "Before you begin": "开始之前",
+    "Set up your wallet": "设置钱包",
+    "Open MetaMask and select Ethereum Sepolia in the network picker. If it does not appear, turn on the option to show test networks.": "打开 MetaMask，在网络选择器中选择以太坊 Sepolia。如果找不到该网络，请开启显示测试网络的选项。",
+    "Get test tokens": "获取测试代币",
+    "Use your public wallet address to request Sepolia ETH for network fees. If you plan to fund a quest with USDC, also request test USDC on Ethereum Sepolia.": "使用你的公开钱包地址领取 Sepolia ETH 以支付网络费用。如果你打算用 USDC 为任务提供资金，也请在以太坊 Sepolia 上领取测试 USDC。",
+    "Test ETH from Google Cloud": "从 Google Cloud 领取测试 ETH",
+    "Test USDC from Circle": "从 Circle 领取测试 USDC",
+    "Test tokens have no monetary value.": "测试代币没有货币价值。",
+    "Try a quest": "尝试完成任务",
+    "Connect your wallet in the dashboard. Choose a quest, complete its objective, and submit evidence for review. To test as a creator, post and fund a quest, review the submission, and release the reward after you approve it.": "在控制面板连接钱包。选择任务，完成目标并提交证明以供审核。如果你想以创建者身份测试，请发布任务并提供资金，审核提交内容，在批准后发放奖励。",
+    "Tell us how it went": "告诉我们你的体验",
+    "If you find a bug, share which step you were on and what you expected to happen. Suggestions are welcome too.": "如果发现问题，请告诉我们问题出现在哪一步，以及你预期的结果。也欢迎提出改进建议。",
+    "Try Perkify": "试用 Perkify"
   }
 }

@@ -1,4 +1,5 @@
 'use client';
+import { usePathname } from 'next/navigation';
 import Navbar from './Navbar';
 import { AppSidebar } from './app-sidebar';
 import {
@@ -11,10 +12,11 @@ import NotificationLink from '../notifications/NotificationLink';
 import LanguageSelect from './LanguageSelect';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const { user, loading } = useAuth();
 
-  // Mientras carga la sesión no mostramos navbar ni sidebar (evita el parpadeo)
-  if (loading) {
+  // La guía y la carga de sesión se muestran sin navegación.
+  if (pathname === '/how-to-test-perkify' || loading) {
     return <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>;
   }
 
