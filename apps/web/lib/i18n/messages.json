@@ -518,6 +518,12 @@
     "Complete quests and earn rewards": "Completa misiones y gana recompensas",
     "Pick a quest, submit proof, and earn the reward when the creator approves your work.": "Elige una misión, envía la evidencia y recibe la recompensa cuando el creador apruebe tu entrega.",
     "Set the objective, proof requirements, and reward. Review submissions and release the reward when you approve the work.": "Define el objetivo, la evidencia requerida y la recompensa. Revisa las entregas y libera la recompensa al aprobarlas.",
+    "Address copied": "Dirección copiada",
+    "Copy contract address": "Copiar dirección del contrato",
+    "Copied": "Copiado",
+    "Copy": "Copiar",
+    "Join the Perkify community": "Únete a la comunidad de Perkify",
+    "Follow updates on X or join the conversation on Telegram.": "Sigue las novedades en X o únete a la conversación en Telegram.",
     "Post or complete a quest on Ethereum Sepolia. The testing guide shows you how to set up your wallet, get test tokens, and get started.": "Publica o completa una misión en Ethereum Sepolia. La guía te explica cómo preparar tu billetera, conseguir tokens de prueba y empezar.",
     "Read the testing guide": "Lee la guía de pruebas"
   },
@@ -1040,6 +1046,12 @@
     "Complete quests and earn rewards": "完成任务并获得奖励",
     "Pick a quest, submit proof, and earn the reward when the creator approves your work.": "选择任务并提交证明。任务创建者批准后，你即可获得奖励。",
     "Set the objective, proof requirements, and reward. Review submissions and release the reward when you approve the work.": "设定任务目标、证明要求和奖励。审核提交内容，并在批准后发放奖励。",
+    "Address copied": "地址已复制",
+    "Copy contract address": "复制合约地址",
+    "Copied": "已复制",
+    "Copy": "复制",
+    "Join the Perkify community": "加入 Perkify 社区",
+    "Follow updates on X or join the conversation on Telegram.": "在 X 上关注动态，或在 Telegram 上参与讨论。",
     "Post or complete a quest on Ethereum Sepolia. The testing guide shows you how to set up your wallet, get test tokens, and get started.": "在以太坊 Sepolia 上发布或完成任务。测试指南将介绍如何设置钱包、获取测试代币并开始体验。",
     "Read the testing guide": "阅读测试指南"
   }

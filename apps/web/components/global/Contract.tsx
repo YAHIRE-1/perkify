@@ -1,9 +1,9 @@
 "use client";
-import { Translate } from '@/lib/i18n/provider';
+import { Translate, useLanguage } from "@/lib/i18n/provider";
 
 import { useEffect, useState } from "react";
 
-interface ComingSoonProps {
+interface ContractSectionProps {
   tokenName?: string;
   network?: string;
   contractAddress?: string;
@@ -15,7 +15,8 @@ export default function ContractSection({
   network = "Ethereum",
   contractAddress = "0x07B1ba3a777602264294e66635B4B1605a594693",
   explorerBaseUrl = "https://www.ponsfamily.com/launchpad/",
-}: ComingSoonProps) {
+}: ContractSectionProps) {
+  const { t } = useLanguage();
   const [mounted, setMounted] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -103,10 +104,10 @@ export default function ContractSection({
             <button
               type="button"
               onClick={copyAddress}
-              aria-label={copied ? "Address copied" : "Copy contract address"}
+              aria-label={copied ? t("Address copied") : t("Copy contract address")}
               className="shrink-0 self-center rounded-full border border-[#3A2E52] bg-[#241C36] px-4 py-1 font-mono text-xs text-[#C084FC] transition-colors hover:border-[#7C3AED] hover:text-[#F7F3FF] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#7C3AED]"
             >
-              {copied ? "Copied" : "Copy"}
+              {copied ? t("Copied") : t("Copy")}
             </button>
           </div>
 
