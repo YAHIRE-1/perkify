@@ -15,8 +15,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, loading } = useAuth();
 
-  // La guía y la carga de sesión se muestran sin navegación.
-  if (pathname === '/how-to-test-perkify' || loading) {
+  if (pathname === '/' || pathname === '/how-to-test-perkify' || loading) {
     return <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>;
   }
 
