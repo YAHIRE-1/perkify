@@ -526,8 +526,14 @@
     "Follow updates on X or join the conversation on Telegram.": "Sigue las novedades en X o únete a la conversación en Telegram.",
     "Post or complete a quest on Ethereum Sepolia. The testing guide shows you how to set up your wallet, get test tokens, and get started.": "Publica o completa una misión en Ethereum Sepolia. La guía te explica cómo preparar tu billetera, conseguir tokens de prueba y empezar.",
     "Read the testing guide": "Lee la guía de pruebas",
+    "Waiting for your wallet…": "Esperando a tu billetera…",
     "Terms of Service": "Términos y condiciones",
-    "Privacy Notice": "Aviso de privacidad"
+    "Privacy Notice": "Aviso de privacidad",
+    "Before you connect your wallet": "Antes de conectar tu billetera",
+    "Perkify uses your public wallet address and a signed message to sign you in. This sign-in does not cost gas or move funds. Transactions you approve separately may be public and irreversible. Never share your seed phrase or private key.": "Perkify usa la dirección pública de tu billetera y un mensaje firmado para iniciar sesión. Este inicio de sesión no cobra comisiones de red ni mueve fondos. Las transacciones que apruebes por separado pueden ser públicas e irreversibles. Nunca compartas tu frase de recuperación ni tu clave privada.",
+    "Terms of Service (opens in a new tab)": "Términos y condiciones (abre en otra pestaña)",
+    "Privacy Notice (opens in a new tab)": "Aviso de privacidad (abre en otra pestaña)",
+    "Continue to wallet": "Continuar a la billetera"
   },
   "zh-CN": {
     "Could not send the evidence. Check your connection and try again.": "无法发送证据。请检查网络连接后重试。",
@@ -1056,7 +1062,13 @@
     "Follow updates on X or join the conversation on Telegram.": "在 X 上关注动态，或在 Telegram 上参与讨论。",
     "Post or complete a quest on Ethereum Sepolia. The testing guide shows you how to set up your wallet, get test tokens, and get started.": "在以太坊 Sepolia 上发布或完成任务。测试指南将介绍如何设置钱包、获取测试代币并开始体验。",
     "Read the testing guide": "阅读测试指南",
+    "Waiting for your wallet…": "正在等待钱包响应…",
     "Terms of Service": "服务条款",
-    "Privacy Notice": "隐私声明"
+    "Privacy Notice": "隐私声明",
+    "Before you connect your wallet": "连接钱包之前",
+    "Perkify uses your public wallet address and a signed message to sign you in. This sign-in does not cost gas or move funds. Transactions you approve separately may be public and irreversible. Never share your seed phrase or private key.": "Perkify 使用你的公开钱包地址和签名消息来验证登录。此登录无需支付 Gas 费，也不会转移资金。你单独批准的交易可能公开且不可撤销。切勿分享助记词或私钥。",
+    "Terms of Service (opens in a new tab)": "服务条款（在新标签页打开）",
+    "Privacy Notice (opens in a new tab)": "隐私声明（在新标签页打开）",
+    "Continue to wallet": "继续连接钱包"
   }
 }

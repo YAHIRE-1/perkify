@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -8,6 +8,7 @@ import { config } from '@/lib/wagmi';
 import { authClient } from '@/lib/auth-client';
 import { signInWithWallet } from '@/lib/wallet-auth';
 import type { UserRow as User } from '@perkify/db/schema/auth';
+import WalletSignInNotice from './global/WalletSignInNotice';
 
 // ---------- Tema (oscuro/claro) ----------
 type Theme = 'dark' | 'light';
@@ -48,7 +49,7 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: () => Promise<void>;
+  login: () => Promise<boolean>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
 }
@@ -56,7 +57,7 @@ interface AuthContextType {
 const AuthCtx = createContext<AuthContextType>({
   user: null,
   loading: true,
-  login: async () => {},
+  login: async () => false,
   logout: async () => {},
   refresh: async () => {},
 });
@@ -66,13 +67,28 @@ export const useAuth = () => useContext(AuthCtx);
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const { data: session, isPending, refetch } = authClient.useSession();
   const [signingIn, setSigningIn] = useState(false);
+  const notice = useRef<HTMLDialogElement>(null);
+  const loginPending = useRef(false);
 
   const login = async () => {
-    setSigningIn(true);
+    const dialog = notice.current;
+    if (!dialog || loginPending.current) return false;
+
+    loginPending.current = true;
     try {
+      const proceed = await new Promise<boolean>((resolve) => {
+        dialog.returnValue = '';
+        dialog.showModal();
+        dialog.addEventListener('close', () => resolve(dialog.returnValue === 'continue'), { once: true });
+      });
+      if (!proceed) return false;
+
+      setSigningIn(true);
       await signInWithWallet();
       await refetch();
+      return true;
     } finally {
+      loginPending.current = false;
       setSigningIn(false);
     }
   };
@@ -97,6 +113,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
+      <WalletSignInNotice dialogRef={notice} />
     </AuthCtx.Provider>
   );
 }
