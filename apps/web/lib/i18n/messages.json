@@ -544,7 +544,9 @@
     "Step {current} of {total}": "Paso {current} de {total}",
     "Skip tour": "Omitir recorrido",
     "Done": "Listo",
-    "Want quest updates in your inbox? Add and verify your email address under Email notifications in your profile. You can turn email updates on or off there.": "¿Quieres recibir novedades sobre tus misiones por correo? Registra y verifica tu dirección en Notificaciones por correo, dentro de tu perfil. Ahí puedes activar o desactivar los avisos."
+    "Want quest updates in your inbox? Add and verify your email address under Email notifications in your profile. You can turn email updates on or off there.": "¿Quieres recibir novedades sobre tus misiones por correo? Registra y verifica tu dirección en Notificaciones por correo, dentro de tu perfil. Ahí puedes activar o desactivar los avisos.",
+    "Close": "Cerrar",
+    "View all notifications": "Ver todas las notificaciones"
   },
   "zh-CN": {
     "Could not send the evidence. Check your connection and try again.": "无法发送证据。请检查网络连接后重试。",
@@ -1091,6 +1093,8 @@
     "Step {current} of {total}": "第 {current} 步，共 {total} 步",
     "Skip tour": "跳过导览",
     "Done": "完成",
-    "Want quest updates in your inbox? Add and verify your email address under Email notifications in your profile. You can turn email updates on or off there.": "想通过邮件接收任务动态吗？请在个人资料的「电子邮件通知」中添加并验证邮箱。你可以在那里开启或关闭邮件通知。"
+    "Want quest updates in your inbox? Add and verify your email address under Email notifications in your profile. You can turn email updates on or off there.": "想通过邮件接收任务动态吗？请在个人资料的「电子邮件通知」中添加并验证邮箱。你可以在那里开启或关闭邮件通知。",
+    "Close": "关闭",
+    "View all notifications": "查看所有通知"
   }
 }
