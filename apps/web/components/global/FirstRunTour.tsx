@@ -45,7 +45,7 @@ export default function FirstRunTour({ userId }: { userId: string }) {
     },
     {
       title: t("Notifications"),
-      description: t("The bell in the top bar opens your notifications. Check it for quest updates, reviews, and rewards."),
+      description: t("Use the bell in the top bar to preview recent notifications. Choose View all notifications to open your full inbox."),
       icon: Bell,
       items: [],
     },
