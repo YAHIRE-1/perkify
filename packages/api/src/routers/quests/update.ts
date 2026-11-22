@@ -20,17 +20,24 @@ export const update = protectedProcedure
       .extend({ id: z.string().uuid() }),
   )
   .handler(async ({ input, context }) => {
-    const { id, ...data } = input;
+    const { id, checklistProofRequired, ...data } = input;
     const userId = context.session.user.id;
 
-    const [updated] = await context.db
-      .update(quest)
-      .set({ ...data, modifiedBy: userId })
-      .where(and(eq(quest.id, id), eq(quest.creatorId, userId), eq(quest.status, "DRAFT")))
-      .returning();
+    return context.db.transaction(async (tx) => {
+      const scope = and(eq(quest.id, id), eq(quest.creatorId, userId), eq(quest.status, "DRAFT"));
+      const [draft] = await tx.select().from(quest).where(scope).for("update");
+      if (!draft) throw new ORPCError("NOT_FOUND", { message: "Quest no encontrada o ya no es editable" });
 
-    if (!updated) {
-      throw new ORPCError("NOT_FOUND", { message: "Quest no encontrada o ya no es editable" });
-    }
-    return updated;
+      const checklist = data.validationChecklist ?? draft.validationChecklist;
+      if (checklistProofRequired?.some((item) => !checklist.includes(item))) {
+        throw new ORPCError("BAD_REQUEST", { message: "Proof requirements must refer to checklist items." });
+      }
+      const required = (checklistProofRequired ?? draft.checklistProofRequired).filter((item) => checklist.includes(item));
+      const [updated] = await tx.update(quest)
+        .set({ ...data, checklistProofRequired: [...new Set(required)], modifiedBy: userId })
+        .where(scope).returning();
+
+      if (!updated) throw new ORPCError("NOT_FOUND", { message: "Quest no encontrada o ya no es editable" });
+      return updated;
+    });
   });

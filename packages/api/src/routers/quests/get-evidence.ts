@@ -36,6 +36,7 @@ export const getEvidence = protectedProcedure
           p.submissions.map(async (s) => ({
             id: s.id,
             notes: s.notes,
+            checklistResponses: s.checklistResponses,
             links: s.links,
             status: s.status,
             rejectionReason: s.rejectionReason,

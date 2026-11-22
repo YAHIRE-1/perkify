@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
 import { protectedProcedure } from "../../index";
-import { EVIDENCE_LIMITS } from "../../lib/evidence";
+import { maxEvidenceBytes } from "../../lib/evidence";
 import { presignUpload } from "../../lib/storage";
 
 export const uploadUrl = protectedProcedure
@@ -21,7 +21,7 @@ export const uploadUrl = protectedProcedure
   .handler(async ({ input, context }) => {
     const userId = context.session.user.id;
 
-    const limit = EVIDENCE_LIMITS[input.contentType];
+    const limit = maxEvidenceBytes(input.contentType);
     if (!limit) throw new ORPCError("BAD_REQUEST", { message: "Tipo de archivo no permitido" });
     if (input.size > limit) {
       throw new ORPCError("BAD_REQUEST", { message: `Máximo ${limit / 1024 / 1024} MB para este tipo` });

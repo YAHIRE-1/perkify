@@ -1,5 +1,5 @@
 import { ORPCError } from "@orpc/server";
-import { questSubmission, questEvidenceFile } from "@perkify/db/schema/evidence";
+import { questSubmission, questEvidenceFile, type ChecklistResponse } from "@perkify/db/schema/evidence";
 import { questParticipation } from "@perkify/db/schema/participations";
 import { quest } from "@perkify/db/schema/quests";
 import { and, eq, gt } from "drizzle-orm";
@@ -7,7 +7,7 @@ import { z } from "zod";
 
 import { protectedProcedure } from "../../index";
 import { recordNotification } from "../../lib/notification-mail";
-import { EVIDENCE_LIMITS, MAX_FILES } from "../../lib/evidence";
+import { maxEvidenceBytes, MAX_FILES, MAX_LINKS } from "../../lib/evidence";
 import { hoursFromNow } from "../../lib/participations";
 import { objectSize } from "../../lib/storage";
 
@@ -15,9 +15,16 @@ export const submitEvidence = protectedProcedure
   .route({ method: "POST", path: "/{id}/submit" })
   .input(
     z.object({
+      checklist: z.array(z.object({
+        item: z.string().trim().min(1).max(200),
+        proof: z.object({
+          kind: z.enum(["link", "file"]),
+          index: z.number().int().min(0),
+        }).optional(),
+      })).max(20).default([]),
       id: z.string().uuid(), // questId
-      notes: z.string().trim().min(10).max(2000),
-      links: z.array(z.string().url()).max(10).default([]),
+      notes: z.string().trim().max(2000).default(""),
+      links: z.array(z.url({ protocol: /^https?$/ })).max(MAX_LINKS).default([]),
       files: z
         .array(
           z.object({
@@ -34,8 +41,8 @@ export const submitEvidence = protectedProcedure
   .handler(async ({ input, context }) => {
     const userId = context.session.user.id;
 
-    if (!input.links.length && !input.files.length) {
-      throw new ORPCError("BAD_REQUEST", { message: "Agrega al menos un link o archivo" });
+    if (input.notes.length < 10 && !input.links.length && !input.files.length && !input.checklist.length) {
+      throw new ORPCError("BAD_REQUEST", { message: "Add notes, mark a checklist item, or attach a link or file." });
     }
 
     const [p] = await context.db
@@ -46,7 +53,7 @@ export const submitEvidence = protectedProcedure
 
     // I/O al bucket fuera de la transacción
     for (const f of input.files) {
-      const limit = EVIDENCE_LIMITS[f.contentType];
+      const limit = maxEvidenceBytes(f.contentType);
       if (!limit || f.size > limit || !f.key.startsWith(`evidence/${input.id}/${p.id}/`)) {
         throw new ORPCError("BAD_REQUEST", { message: `Archivo inválido: ${f.name}` });
       }
@@ -60,6 +67,29 @@ export const submitEvidence = protectedProcedure
       const now = new Date();
       if (!q || q.status !== "FUNDED" || q.deadline <= now || q.cancelExpiresAt !== null) {
         throw new ORPCError("CONFLICT", { message: "Esta quest ya no acepta evidencia" });
+      }
+
+      const fileRows = input.files.map((file) => ({ ...file, id: crypto.randomUUID() }));
+      const checklistResponses = new Map<string, ChecklistResponse>();
+      for (const { item, proof } of input.checklist) {
+        if (!q.validationChecklist.includes(item) || checklistResponses.has(item)) {
+          throw new ORPCError("BAD_REQUEST", { message: "Select each checklist item at most once." });
+        }
+        let attachment: ChecklistResponse["proof"] = null;
+        if (proof?.kind === "link") {
+          const url = input.links[proof.index];
+          if (url) attachment = { kind: "link", url };
+        } else if (proof?.kind === "file") {
+          const file = fileRows[proof.index];
+          if (file) attachment = { kind: "file", fileId: file.id };
+        }
+        if (proof && !attachment) {
+          throw new ORPCError("BAD_REQUEST", { message: "Choose an attachment included in this submission." });
+        }
+        checklistResponses.set(item, { item, proof: attachment });
+      }
+      if (q.checklistProofRequired.some((item) => !checklistResponses.get(item)?.proof)) {
+        throw new ORPCError("BAD_REQUEST", { message: "Add proof for every checklist item that requires it." });
       }
 
       // Atómico: si el plazo venció un instante antes, no actualiza nada
@@ -81,15 +111,16 @@ export const submitEvidence = protectedProcedure
         .values({
           participationId: p.id,
           notes: input.notes,
+          checklistResponses: [...checklistResponses.values()],
           links: input.links,
           reviewDeadline: hoursFromNow(q.reviewWindowHours),
         })
         .returning();
 
-      if (input.files.length) {
-        await tx
-          .insert(questEvidenceFile)
-          .values(input.files.map((f) => ({ submissionId: sub!.id, ...f })));
+      if (!sub) throw new ORPCError("INTERNAL_SERVER_ERROR");
+      if (fileRows.length) {
+        await tx.insert(questEvidenceFile)
+          .values(fileRows.map((file) => ({ submissionId: sub.id, ...file })));
       }
       await recordNotification(tx, q.creatorId, q, "SUBMITTED");
       return sub;

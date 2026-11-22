@@ -15,7 +15,10 @@ export const create = protectedProcedure
   .input(createQuestSchema)
   .handler(async ({ input, context }) => {
     const userId = context.session.user.id;
-    const { milestones = [], deadline, ...rest } = input;
+    const { milestones = [], deadline, checklistProofRequired = [], ...rest } = input;
+    if (checklistProofRequired.some((item) => !rest.validationChecklist?.includes(item))) {
+      throw new ORPCError("BAD_REQUEST", { message: "Proof requirements must refer to checklist items." });
+    }
 
     const deadlineDate = new Date(deadline);
     if (deadlineDate.getTime() < Date.now() + MIN_LEAD_MS) {
@@ -48,6 +51,7 @@ export const create = protectedProcedure
         .values({
           ...rest, // incluye maxParticipants, submitWindowHours, reviewWindowHours, maxAttempts
           deadline: deadlineDate,
+          checklistProofRequired: [...new Set(checklistProofRequired)],
           chainId: token.chainId,
           escrowAddress,
           creatorId: userId,
