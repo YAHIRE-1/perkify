@@ -17,17 +17,36 @@ export default defineConfig({
     "packages/db/src/migrations/**",
     ".agents/skills/**",
     ".claude/skills/**",
-    "tools/oxlint/anti-slop/**",
+    "anti-slop/**",
+    "packages/contracts/lib/**",
   ],
   jsPlugins: [
     // oxlint-disable-next-line typescript/no-non-null-assertion
     ...jsPlugins.jsPlugins!,
     // oxlint-disable-next-line typescript/no-non-null-assertion
     ...shadcn.jsPlugins!,
-    { name: "anti-slop", specifier: "./tools/oxlint/anti-slop/index.ts" },
+    { name: "anti-slop", specifier: "./anti-slop/index.ts" },
   ],
   settings: jsPluginSettings,
   overrides: [
+    {
+      files: ["apps/web/**/*.{ts,tsx}"],
+      rules: {
+        "no-restricted-imports": [
+          "error",
+          {
+            paths: [
+              {
+                name: "@perkify/db",
+                allowTypeImports: true,
+                message:
+                  "Use the oRPC client to access the database from the web app.",
+              },
+            ],
+          },
+        ],
+      },
+    },
     {
       files: ["packages/db/src/index.ts", "packages/db/src/schema/index.ts"],
       rules: {
@@ -57,6 +76,7 @@ export default defineConfig({
     },
   ],
   rules: {
+    "no-useless-assignment": "error",
     "oxc/no-accumulating-spread": "error",
     "anti-slop/no-array-filter-map": "error",
     "anti-slop/no-reduce-accumulator-copy": "error",

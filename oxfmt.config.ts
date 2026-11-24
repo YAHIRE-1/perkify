@@ -10,7 +10,7 @@ export default defineConfig({
     "packages/db/src/migrations/**",
     ".agents/skills/**",
     ".claude/skills/**",
-    "tools/oxlint/anti-slop/**",
+    "anti-slop/**",
     "**/CLAUDE.md",
   ],
 });

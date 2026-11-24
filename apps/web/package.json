@@ -6,7 +6,7 @@
     "dev": "varlock run -- next dev -p 3001",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "cd ../.. && oxlint apps/web"
   },
   "dependencies": {
     "@base-org/account": "^2.5.13",

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "include": ["files"],
+  "ignoreWorkspaces": ["packages/db"],
+  "workspaces": {
+    ".": {
+      "project": ["anti-slop/**/*.ts", "scripts/**/*.mjs", "*.config.ts"],
+    },
+    "packages/api": {
+      "entry": ["scripts/{create-bucket,test-presign}.ts"],
+    },
+    "packages/contracts": {
+      "project": ["src/**/*.ts", "scripts/**/*.mjs"],
+    },
+  },
+}
