@@ -3,6 +3,7 @@ import Link from "next/link";
 import LegalDocument from "@/components/global/LegalDocument";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/terms" },
   title: "Perkify Terms of Service",
   description: "General terms for using the Perkify Web3 quest platform.",
 };

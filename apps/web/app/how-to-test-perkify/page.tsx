@@ -4,6 +4,7 @@ import LanguageSelect from "@/components/global/LanguageSelect";
 import { Translate } from "@/lib/i18n/provider";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/how-to-test-perkify" },
   title: "How to Test Perkify",
   description:
     "Set up your wallet and complete your first test quest on Perkify.",

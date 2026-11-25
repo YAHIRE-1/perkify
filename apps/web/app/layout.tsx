@@ -6,6 +6,8 @@ import Providers from "@/components/Providers";
 import AppShell from "@/components/global/AppShell";
 import { LanguageProvider } from "@/lib/i18n/provider";
 
+import { SITE_URL } from "@/lib/site";
+
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -25,6 +27,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Perkify",
   description:
     "The Web3 quest and rewards marketplace. Find a quest, take the action, submit proof, and get paid in crypto.",

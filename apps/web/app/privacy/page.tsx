@@ -3,6 +3,7 @@ import Link from "next/link";
 import LegalDocument from "@/components/global/LegalDocument";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/privacy" },
   title: "Perkify Privacy Notice",
   description: "How Perkify uses wallet, account, quest, and blockchain data.",
 };
