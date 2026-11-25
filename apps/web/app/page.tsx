@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Translate } from "@/lib/i18n/provider";
 import Header from "@/components/header";
@@ -6,6 +7,18 @@ import SocialSection from "@/components/global/SocialMedia";
 import Footer from "@/components/global/Footer";
 import { flowSteps } from "@/const/landing";
 import TryPerkifySection from "@/components/global/TryPerkifySection";
+
+export const metadata: Metadata = {
+  title: "Perkify | Crypto Quest Marketplace",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "Perkify",
+    title: "Perkify | Crypto Quest Marketplace",
+    description: "Publish a quest with a crypto reward or complete one and submit proof to get paid.",
+  },
+};
 
 export default function Home() {
   return (
@@ -62,7 +75,7 @@ export default function Home() {
                 <div className="dual-tag"><Translate text={"FOR BOUNTY HUNTERS"} /></div>
                 <h3><Translate text={"Complete quests and earn rewards"} /></h3>
                 <p><Translate text={"Pick a quest, submit proof, and earn the reward when the creator approves your work."} /></p>
-                <Link href="/how-to-test-perkify" className="dual-btn"><Translate text={"Start hunting"} /></Link>
+                <Link href="/dashboard" className="dual-btn"><Translate text={"Start hunting"} /></Link>
               </div>
               <div className="dual-card brand">
                 <div className="dual-tag"><Translate text={"FOR EVERYONE"} /></div>
