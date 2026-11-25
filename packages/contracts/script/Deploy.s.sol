@@ -7,7 +7,18 @@ import {QuestEscrow} from "../src/QuestEscrow.sol";
 /// Uso:
 ///   forge script script/Deploy.s.sol --rpc-url eth_sepolia --broadcast --verify
 contract Deploy is Script {
+    uint256 private constant ROBINHOOD_TESTNET_CHAIN_ID = 46630;
+
     function run() external returns (QuestEscrow escrow) {
+        return deploy();
+    }
+
+    function runRobinhoodTestnet() external returns (QuestEscrow escrow) {
+        require(block.chainid == ROBINHOOD_TESTNET_CHAIN_ID, "Expected Robinhood Chain Testnet");
+        return deploy();
+    }
+
+    function deploy() private returns (QuestEscrow escrow) {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address arbiter = vm.envAddress("ARBITER_ADDRESS");
         address signer = vm.envAddress("VOUCHER_SIGNER_ADDRESS");

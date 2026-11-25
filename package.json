@@ -42,6 +42,8 @@
     "contracts:gas": "pnpm --filter @perkify/contracts test:gas",
     "contracts:deploy:local": "pnpm --filter @perkify/contracts deploy:local",
     "contracts:deploy:sepolia": "pnpm --filter @perkify/contracts deploy:sepolia",
+    "contracts:simulate:robinhood-testnet": "pnpm --filter @perkify/contracts run simulate:robinhood-testnet",
+    "contracts:deploy:robinhood-testnet": "pnpm --filter @perkify/contracts run deploy:robinhood-testnet",
     "contracts:deploy:eth-sepolia": "pnpm --filter @perkify/contracts deploy:eth-sepolia",
     "contracts:deploy:mainnet": "pnpm --filter @perkify/contracts deploy:mainnet"
   },

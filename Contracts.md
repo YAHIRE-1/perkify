@@ -9,6 +9,8 @@ La idea original cambió en tres puntos durante la conversación:
 - **Entonces el creador tenía poder total**, y el postulante dependía de su buena fe. Se resolvió con un árbitro.
 - **La plataforma es el árbitro**, no Kleros. Kleros quedó como una posible evolución futura.
 
+[Probar QuestEscrow en Robinhood Chain Testnet](docs/robinhood-testnet.md)
+
 ## 2. Cómo funciona el contrato (`QuestEscrow.sol`)
 
 Es **un solo contrato compartido**, donde cada quest es una entrada en una tabla (no se despliega un contrato por quest, que sería mucho más caro).

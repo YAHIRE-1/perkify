@@ -16,8 +16,11 @@
     "test:gas": "forge test --gas-report",
     "typecheck": "tsc --noEmit",
     "deploy:sepolia": "varlock run -- forge script script/Deploy.s.sol --rpc-url arbitrum_sepolia --broadcast --verify",
+    "simulate:robinhood-testnet": "varlock run -- forge script script/Deploy.s.sol --sig \"runRobinhoodTestnet()\" --rpc-url robinhood_testnet",
+    "deploy:robinhood-testnet": "pnpm run simulate:robinhood-testnet --broadcast",
     "deploy:eth-sepolia": "varlock run -- forge script script/Deploy.s.sol --rpc-url sepolia --broadcast --gas-estimate-multiplier 1000",
-    "deploy:local": "forge script script/DeployLocal.s.sol --rpc-url http://127.0.0.1:8545 --broadcast --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"    },
+    "deploy:local": "forge script script/DeployLocal.s.sol --rpc-url http://127.0.0.1:8545 --broadcast --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+  },
 
   "dependencies": {
     "viem": "catalog:"

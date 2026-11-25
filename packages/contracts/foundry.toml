@@ -13,6 +13,7 @@ evm_version = "cancun"
 sepolia = "${NEXT_PUBLIC_SEPOLIA_RPC_URL}"
 arbitrum_sepolia = "${ARBITRUM_SEPOLIA_RPC_URL}"
 arbitrum = "${ARBITRUM_RPC_URL}"
+robinhood_testnet = "${ROBINHOOD_TESTNET_RPC_URL}"
 
 [etherscan]
 sepolia = { key = "${ARBISCAN_API_KEY}", chain = 11155111 }
