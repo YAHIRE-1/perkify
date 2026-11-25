@@ -7,7 +7,6 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { config } from '@/lib/wagmi';
 import { authClient } from '@/lib/auth-client';
 import { signInWithWallet } from '@/lib/wallet-auth';
-import { signInChains, type SignInChain } from '@perkify/auth/sign-in-chains';
 import type { UserRow as User } from '@perkify/db/schema/auth';
 import WalletSignInNotice from './global/WalletSignInNotice';
 
@@ -77,17 +76,17 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
     loginPending.current = true;
     try {
-      const chain = await new Promise<SignInChain | undefined>((resolve) => {
+      const confirmed = await new Promise<boolean>((resolve) => {
         dialog.returnValue = '';
         dialog.showModal();
         dialog.addEventListener('close', () => {
-          resolve(signInChains.find(({ id }) => String(id) === dialog.returnValue));
+          resolve(dialog.returnValue === 'continue');
         }, { once: true });
       });
-      if (!chain) return false;
+      if (!confirmed) return false;
 
       setSigningIn(true);
-      await signInWithWallet(chain);
+      await signInWithWallet();
       await refetch();
       return true;
     } finally {

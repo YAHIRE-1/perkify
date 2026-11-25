@@ -1,6 +1,5 @@
-import { signInChains } from "@perkify/auth/sign-in-chains";
 import Link from "next/link";
-import { useState, type Ref } from "react";
+import type { Ref } from "react";
 
 import { Translate } from "@/lib/i18n/provider";
 
@@ -9,8 +8,6 @@ export default function WalletSignInNotice({
 }: {
   dialogRef: Ref<HTMLDialogElement>;
 }) {
-  const [chainId, setChainId] = useState("");
-
   return (
     <dialog
       ref={dialogRef}
@@ -52,43 +49,17 @@ export default function WalletSignInNotice({
           <Translate text={"Privacy Notice (opens in a new tab)"} />
         </Link>
       </div>
-      <form method="dialog" className="mt-6 space-y-4">
-        <div>
-          <label
-            htmlFor="wallet-sign-in-chain"
-            className="mb-2 block text-sm font-medium"
-          >
-            <Translate text={"Sign-in network"} />
-          </label>
-          <select
-            id="wallet-sign-in-chain"
-            className="input"
-            value={chainId}
-            onChange={(event) => setChainId(event.currentTarget.value)}
-          >
-            <option value="" disabled>
-              <Translate text={"Choose a network"} />
-            </option>
-            {signInChains.map((chain) => (
-              <option key={chain.id} value={chain.id}>
-                {chain.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="flex flex-wrap justify-end gap-2">
-          <button type="submit" value="cancel" className="btn">
-            <Translate text={"Cancel"} />
-          </button>
-          <button
-            type="submit"
-            value={chainId}
-            className="btn btn-primary"
-            disabled={!chainId}
-          >
-            <Translate text={"Continue to wallet"} />
-          </button>
-        </div>
+      <form method="dialog" className="mt-6 flex flex-wrap justify-end gap-2">
+        <button type="submit" value="cancel" className="btn">
+          <Translate text={"Cancel"} />
+        </button>
+        <button
+          type="submit"
+          value="continue"
+          className="btn btn-primary"
+        >
+          <Translate text={"Continue to wallet"} />
+        </button>
       </form>
     </dialog>
   );

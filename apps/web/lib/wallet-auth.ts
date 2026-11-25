@@ -1,4 +1,4 @@
-import type { SignInChain } from "@perkify/auth/sign-in-chains";
+import { signInChains } from "@perkify/auth/sign-in-chains";
 import {
   BaseError,
   createWalletClient,
@@ -7,6 +7,7 @@ import {
   UserRejectedRequestError,
 } from "viem";
 import type { EIP1193Provider } from "viem";
+import { sepolia } from "viem/chains";
 import { createSiweMessage } from "viem/siwe";
 
 import { authClient } from "@/lib/auth-client";
@@ -17,7 +18,7 @@ declare global {
   }
 }
 
-export async function signInWithWallet(chain: SignInChain): Promise<void> {
+export async function signInWithWallet(): Promise<void> {
   if (!window.ethereum) {
     throw new Error(
       "No wallet detected. Please install MetaMask or another wallet extension."
@@ -31,7 +32,10 @@ export async function signInWithWallet(chain: SignInChain): Promise<void> {
   try {
     await wallet.requestAddresses();
 
-    if ((await wallet.getChainId()) !== chain.id) {
+    const activeChainId = await wallet.getChainId();
+    const chain = signInChains.find(({ id }) => id === activeChainId) ?? sepolia;
+
+    if (activeChainId !== chain.id) {
       try {
         await wallet.switchChain({ id: chain.id });
       } catch (error) {
@@ -56,7 +60,7 @@ export async function signInWithWallet(chain: SignInChain): Promise<void> {
     }
     if ((await wallet.getChainId()) !== chain.id) {
       throw new Error(
-        "Switch your wallet to the selected network and try again."
+        "Your wallet network changed during sign-in. Try again."
       );
     }
 
