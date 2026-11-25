@@ -15,9 +15,9 @@ import {
   http,
   type PublicClient,
 } from "viem";
-import { arbitrum, arbitrumSepolia, sepolia } from "viem/chains";
 import { parseSiweMessage, verifySiweMessage } from "viem/siwe";
 import { z } from "zod";
+import { signInChains } from "./sign-in-chains";
 
 // ─── Constantes ──────────────────────────────────────────────────────────────
 
@@ -41,11 +41,9 @@ const rpc = () =>
     timeout: RPC_TIMEOUT_MS,
   });
 
-const publicClients: Record<string, PublicClient> = {
-  "11155111": createPublicClient({ chain: sepolia, transport: rpc() }),
-  "421614": createPublicClient({ chain: arbitrumSepolia, transport: rpc() }),
-  "42161": createPublicClient({ chain: arbitrum, transport: rpc() }),
-};
+const publicClients = new Map<number, PublicClient>(
+  signInChains.map((chain) => [chain.id, createPublicClient({ chain, transport: rpc() })]),
+);
 
 const walletAddressSchema = z.string().regex(/^0x[a-fA-F0-9]{40}$/);
 
@@ -120,10 +118,7 @@ export function createAuth(
               return false;
             }
 
-            const client =
-              publicClients[
-                parsed.chainId.toString() as keyof typeof publicClients
-              ];
+            const client = publicClients.get(parsed.chainId);
             if (!client) {
               log.error({
                 action: "siwe.verify",

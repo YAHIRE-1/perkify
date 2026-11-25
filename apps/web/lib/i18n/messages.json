@@ -1,5 +1,7 @@
 {
   "es": {
+    "Choose a network": "Elige una red",
+    "Sign-in network": "Red para iniciar sesión",
     "Could not send the evidence. Check your connection and try again.": "No se pudo enviar la evidencia. Revisa tu conexión e inténtalo de nuevo.",
     "Tell us a little about what you did (at least 10 characters).": "Cuéntanos brevemente qué hiciste (al menos 10 caracteres).",
     "Check the submission notes and try again.": "Revisa las notas de la entrega e inténtalo de nuevo.",
@@ -549,6 +551,8 @@
     "View all notifications": "Ver todas las notificaciones"
   },
   "zh-CN": {
+    "Choose a network": "选择网络",
+    "Sign-in network": "登录网络",
     "Could not send the evidence. Check your connection and try again.": "无法发送证据。请检查网络连接后重试。",
     "Tell us a little about what you did (at least 10 characters).": "简单说说你完成了什么（至少 10 个字符）。",
     "Check the submission notes and try again.": "请检查提交说明后重试。",
