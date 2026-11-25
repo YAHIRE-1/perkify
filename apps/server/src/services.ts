@@ -3,7 +3,7 @@ import { createDb } from "@perkify/db";
 import type { SupportedChainId } from "@perkify/contracts/addresses";
 import { ORPCError } from "@orpc/server";
 import { createPublicClient, http, type Chain, type PublicClient } from "viem";
-import { arbitrum, arbitrumSepolia, foundry, sepolia } from "viem/chains";
+import { arbitrum, arbitrumSepolia, foundry, robinhoodTestnet, sepolia } from "viem/chains";
 import { ENV } from "./env";
 
 export const db = createDb(ENV);
@@ -15,6 +15,7 @@ const chains: Record<SupportedChainId, Chain> = {
   [sepolia.id]: sepolia,
   [arbitrumSepolia.id]: arbitrumSepolia,
   [arbitrum.id]: arbitrum,
+  [robinhoodTestnet.id]: robinhoodTestnet,
 };
 
 const rpcConfig: Record<SupportedChainId, { envName: string; url: string | undefined }> = {
@@ -22,6 +23,7 @@ const rpcConfig: Record<SupportedChainId, { envName: string; url: string | undef
   [sepolia.id]: { envName: "SEPOLIA_RPC_URL", url: ENV.SEPOLIA_RPC_URL },
   [arbitrumSepolia.id]: { envName: "ARBITRUM_SEPOLIA_RPC_URL", url: ENV.ARBITRUM_SEPOLIA_RPC_URL },
   [arbitrum.id]: { envName: "ARBITRUM_RPC_URL", url: ENV.ARBITRUM_RPC_URL },
+  [robinhoodTestnet.id]: { envName: "ROBINHOOD_TESTNET_RPC_URL", url: ENV.ROBINHOOD_TESTNET_RPC_URL },
 };
 
 // Log al arrancar: qué RPCs están configurados (sin exponer las URLs, llevan API keys)

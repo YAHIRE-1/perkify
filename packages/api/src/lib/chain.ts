@@ -1,11 +1,12 @@
 import { ORPCError } from "@orpc/server";
 import { getQuestEscrowAddress } from "@perkify/contracts";
 import { createPublicClient, getAddress, http, type PublicClient } from "viem";
-import { arbitrum, arbitrumSepolia } from "viem/chains";
+import { arbitrum, arbitrumSepolia, robinhoodTestnet } from "viem/chains";
 
 const SUPPORTED = {
   [arbitrumSepolia.id]: { chain: arbitrumSepolia, rpcEnv: "ARBITRUM_SEPOLIA_RPC_URL" },
   [arbitrum.id]: { chain: arbitrum, rpcEnv: "ARBITRUM_RPC_URL" },
+  [robinhoodTestnet.id]: { chain: robinhoodTestnet, rpcEnv: "ROBINHOOD_TESTNET_RPC_URL" },
 } as const;
 
 const clients = new Map<number, PublicClient>();

@@ -1,13 +1,17 @@
 import { ENV } from "../env";
-import { arbitrum, arbitrumSepolia, foundry, sepolia } from "viem/chains";
+import { isAddress } from "viem";
+import { arbitrum, arbitrumSepolia, foundry, robinhoodTestnet, sepolia } from "viem/chains";
 
 type Address = `0x${string}`;
+
+const robinhoodEscrow = ENV.QUEST_ESCROW_ROBINHOOD_TESTNET;
 
 export const questEscrowAddresses = {
   [foundry.id]: ENV.QUEST_ESCROW_ANVIL as Address,
   [sepolia.id]: ENV.QUEST_ESCROW_SEPOLIA as Address,
   [arbitrumSepolia.id]: undefined as Address | undefined,
   [arbitrum.id]: undefined as Address | undefined,
+  [robinhoodTestnet.id]: robinhoodEscrow && isAddress(robinhoodEscrow) ? robinhoodEscrow : undefined,
 } as const;
 
 export const questEscrowDeployBlocks = {
