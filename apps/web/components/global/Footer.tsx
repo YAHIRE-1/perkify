@@ -33,6 +33,7 @@ export default function Footer() {
           <div className="footer-bottom">
             <span><Translate text={"© 2026 Perkify. All rewards settle on-chain."} /></span>
             <div className="flex flex-wrap gap-4">
+              <a href="/agents.md" className="underline underline-offset-4">Agent API (Markdown)</a>
               <Link href="/terms" className="underline underline-offset-4"><Translate text={"Terms of Service"} /></Link>
               <Link href="/privacy" className="underline underline-offset-4"><Translate text={"Privacy Notice"} /></Link>
             </div>
